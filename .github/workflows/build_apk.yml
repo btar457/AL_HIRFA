@@ -24,6 +24,16 @@ jobs:
         flutter-version: '3.19.x'
         channel: 'stable'
 
+    # ✨ خطوة المعالجة التلقائية: إنشاء بيئة أندرويد مفقودة للمشروع الحالي
+    - name: Recreate Android Project Platform
+      run: |
+        mv lib _lib_backup
+        mv pubspec.yaml _pubspec_backup
+        flutter create . --project-name=al_hirfa --platforms=android
+        rm -rf lib pubspec.yaml
+        mv _lib_backup lib
+        mv _pubspec_backup pubspec.yaml
+
     - name: Install Dependencies
       run: flutter pub get
 
