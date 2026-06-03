@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// استدعاء ملف شاشة محادثة المستشار الذكي التي قمت برفعها
 import 'artisan_chat_screen.dart';
 
 void main() {
@@ -8,7 +7,6 @@ void main() {
 
 class AlHirfaApp extends StatefulWidget {
   const AlHirfaApp({super.key});
-
   @override
   State<AlHirfaApp> createState() => _AlHirfaAppState();
 }
@@ -28,7 +26,6 @@ class _AlHirfaAppState extends State<AlHirfaApp> {
       title: 'Al-Hirfa | الحرفة',
       debugShowCheckedModeBanner: false,
       themeMode: _themeMode,
-      
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0F0F0F),
@@ -41,14 +38,13 @@ class _AlHirfaAppState extends State<AlHirfaApp> {
           error: Color(0xFFCF6679),
         ),
         fontFamily: 'Cairo',
-        textTheme: const TextTheme(
+        textTheme: TextTheme(
           displayLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37)),
           titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-          bodyLarge: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.8)),
+          bodyLarge: TextStyle(fontSize: 14, color: Color(0xCCFFFFFF)),
           bodySmall: TextStyle(fontSize: 12, color: Colors.white54),
         ),
       ),
-
       theme: ThemeData(
         brightness: Brightness.light,
         scaffoldBackgroundColor: const Color(0xFFFDFBF7),
@@ -76,14 +72,12 @@ class _AlHirfaAppState extends State<AlHirfaApp> {
 class MainNavigationHub extends StatefulWidget {
   final VoidCallback toggleTheme;
   const MainNavigationHub({super.key, required this.toggleTheme});
-
   @override
   State<MainNavigationHub> createState() => _MainNavigationHubState();
 }
 
 class _MainNavigationHubState extends State<MainNavigationHub> {
   int _selectedSystemIndex = 0;
-
   final List<Widget> _systems = [
     const BuyerSystemRoot(),
     const ArtisanSystemRoot(),
@@ -99,26 +93,18 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.brightness_6_outlined),
-          onPressed: widget.toggleTheme,
-        ),
+        leading: IconButton(icon: const Icon(Icons.brightness_6_outlined), onPressed: widget.toggleTheme),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: Center(
-              child: Text(
-                _getSystemName(_selectedSystemIndex),
-                style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 13),
-              ),
+              child: Text(_getSystemName(_selectedSystemIndex),
+                style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 13)),
             ),
           )
         ],
       ),
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: _systems[_selectedSystemIndex],
-      ),
+      body: Directionality(textDirection: TextDirection.rtl, child: _systems[_selectedSystemIndex]),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedSystemIndex,
         onTap: (index) => setState(() => _selectedSystemIndex = index),
@@ -150,11 +136,8 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ٢. رحلة المستخدم والمشتري
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class BuyerSystemRoot extends StatefulWidget {
   const BuyerSystemRoot({super.key});
-
   @override
   State<BuyerSystemRoot> createState() => _BuyerSystemRootState();
 }
@@ -165,7 +148,6 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
     {'id': '2', 'title': 'سجادة صوفية بنمط بابلي', 'artisan': 'حرفيو ذي قار', 'price': 450000, 'category': 'سجاد وتطريز الرافدين', 'stock': 1, 'rating': 5.0},
     {'id': '3', 'title': 'لوحة خط عربي بماء الذهب', 'artisan': 'محترف الخط العربي', 'price': 320000, 'category': 'النحت والخط العربي', 'stock': 2, 'rating': 4.8},
   ];
-
   final List<Map<String, dynamic>> _cart = [];
 
   void _addToCart(Map<String, dynamic> product) {
@@ -186,21 +168,11 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
             bottom: TabBar(
               indicatorColor: Theme.of(context).colorScheme.primary,
               labelColor: Theme.of(context).colorScheme.primary,
-              tabs: const [
-                Tab(text: 'المعرض الحالي'),
-                Tab(text: 'التصنيفات التراثية'),
-                Tab(text: 'سلة الشراء الموحدة'),
-              ],
+              tabs: const [Tab(text: 'المعرض الحالي'), Tab(text: 'التصنيفات التراثية'), Tab(text: 'سلة الشراء الموحدة')],
             ),
           ),
         ),
-        body: TabBarView(
-          children: [
-            _buildGalleryView(),
-            _buildCategoriesView(),
-            _buildCartView(),
-          ],
-        ),
+        body: TabBarView(children: [_buildGalleryView(), _buildCategoriesView(), _buildCartView()]),
       ),
     );
   }
@@ -208,9 +180,7 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
   Widget _buildGalleryView() {
     return GridView.builder(
       padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.75,
-      ),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.75),
       itemCount: _products.length,
       itemBuilder: (context, index) {
         final product = _products[index];
@@ -242,8 +212,7 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
                 ),
                 const SizedBox(height: 8),
                 SizedBox(
-                  width: double.infinity,
-                  height: 32,
+                  width: double.infinity, height: 32,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
                     onPressed: () => _addToCart(product),
@@ -279,9 +248,7 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
   }
 
   Widget _buildCartView() {
-    if (_cart.isEmpty) {
-      return const Center(child: Text('سلة التسوق فارغة حالياً. تصفح المعرض لاقتناء الأعمال التراثية.'));
-    }
+    if (_cart.isEmpty) return const Center(child: Text('سلة التسوق فارغة حالياً.'));
     num total = _cart.fold(0, (sum, item) => sum + item['price']);
     return Padding(
       padding: const EdgeInsets.all(12.0),
@@ -317,16 +284,11 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
             ),
           ),
           SizedBox(
-            width: double.infinity,
-            height: 48,
+            width: double.infinity, height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('الانتقال لبوابة الدفع الأمنة (ZainCash / Qi Card)...')),
-                );
-              },
-              child: const Text('إتمام الدفع الآمن المتوافق مع شروط حماية المستهلك', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الانتقال لبوابة الدفع (ZainCash / Qi Card)...'))),
+              child: const Text('إتمام الدفع الآمن', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           )
         ],
@@ -336,11 +298,8 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ٣. نظام الحرفيين والمزودين
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class ArtisanSystemRoot extends StatefulWidget {
   const ArtisanSystemRoot({super.key});
-
   @override
   State<ArtisanSystemRoot> createState() => _ArtisanSystemRootState();
 }
@@ -350,7 +309,6 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
   final _titleController = TextEditingController();
   final _priceController = TextEditingController();
   final _descController = TextEditingController();
-
   final List<Map<String, dynamic>> _myInventory = [
     {'title': 'إناء نحاسي منقوش يدوياً', 'price': 125000, 'stock': 3, 'status': 'معتمد وموثق'},
   ];
@@ -366,19 +324,11 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
             bottom: TabBar(
               indicatorColor: Theme.of(context).colorScheme.primary,
               labelColor: Theme.of(context).colorScheme.primary,
-              tabs: const [
-                Tab(text: 'لوحة التحكم والمخزون'),
-                Tab(text: 'إدراج عمل جديد'),
-              ],
+              tabs: const [Tab(text: 'لوحة التحكم والمخزون'), Tab(text: 'إدراج عمل جديد')],
             ),
           ),
         ),
-        body: TabBarView(
-          children: [
-            _buildInventoryDashboard(),
-            _buildAddProductForm(),
-          ],
-        ),
+        body: TabBarView(children: [_buildInventoryDashboard(), _buildAddProductForm()]),
       ),
     );
   }
@@ -391,52 +341,24 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
         children: [
           Card(
             color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-              side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1)
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1)),
             child: ListTile(
               leading: Icon(Icons.psychology, color: Theme.of(context).colorScheme.primary, size: 30),
               title: const Text('مستشار الأصالة التراثية (Gemini AI)', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('استشر الذكاء الاصطناعي لتدقيق جودة عملك الفني وصياغة الوصف قبل النشر.'),
+              subtitle: const Text('استشر الذكاء الاصطناعي لتدقيق جودة عملك الفني قبل النشر.'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.amber),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ArtisanChatScreen()),
-                );
-              },
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ArtisanChatScreen())),
             ),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(
-                child: Card(
-                  color: Theme.of(context).colorScheme.surface,
-                  child: const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [Text('المبيعات المستحقة'), SizedBox(height: 8), Text('١٢٥,٠٠٠ د.ع', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.green))],
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Card(
-                  color: Theme.of(context).colorScheme.surface,
-                  child: const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [Text('فترة تسوية المدفوعات'), SizedBox(height: 8), Text('٧ أيام عمل', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.amber))],
-                    ),
-                  ),
-                ),
-              ),
+              Expanded(child: Card(color: Theme.of(context).colorScheme.surface, child: const Padding(padding: EdgeInsets.all(16.0), child: Column(children: [Text('المبيعات المستحقة'), SizedBox(height: 8), Text('١٢٥,٠٠٠ د.ع', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.green))])))),
+              Expanded(child: Card(color: Theme.of(context).colorScheme.surface, child: const Padding(padding: EdgeInsets.all(16.0), child: Column(children: [Text('فترة التسوية'), SizedBox(height: 8), Text('٧ أيام عمل', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.amber))])))),
             ],
           ),
           const SizedBox(height: 16),
-          Text('إدارة المخزون والأعمال المنشورة:', style: Theme.of(context).textTheme.titleMedium),
+          Text('إدارة المخزون:', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Expanded(
             child: ListView.builder(
@@ -447,7 +369,7 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
                   color: Theme.of(context).cardColor,
                   child: ListTile(
                     title: Text(item['title']),
-                    subtitle: Text('السعر الحالي: ${item['price']} د.ع | الكمية المتوفرة: ${item['stock']}'),
+                    subtitle: Text('السعر: ${item['price']} د.ع | الكمية: ${item['stock']}'),
                     trailing: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(color: Colors.green.withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
@@ -471,57 +393,35 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('إدراج عمل يدوي جديد وتحت طائلة مسؤولية الأصالة الحرفية', style: Theme.of(context).textTheme.bodyLarge),
+            Text('إدراج عمل يدوي جديد', style: Theme.of(context).textTheme.bodyLarge),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(labelText: 'اسم العمل التراثي', border: OutlineInputBorder()),
-              validator: (v) => v!.isEmpty ? 'الحقل مطلوب' : null,
-            ),
+            TextFormField(controller: _titleController, decoration: const InputDecoration(labelText: 'اسم العمل التراثي', border: OutlineInputBorder()), validator: (v) => v!.isEmpty ? 'الحقل مطلوب' : null),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _priceController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'السعر النهائي بالدينار العراقي', border: OutlineInputBorder()),
-              validator: (v) => v!.isEmpty ? 'الحقل مطلوب' : null,
-            ),
+            TextFormField(controller: _priceController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'السعر بالدينار العراقي', border: OutlineInputBorder()), validator: (v) => v!.isEmpty ? 'الحقل مطلوب' : null),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _descController,
-              maxLines: 3,
-              decoration: const InputDecoration(labelText: 'الوصف الفني والمواد التكوينية يدوياً', border: OutlineInputBorder()),
-              validator: (v) => v!.isEmpty ? 'الحقل مطلوب' : null,
-            ),
+            TextFormField(controller: _descController, maxLines: 3, decoration: const InputDecoration(labelText: 'الوصف الفني والمواد', border: OutlineInputBorder()), validator: (v) => v!.isEmpty ? 'الحقل مطلوب' : null),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-              child: Row(
-                children: [
-                  Icon(Icons.gavel, color: Theme.of(context).colorScheme.primary),
-                  const SizedBox(width: 8),
-                  const Expanded(child: Text('بإدراج العمل، أقر قانوناً بالتزامي ببنود المادة ٢.٤ الخاصة بالأصالة وعدم التقليد.', style: TextStyle(fontSize: 11))),
-                ],
-              ),
+              child: Row(children: [
+                Icon(Icons.gavel, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                const Expanded(child: Text('بإدراج العمل، أقر بالتزامي ببنود المادة ٢.٤ الخاصة بالأصالة.', style: TextStyle(fontSize: 11))),
+              ]),
             ),
             const SizedBox(height: 24),
             SizedBox(
-              width: double.infinity,
-              height: 48,
+              width: double.infinity, height: 48,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     setState(() {
-                      _myInventory.add({
-                        'title': _titleController.text,
-                        'price': int.parse(_priceController.text),
-                        'stock': 1,
-                        'status': 'قيد المراجعة والتدقيق'
-                      });
+                      _myInventory.add({'title': _titleController.text, 'price': int.parse(_priceController.text), 'stock': 1, 'status': 'قيد المراجعة'});
                     });
                     _titleController.clear(); _priceController.clear(); _descController.clear();
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إرسال العمل لتدقيق الجودة والأصالة التراثية.')));
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إرسال العمل للتدقيق.')));
                   }
                 },
                 child: const Text('رفع وتوثيق العمل في المنصة', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
@@ -535,23 +435,20 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ٤. النظام اللوجستي
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class LogisticsSystemRoot extends StatelessWidget {
   const LogisticsSystemRoot({super.key});
 
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> activeShipments = [
-      {'id': 'TRK-9082', 'from': 'الحرفي أبو مصطفى (بغداد)', 'to': 'المشتري (الناصرية - ذي قار)', 'status': 'جاري التوصيل', 'deadline': 'خلال ٢٤ ساعة'},
+      {'id': 'TRK-9082', 'from': 'الحرفي أبو مصطفى (بغداد)', 'to': 'المشتري (الناصرية)', 'status': 'جاري التوصيل', 'deadline': 'خلال ٢٤ ساعة'},
     ];
-
     return Padding(
       padding: const EdgeInsets.all(12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('لوحة متابعة الشريك اللوجستي والتتبع الآني', style: Theme.of(context).textTheme.titleMedium),
+          Text('لوحة متابعة الشريك اللوجستي', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           Expanded(
             child: ListView.builder(
@@ -570,4 +467,103 @@ class LogisticsSystemRoot extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('رقم الشحنة: ${shipment['id']}', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
-                            const Icon(Icons.local_shippin
+                            const Icon(Icons.local_shipping, size: 20),
+                          ],
+                        ),
+                        const Divider(height: 20),
+                        Text('من: ${shipment['from']}', style: Theme.of(context).textTheme.bodyLarge),
+                        Text('إلى: ${shipment['to']}', style: Theme.of(context).textTheme.bodyLarge),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('الحالة: ${shipment['status']}', style: const TextStyle(fontSize: 12, color: Colors.amber, fontWeight: FontWeight.bold)),
+                            Text('الموعد: ${shipment['deadline']}', style: Theme.of(context).textTheme.bodySmall),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity, height: 36,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(side: BorderSide(color: Theme.of(context).colorScheme.primary)),
+                            icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                            label: const Text('توثيق حالة الشحنة', style: TextStyle(fontSize: 12)),
+                            onPressed: () {},
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class FounderSystemRoot extends StatelessWidget {
+  const FounderSystemRoot({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('بوابة التحكم العليا للمؤسس', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 16),
+          Card(
+            color: Theme.of(context).cardColor,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('العمولة الإجمالية (١٠%)'), const Text('١٢,٥٠٠ د.ع', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green))]),
+                  const Divider(),
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('الحرفيون النشطون'), const Text('٢٤ حرفي معتمد')]),
+                  const Divider(),
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('مستوى الامتثال القانوني'), const Text('١٠٠% مؤمن')]),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text('إجراءات الجودة المستعجلة:', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          ListTile(
+            tileColor: Theme.of(context).cardColor,
+            leading: const Icon(Icons.gavel, color: Colors.amber),
+            title: const Text('مراجعة طلب التوثيق للعمل المرفوع حديثاً'),
+            subtitle: const Text('التحقق من أصالة العمل الفني المرفوع.'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(icon: const Icon(Icons.check_circle, color: Colors.green), onPressed: () {}),
+                IconButton(icon: const Icon(Icons.cancel, color: Colors.redAccent), onPressed: () {}),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(border: Border.all(color: Colors.redAccent.withOpacity(0.5)), borderRadius: BorderRadius.circular(6)),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('نظام العقوبات الفوري — البند ٥.٣:', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                SizedBox(height: 4),
+                Text('في حال ثبوت التهرب أو بيع مواد مقلدة، يتم تطبيق الحظر الكلي فوراً.', style: TextStyle(fontSize: 11, color: Colors.white70)),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
