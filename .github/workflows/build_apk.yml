@@ -24,7 +24,7 @@ jobs:
         flutter-version: '3.19.x'
         channel: 'stable'
 
-    # 1. إنشاء بيئة منصة الأندرويد المفقودة
+    # 1. إعادة توليد منصة أندرويد نظيفة ومستقرة للمشروع
     - name: Recreate Android Project Platform
       run: |
         mv lib _lib_backup
@@ -34,12 +34,20 @@ jobs:
         mv _lib_backup lib
         mv _pubspec_backup pubspec.yaml
 
-    # 2. ✨ ضبط وإصدار قيم الـ SDK لضمان توافق الحزم تلقائياً
-    - name: Auto-Configure Android SDK Versions
+    # 2. 🔥 الحل الهندسي: حقن كود جبري لتجاوز توافقية الـ SDK ومنع تعارض الحزم
+    - name: Force Android SDK Configurations
       run: |
-        sed -i 's/minSdkVersion.*/minSdkVersion 21/g' android/app/build.gradle
-        sed -i 's/targetSdkVersion.*/targetSdkVersion 34/g' android/app/build.gradle
-        sed -i 's/compileSdkVersion.*/compileSdkVersion 34/g' android/app/build.gradle
+        cat << EOF >> android/app/build.gradle
+
+        // إجبار نظام أندرويد على تخطي القيم الافتراضية واعتماد القيم المتوافقة مع الحزم
+        android {
+            compileSdkVersion 34
+            defaultConfig {
+                minSdkVersion 21
+                targetSdkVersion 34
+            }
+        }
+        EOF
 
     - name: Install Dependencies
       run: flutter pub get
