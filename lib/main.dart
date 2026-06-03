@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// استدعاء ملف شاشة محادثة المستشار الذكي التي قمت برفعها
+import 'artisan_chat_screen.dart';
 
 void main() {
   runApp(const AlHirfaApp());
@@ -163,8 +165,8 @@ class BuyerSystemRoot extends StatefulWidget {
 class _BuyerSystemRootState extends State<BuyerSystemRoot> {
   final List<Map<String, dynamic>> _products = [
     {'id': '1', 'title': 'إناء نحاسي منقوش يدوياً', 'artisan': 'الحرفي أبو مصطفى', 'price': 125000, 'category': 'نحاسيات', 'stock': 3, 'rating': 4.9},
-    {'id': '2', 'title': 'سجادة صوفية بنمط بابلي', 'artisan': 'حرفيو ذي قار', 'price': 450000, 'category': 'سجاد وتطريز', 'stock': 1, 'rating': 5.0},
-    {'id': '3', 'title': 'خنجر سومري مقبض عاج', 'artisan': 'محترف النحاسيات', 'price': 320000, 'category': 'تحف وفضيات', 'stock': 2, 'rating': 4.8},
+    {'id': '2', 'title': 'سجادة صوفية بنمط بابلي', 'artisan': 'حرفيو ذي قار', 'price': 450000, 'category': 'سجاد وتطريز الرافدين', 'stock': 1, 'rating': 5.0},
+    {'id': '3', 'title': 'لوحة خط عربي بماء الذهب', 'artisan': 'محترف الخط العربي', 'price': 320000, 'category': 'النحت والخط العربي', 'stock': 2, 'rating': 4.8},
   ];
 
   final List<Map<String, dynamic>> _cart = [];
@@ -262,7 +264,7 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
   }
 
   Widget _buildCategoriesView() {
-    final categories = ['نحاسيات وريازة', 'سجاد وتطريز الرافدين', 'فخاريات وتماثيل طينية', 'فضيات وتحف تراثية'];
+    final categories = ['نحاسيات وريازة', 'سجاد وتطريز الرافدين', 'النحت والخط العربي', 'فضيات وأعمال تراثية'];
     return ListView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: categories.length,
@@ -283,7 +285,7 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
 
   Widget _buildCartView() {
     if (_cart.isEmpty) {
-      return const Center(child: Text('سلة التسوق فارغة حالياً. تصفح المعرض لاقتناء التحف.'));
+      return const Center(child: Text('سلة التسوق فارغة حالياً. تصفح المعرض لاقتناء الأعمال التراثية.'));
     }
     num total = _cart.fold(0, (sum, item) => sum + item['price']);
     return Padding(
@@ -371,7 +373,7 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
               labelColor: Theme.of(context).colorScheme.primary,
               tabs: const [
                 Tab(text: 'لوحة التحكم والمخزون'),
-                Tab(text: 'إدراج تحفة جديدة'),
+                Tab(text: 'إدراج عمل جديد'),
               ],
             ),
           ),
@@ -392,6 +394,28 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 🚀 زر تشغيل مستشار الجودة والأصالة الذكي المطور حديثاً
+          Card(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1)
+            ),
+            child: ListTile(
+              leading: Icon(Icons.psychology, color: Theme.of(context).colorScheme.primary, size: 30),
+              title: const Text('مستشار الأصالة التراثية (Gemini AI)', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: const Text('استشر الذكاء الاصطناعي لتدقيق جودة عملك الفني وصياغة الوصف قبل النشر.'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.amber),
+              onTap: () {
+                // الانتقال الآمن والمباشر لشاشة المحادثة المرفوعة مسبقاً
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ArtisanChatScreen()),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -419,7 +443,7 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
             ],
           ),
           const SizedBox(height: 16),
-          Text('إدارة المخزون والمنتجات المنشورة:', style: Theme.of(context).textTheme.titleMedium),
+          Text('إدارة المخزون والأعمال المنشورة:', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Expanded(
             child: ListView.builder(
@@ -454,11 +478,11 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('إدراج منتج يدوي جديد وتحت طائلة مسؤولية الأصالة الحرفية', style: Theme.of(context).textTheme.bodyLarge),
+            Text('إدراج عمل يدوي جديد وتحت طائلة مسؤولية الأصالة الحرفية', style: Theme.of(context).textTheme.bodyLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'اسم المنتج والتحفة التراثية', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'اسم العمل التراثي', border: OutlineInputBorder()),
               validator: (v) => v!.isEmpty ? 'الحقل مطلوب' : null,
             ),
             const SizedBox(height: 12),
@@ -483,7 +507,7 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
                 children: [
                   Icon(Icons.gavel, color: Theme.of(context).colorScheme.primary),
                   const SizedBox(width: 8),
-                  const Expanded(child: Text('بإدراج المنتج، أقر قانوناً بالتزامي ببنود المادة ٢.٤ الخاصة بالأصالة وعدم التقليد.', style: TextStyle(fontSize: 11))),
+                  const Expanded(child: Text('بإدراج العمل، أقر قانوناً بالتزامي ببنود المادة ٢.٤ الخاصة بالأصالة وعدم التقليد.', style: TextStyle(fontSize: 11))),
                 ],
               ),
             ),
@@ -504,10 +528,10 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
                       });
                     });
                     _titleController.clear(); _priceController.clear(); _descController.clear();
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إرسال المنتج لتدقيق الجودة والأصالة التراثية.')));
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إرسال العمل لتدقيق الجودة والأصالة التراثية.')));
                   }
                 },
-                child: const Text('رفع وتوثيق المنتج في المنصة', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                child: const Text('رفع وتوثيق العمل في المنصة', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
               ),
             )
           ],
@@ -612,7 +636,7 @@ class FounderSystemRoot extends StatelessWidget {
               padding: EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.between, children: [Text('العمولة الإجمالية المحققة (١٠%)'), Text('١٢,٥٠٠ د.ع', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green))]),
+                  Row(mainAxisAlignment: MainAxisAlignment.between, children: [Text('العمولة الإجمالية المحققة (١٠%)'), Text('١٢,٥٠0 د.ع', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green))]),
                   Divider(),
                   Row(mainAxisAlignment: MainAxisAlignment.between, children: [Text('إجمالي حسابات الحرفيين النشطة'), Text('٢٤ حرفي معتمد')]),
                   Divider(),
@@ -627,8 +651,8 @@ class FounderSystemRoot extends StatelessWidget {
           ListTile(
             tileColor: Theme.of(context).cardColor,
             leading: const Icon(Icons.gavel, color: Colors.amber),
-            title: const Text('مراجعة طلب التوثيق للمنتج المرفوع حديثاً'),
-            subtitle: const Text('التحقق الميداني أو المرئي من أصالة الخنجر السومري المرفوع.'),
+            title: const Text('مراجعة طلب التوثيق للعمل المرفوع حديثاً'),
+            subtitle: const Text('التحقق الميداني أو المرئي من أصالة العمل الفني المرفوع.'),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
