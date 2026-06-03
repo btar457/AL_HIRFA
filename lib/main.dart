@@ -29,15 +29,14 @@ class _AlHirfaAppState extends State<AlHirfaApp> {
       debugShowCheckedModeBanner: false,
       themeMode: _themeMode,
       
-      // النمط الداكن السينمائي (Heritage Cinematic - Dark)
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0F0F0F),
         primaryColor: const Color(0xFFD4AF37),
         cardColor: const Color(0xFF1A1A1A),
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFD4AF37),      // الذهب التراثي
-          secondary: Color(0xFF8B5A2B),    // البرونز البني
+          primary: Color(0xFFD4AF37),
+          secondary: Color(0xFF8B5A2B),
           surface: Color(0xFF161616),
           error: Color(0xFFCF6679),
         ),
@@ -45,12 +44,11 @@ class _AlHirfaAppState extends State<AlHirfaApp> {
         textTheme: const TextTheme(
           displayLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37)),
           titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-          bodyLarge: TextStyle(fontSize: 14, color: Colors.white80),
+          bodyLarge: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.8)),
           bodySmall: TextStyle(fontSize: 12, color: Colors.white54),
         ),
       ),
 
-      // النمط الفاتح السينمائي (Heritage Cinematic - Light)
       theme: ThemeData(
         brightness: Brightness.light,
         scaffoldBackgroundColor: const Color(0xFFFDFBF7),
@@ -75,7 +73,6 @@ class _AlHirfaAppState extends State<AlHirfaApp> {
   }
 }
 
-// مركز التحكم والملاحة الموحد لكافة الأنظمة
 class MainNavigationHub extends StatefulWidget {
   final VoidCallback toggleTheme;
   const MainNavigationHub({super.key, required this.toggleTheme});
@@ -88,10 +85,10 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
   int _selectedSystemIndex = 0;
 
   final List<Widget> _systems = [
-    const BuyerSystemRoot(),      // نظام المشتري (المعرض، الفئات، السلة)
-    const ArtisanSystemRoot(),    // نظام الحرفي والمزود (المخزون، إضافة المنتجات)
-    const LogisticsSystemRoot(),  // النظام اللوجستي (شركات الشحن، التتبع)
-    const FounderSystemRoot(),    // بوابة المؤسس والأمن وضبط الجودة
+    const BuyerSystemRoot(),
+    const ArtisanSystemRoot(),
+    const LogisticsSystemRoot(),
+    const FounderSystemRoot(),
   ];
 
   @override
@@ -153,7 +150,7 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ٢. رحلة المستخدم والمشتري (Buyer Journey System)
+// ٢. رحلة المستخدم والمشتري
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class BuyerSystemRoot extends StatefulWidget {
   const BuyerSystemRoot({super.key});
@@ -172,9 +169,7 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
   final List<Map<String, dynamic>> _cart = [];
 
   void _addToCart(Map<String, dynamic> product) {
-    setState(() {
-      _cart.add(product);
-    });
+    setState(() { _cart.add(product); });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('تم إضافة ${product['title']} إلى سلة التسوق'), backgroundColor: Theme.of(context).colorScheme.primary),
     );
@@ -239,7 +234,7 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
                 Text(product['artisan'], style: Theme.of(context).textTheme.bodySmall),
                 const SizedBox(height: 4),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.between,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('${product['price']} د.ع', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 13)),
                     Row(children: [const Icon(Icons.star, color: Colors.amber, size: 14), Text('${product['rating']}', style: Theme.of(context).textTheme.bodySmall)]),
@@ -271,7 +266,7 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
       itemBuilder: (context, index) {
         return Card(
           color: Theme.of(context).cardColor,
-          margin: const EdgeInsets.bottom(10),
+          margin: const EdgeInsets.only(bottom: 10),
           child: ListTile(
             leading: Icon(Icons.category, color: Theme.of(context).colorScheme.primary),
             title: Text(categories[index], style: Theme.of(context).textTheme.titleMedium),
@@ -314,7 +309,7 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.between,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('إجمالي القيمة التقديرية:', style: Theme.of(context).textTheme.titleMedium),
                 Text('$total د.ع', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 18)),
@@ -341,7 +336,7 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ٣. نظام وإدارة الحرفيين والمزودين (Artisan System)
+// ٣. نظام الحرفيين والمزودين
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class ArtisanSystemRoot extends StatefulWidget {
   const ArtisanSystemRoot({super.key});
@@ -394,7 +389,6 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🚀 زر تشغيل مستشار الجودة والأصالة الذكي المطور حديثاً
           Card(
             color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
             shape: RoundedRectangleBorder(
@@ -407,7 +401,6 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
               subtitle: const Text('استشر الذكاء الاصطناعي لتدقيق جودة عملك الفني وصياغة الوصف قبل النشر.'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.amber),
               onTap: () {
-                // الانتقال الآمن والمباشر لشاشة المحادثة المرفوعة مسبقاً
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const ArtisanChatScreen()),
@@ -542,7 +535,7 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ٤. النظام اللوجستي وشركات الشحن (Logistics System)
+// ٤. النظام اللوجستي
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class LogisticsSystemRoot extends StatelessWidget {
   const LogisticsSystemRoot({super.key});
@@ -550,7 +543,7 @@ class LogisticsSystemRoot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> activeShipments = [
-      {'id': 'TRK-9082', 'from': 'الحرفي أبو مصطفى (بغداد)', 'to': 'المشتري (الناصرية - ذي قار)', 'status': 'جاري التوصيل التابع للمرحلة ٣.٣', 'deadline': 'خلال ٢٤ ساعة'},
+      {'id': 'TRK-9082', 'from': 'الحرفي أبو مصطفى (بغداد)', 'to': 'المشتري (الناصرية - ذي قار)', 'status': 'جاري التوصيل', 'deadline': 'خلال ٢٤ ساعة'},
     ];
 
     return Padding(
@@ -558,7 +551,7 @@ class LogisticsSystemRoot extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('لوحة متابعة الشريك اللوجستي والتتبع الآني المَحلي', style: Theme.of(context).textTheme.titleMedium),
+          Text('لوحة متابعة الشريك اللوجستي والتتبع الآني', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           Expanded(
             child: ListView.builder(
@@ -574,109 +567,7 @@ class LogisticsSystemRoot extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.between,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('رقم الشحنة الموحد: ${shipment['id']}', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
-                            const Icon(Icons.local_shipping, size: 20),
-                          ],
-                        ),
-                        const Divider(height: 20),
-                        Text('نقطة الاستلام: ${shipment['from']}', style: Theme.of(context).textTheme.bodyLarge),
-                        Text('وجهة التسليم النهائية: ${shipment['to']}', style: Theme.of(context).textTheme.bodyLarge),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.between,
-                          children: [
-                            Text('الحالة التشغيلية: ${shipment['status']}', style: const TextStyle(fontSize: 12, color: Colors.amber, fontWeight: FontWeight.bold)),
-                            Text('الالتزام الزمني المتبقي: ${shipment['deadline']}', style: Theme.of(context).textTheme.bodySmall),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 36,
-                          child: OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(side: BorderSide(color: Theme.of(context).colorScheme.primary)),
-                            icon: const Icon(Icons.camera_alt_outlined, size: 18),
-                            label: const Text('توثيق حالة الشحنة بالصور عند التسليم', style: TextStyle(fontSize: 12)),
-                            onPressed: () {},
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ٥. بوابة المؤسس، الأمن، وضبط الجودة (Founder Dashboard)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-class FounderSystemRoot extends StatelessWidget {
-  const FounderSystemRoot({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('بوابة التحكم العليا للمؤسس ونظام ضبط معايير الأصالة التراثية', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 16),
-          Card(
-            color: Theme.of(context).cardColor,
-            child: const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.between, children: [Text('العمولة الإجمالية المحققة (١٠%)'), Text('١٢,٥٠0 د.ع', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green))]),
-                  Divider(),
-                  Row(mainAxisAlignment: MainAxisAlignment.between, children: [Text('إجمالي حسابات الحرفيين النشطة'), Text('٢٤ حرفي معتمد')]),
-                  Divider(),
-                  Row(mainAxisAlignment: MainAxisAlignment.between, children: [Text('مستوى الامتثال القانوني وحماية السرية'), Text('١٠٠% مؤمن ومُشفر')]),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('إجراءات جودة المنصة المستعجلة الحالية:', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          ListTile(
-            tileColor: Theme.of(context).cardColor,
-            leading: const Icon(Icons.gavel, color: Colors.amber),
-            title: const Text('مراجعة طلب التوثيق للعمل المرفوع حديثاً'),
-            subtitle: const Text('التحقق الميداني أو المرئي من أصالة العمل الفني المرفوع.'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(icon: const Icon(Icons.check_circle, color: Colors.green), onPressed: () {}),
-                IconButton(icon: const Icon(Icons.cancel, color: Colors.redAccent), onPressed: () {}),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(border: Border.all(color: Colors.redAccent.withOpacity(0.5)), borderRadius: BorderRadius.circular(6)),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('نظام العقوبات الفوري للانتهاكات الجسيمة البند ٥.٣:', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-                SizedBox(height: 4),
-                Text('في حال ثبوت محاولات التهرب أو بيع مواد مستوردة ومقلدة، يتم تطبيق الحظر الكلي وتجميد الحساب فوراً بصلاحيات الإدارة المطلقة.', style: TextStyle(fontSize: 11, color: Colors.white70)),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
+                            Text('رقم الشحنة: ${shipment['id']}', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
+                            const Icon(Icons.local_shippin
