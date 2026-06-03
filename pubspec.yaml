@@ -1,0 +1,30 @@
+name: al_hirfa
+description: "منصة الحرفة للتراث العراقي - تطبيق متكامل يربط المشترين، الحرفيين، والشركاء اللوجستيين."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # مكتبات إدارة الأيقونات والتصميم الجمالي التراثي
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # إعداد الخط العربي الاحترافي لضمان جمالية النصوص السينمائية بالتطبيق
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: fonts/Cairo-Regular.ttf
+        - asset: fonts/Cairo-Bold.ttf
+          weight: 700
