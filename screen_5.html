@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AL-HIRFA | المحفظة والمدفوعات</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Playfair+Display:wght@600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .vault-inset {
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+            background-color: #0c0e10;
+        }
+        .metallic-glint:hover {
+            background: linear-gradient(90deg, #f2ca50 0%, #ffe088 50%, #f2ca50 100%);
+            background-size: 200% 100%;
+            animation: glint 1.5s infinite;
+        }
+        @keyframes glint {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .grain-texture {
+            background-image: url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+            opacity: 0.05;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#93000a",
+                        "secondary-container": "#454749",
+                        "surface-variant": "#333537",
+                        "inverse-primary": "#735c00",
+                        "surface-bright": "#38393c",
+                        "tertiary-fixed-dim": "#b5c8df",
+                        "secondary": "#c6c6c9",
+                        "background": "#121416",
+                        "error": "#ffb4ab",
+                        "on-secondary-container": "#b4b5b7",
+                        "on-tertiary-container": "#354759",
+                        "secondary-fixed-dim": "#c6c6c9",
+                        "on-secondary-fixed-variant": "#454749",
+                        "on-background": "#e2e2e5",
+                        "outline": "#99907c",
+                        "on-surface-variant": "#d0c5af",
+                        "surface": "#121416",
+                        "on-primary": "#3c2f00",
+                        "primary-fixed": "#ffe088",
+                        "tertiary": "#bed0e7",
+                        "surface-container": "#1e2022",
+                        "surface-container-high": "#282a2c",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-fixed": "#1a1c1e",
+                        "on-error": "#690005",
+                        "on-primary-fixed-variant": "#574500",
+                        "primary-container": "#d4af37",
+                        "on-primary-container": "#554300",
+                        "inverse-on-surface": "#2f3133",
+                        "on-tertiary-fixed-variant": "#36485b",
+                        "outline-variant": "#4d4635",
+                        "surface-container-low": "#1a1c1e",
+                        "on-tertiary": "#203243",
+                        "secondary-fixed": "#e2e2e5",
+                        "surface-dim": "#121416",
+                        "surface-container-lowest": "#0c0e10",
+                        "tertiary-fixed": "#d1e4fb",
+                        "surface-container-highest": "#333537",
+                        "primary": "#f2ca50",
+                        "on-secondary": "#2f3133",
+                        "surface-tint": "#e9c349",
+                        "on-primary-fixed": "#241a00",
+                        "on-tertiary-fixed": "#091d2e",
+                        "on-surface": "#e2e2e5",
+                        "inverse-surface": "#e2e2e5",
+                        "tertiary-container": "#a2b5cb",
+                        "primary-fixed-dim": "#e9c349"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "unit": "8px",
+                        "container-max": "1200px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Playfair Display"],
+                        "label-caps": ["JetBrains Mono"],
+                        "display-lg": ["Playfair Display"],
+                        "security-code": ["JetBrains Mono"],
+                        "display-lg-mobile": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "security-code": ["20px", {"lineHeight": "24px", "letterSpacing": "0.25em", "fontWeight": "600"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen selection:bg-primary/30">
+<!-- TopAppBar Component -->
+<header class="w-full top-0 sticky border-b border-white/10 bg-background z-40">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 w-full">
+<div class="flex items-center gap-4">
+<button class="text-primary hover:opacity-80 transition-opacity scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+<h1 class="font-headline-md text-headline-md-mobile md:text-headline-md tracking-widest text-primary">AL-HIRFA</h1>
+<div class="flex items-center gap-4">
+<span class="hidden md:flex items-center gap-2 font-label-caps text-primary text-[10px]">
+<span class="material-symbols-outlined text-sm" data-icon="verified_user">verified_user</span>
+                    جلسة مشفرة 256-BIT
+                </span>
+<button class="text-primary hover:opacity-80 transition-opacity scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="lock">lock</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 pb-32">
+<!-- Header Section -->
+<div class="mb-12">
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-2">المحفظة والمدفوعات</h2>
+<p class="text-on-surface-variant font-body-lg max-w-2xl">إدارة أصولك المالية والتحويلات بكل أمان وخصوصية تامة.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Left Column: Balance & Cards -->
+<div class="md:col-span-8 space-y-8">
+<!-- Balance Summary (Bento Style) -->
+<div class="bg-surface-container border border-white/5 rounded-xl p-8 overflow-hidden relative group">
+<div class="absolute inset-0 grain-texture pointer-events-none"></div>
+<div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+<div>
+<span class="font-label-caps text-on-surface-variant mb-4 block">الرصيد الإجمالي المتوفر</span>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-display-lg text-primary">١٤٢,٥٠٠</span>
+<span class="font-headline-md text-on-surface-variant">درهم</span>
+</div>
+</div>
+<div class="flex gap-4 w-full md:w-auto">
+<button class="flex-1 md:flex-none bg-primary text-on-primary-fixed px-8 py-3 rounded-full font-bold metallic-glint transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                                إضافة رصيد
+                            </button>
+<button class="flex-1 md:flex-none border border-primary text-primary px-8 py-3 rounded-full font-bold hover:bg-primary/10 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+                                تحويل
+                            </button>
+</div>
+</div>
+</div>
+<!-- Saved Cards Section -->
+<section>
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="credit_card">credit_card</span>
+                            البطاقات المحفوظة
+                        </h3>
+<button class="text-primary font-label-caps hover:underline">إدارة البطاقات</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<!-- Card 1 -->
+<div class="bg-surface-container-high border border-white/10 p-6 rounded-xl relative overflow-hidden group hover:border-primary/30 transition-colors">
+<div class="absolute inset-0 grain-texture"></div>
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-12">
+<span class="font-label-caps text-on-surface-variant">البلاتينية</span>
+<img alt="Chip" class="w-10 grayscale brightness-200" data-alt="A highly detailed, macro photograph of a premium metallic credit card chip. The chip is rendered in burnished gold with intricate circuitry visible, reflecting soft studio lighting. The background is a deep charcoal grey with a subtle carbon fiber texture, evoking a sense of high-end financial security and luxury craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL0r5bKheHACdOZkP4KGxVjTwTA0SODZra2hOv8epCgnTIBbQMtrTrDnlzh3jZzXz0Ye91GP1vhS3YzVH_PK7yodw9PkLvhpL-otdKzntkbhxg-fEW8SlcSYPRT3hnB5zKdCC7qLLsR7dlLjewGpMrfquro-LJg7xyy49n8aLLXCtUg3kHqoEruVhHonevvEKFu4POTejBoDbNEZMgvr-3lXUUmmqagx0wE3QzYOlu0KOuqIBHg1_8o66SRot-gN5Wb3iCyvJmexn-"/>
+</div>
+<div class="vault-inset p-4 rounded-lg mb-4">
+<p class="font-security-code text-security-code text-on-surface tracking-widest">•••• •••• •••• ٨٨٢٤</p>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<p class="text-[10px] text-on-surface-variant font-label-caps">صاحب البطاقة</p>
+<p class="font-body-md uppercase">Ahmed Al-Maktoum</p>
+</div>
+<p class="font-security-code text-sm">١٢/٢٧</p>
+</div>
+</div>
+</div>
+<!-- Card 2 (Add New) -->
+<button class="border-2 border-dashed border-white/10 p-6 rounded-xl flex flex-col items-center justify-center gap-4 hover:border-primary/50 transition-all hover:bg-surface-container group min-h-[220px]">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="add_card">add_card</span>
+</div>
+<span class="font-label-caps text-on-surface-variant">إضافة بطاقة جديدة</span>
+</button>
+</div>
+</section>
+<!-- Transactions -->
+<section>
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-on-surface">سجل العمليات الأخيرة</h3>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer" data-icon="filter_list">filter_list</span>
+</div>
+<div class="bg-surface-container rounded-xl overflow-hidden">
+<table class="w-full text-right border-collapse">
+<tbody>
+<tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-4">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="shopping_bag">shopping_bag</span>
+</div>
+<div>
+<p class="font-body-md">متجر السجاد الفاخر</p>
+<p class="text-[11px] font-label-caps text-on-surface-variant uppercase">٢٤ أكتوبر ٢٠٢٣</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-left">
+<p class="font-label-caps text-error">- ٤,٢٠٠ درهم</p>
+<span class="text-[10px] text-on-surface-variant flex items-center justify-end gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                            مؤكد
+                                        </span>
+</td>
+</tr>
+<tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-4">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<div>
+<p class="font-body-md">إيداع رصيد من المحفظة</p>
+<p class="text-[11px] font-label-caps text-on-surface-variant uppercase">٢٠ أكتوبر ٢٠٢٣</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-left">
+<p class="font-label-caps text-primary">+ ١٥,٠٠٠ درهم</p>
+<span class="text-[10px] text-on-surface-variant flex items-center justify-end gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                            مؤكد
+                                        </span>
+</td>
+</tr>
+<tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-4">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="work">work</span>
+</div>
+<div>
+<p class="font-body-md">رسوم صيانة الأعمال</p>
+<p class="text-[11px] font-label-caps text-on-surface-variant uppercase">١٨ أكتوبر ٢٠٢٣</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-left">
+<p class="font-label-caps text-error">- ٨٥٠ درهم</p>
+<span class="text-[10px] text-on-surface-variant flex items-center justify-end gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                            مؤكد
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 text-center border-t border-white/5">
+<button class="text-on-surface-variant font-label-caps hover:text-primary transition-colors">عرض جميع المعاملات</button>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Security & Identity -->
+<div class="md:col-span-4 space-y-8">
+<!-- Security Guarantee Section -->
+<div class="bg-surface-container-highest border border-primary/20 p-8 rounded-xl relative overflow-hidden">
+<div class="absolute -right-12 -top-12 opacity-10">
+<span class="material-symbols-outlined text-[160px] text-primary" data-icon="shield">shield</span>
+</div>
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary" data-icon="security" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<h4 class="font-headline-md text-on-surface mb-4">ضمان الأمان الفائق</h4>
+<p class="text-on-surface-variant text-body-md mb-6 leading-relaxed">
+                            نحن نستخدم بروتوكولات تشفير عسكرية. بياناتك المالية مشفرة من طرف إلى طرف ولا يمكن لأي موظف أو مدير نظام الوصول إليها. مفتاح فك التشفير خاص بك وحدك.
+                        </p>
+<ul class="space-y-3">
+<li class="flex items-center gap-3 text-sm font-label-caps text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="lock_open">lock_open</span>
+                                تشفير AES-256 بت
+                            </li>
+<li class="flex items-center gap-3 text-sm font-label-caps text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="privacy_tip">privacy_tip</span>
+                                عدم الاحتفاظ بالبيانات الحساسة
+                            </li>
+<li class="flex items-center gap-3 text-sm font-label-caps text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="history">history</span>
+                                تدقيق مستقل للأنظمة
+                            </li>
+</ul>
+</div>
+</div>
+<!-- Identity Summary -->
+<div class="bg-surface-container border border-white/5 rounded-xl p-6">
+<div class="flex items-center gap-4 mb-6">
+<img alt="Artisan User Profile" class="w-16 h-16 rounded-full object-cover border-2 border-primary" data-alt="A sophisticated portrait of a middle-aged Arab man with a well-groomed beard, wearing a traditional white ghutra and agal. The lighting is cinematic and high-contrast, reminiscent of a luxury editorial shoot, casting soft shadows across his face against a deep, dark grey studio background. The overall mood is one of quiet authority, prestige, and trust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTrcS-mXRttCh0-K67gWDWSapyyt2FzPTqkVl3AOxfatOcyuHWCt34rtwNFqJwipuyWlalR48gW0Yc4ReKzbx1ITrks5fFAmZyou7eANSjDbWPP0JQ15xLcv7AqaspTaaQIiY2NIc-r1Fv3VGQkeApwT9TtjhyQhtl-MuoAlBjCLKdC6HIZD4YSZvfaSCSjafYxfoXfebn4foLOmvwMYk-r02uXXkenoUYaMVlMWiii3e_kGRMBVE5Y9PyZsZPRcbVqBogan3ewwQ2"/>
+<div>
+<p class="font-headline-md text-on-surface">عضو الحرفة</p>
+<span class="font-label-caps text-primary text-[10px] bg-primary/10 px-2 py-0.5 rounded">حرفي موثق</span>
+</div>
+</div>
+<div class="space-y-4 pt-4 border-t border-white/5">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant text-sm">حالة التوثيق</span>
+<span class="text-primary text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                مكتمل
+                            </span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant text-sm">حد السحب اليومي</span>
+<span class="text-on-surface text-sm font-label-caps">٥٠,٠٠٠ درهم</span>
+</div>
+</div>
+<button class="w-full mt-6 py-3 border border-white/10 rounded-lg font-label-caps text-on-surface-variant hover:bg-white/5 transition-all">
+                        إعدادات الأمان
+                    </button>
+</div>
+<!-- Security Badge Capsule -->
+<div class="flex justify-center">
+<div class="inline-flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-tertiary/20 rounded-full">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="shield_check" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span class="font-label-caps text-[10px] text-tertiary">مؤمن بواسطة AL-HIRFA TRUST</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- NavigationDrawer (Mobile/Global Mockup) -->
+<aside class="fixed inset-y-0 right-0 w-80 bg-surface-container shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out z-50" id="drawer">
+<div class="flex flex-col h-full p-6">
+<div class="flex justify-between items-center mb-8">
+<span class="font-label-caps text-primary tracking-tighter">AL-HIRFA</span>
+<button class="text-on-surface-variant" onclick="toggleDrawer()">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<nav class="space-y-2">
+<a class="flex items-center gap-4 p-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="shield">shield</span>
+<span class="font-body-md">إعدادات الأمان</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-primary font-bold bg-primary-container/10 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="credit_card">credit_card</span>
+<span class="font-body-md">طرق الدفع</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="vpn_key">vpn_key</span>
+<span class="font-body-md">مفاتيح التشفير</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+<span class="font-body-md">الدعم الفني</span>
+</a>
+<hr class="border-white/5 my-4"/>
+<a class="flex items-center gap-4 p-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-body-md">تسجيل الخروج</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- BottomNavBar Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-surface-container-lowest border-t border-white/5 shadow-2xl rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-primary bg-surface-variant/30 rounded-full px-4 py-1 transition-transform active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+<span class="font-label-caps text-[10px] mt-1">المحفظة</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed transition-colors active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-caps text-[10px] mt-1">النشاط</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed transition-colors active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span class="font-label-caps text-[10px] mt-1">الحرفيون</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed transition-colors active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-caps text-[10px] mt-1">الهوية</span>
+</a>
+</nav>
+<script>
+        function toggleDrawer() {
+            const drawer = document.getElementById('drawer');
+            drawer.classList.toggle('translate-x-full');
+        }
+
+        // Micro-interaction: Reveal balance
+        const balanceSpan = document.querySelector('.font-display-lg');
+        let originalText = balanceSpan.textContent;
+        balanceSpan.addEventListener('mouseenter', () => {
+            // Atmospheric effect could go here
+        });
+
+        // Toggle visibility of masked numbers (Demo)
+        document.querySelectorAll('.font-security-code').forEach(el => {
+            el.addEventListener('click', () => {
+                // In a real app, this would trigger 2FA or biometric
+                if(el.textContent.includes('•')) {
+                    el.textContent = el.textContent.replace(/•/g, Math.floor(Math.random() * 10));
+                }
+            });
+        });
+    </script>
+</body></html>
