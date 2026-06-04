@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:convert';
 import 'package:flutter/services.dart';
 
 void main() {
@@ -39,11 +38,11 @@ class _AlHirfaHomeState extends State<AlHirfaHome> {
   int _currentIndex = 0;
 
   final List<Map<String, dynamic>> _screens = [
-    {'label': 'الرئيسية',   'icon': Icons.home_outlined,              'activeIcon': Icons.home,                   'asset': 'assets/screens/screen_4.html'},
-    {'label': 'الأصناف',    'icon': Icons.grid_view_outlined,         'activeIcon': Icons.grid_view,              'asset': 'assets/screens/screen_10.html'},
-    {'label': 'المحفظة',    'icon': Icons.account_balance_wallet_outlined, 'activeIcon': Icons.account_balance_wallet, 'asset': 'assets/screens/screen_5.html'},
-    {'label': 'الحرفي',     'icon': Icons.gavel_outlined,             'activeIcon': Icons.gavel,                  'asset': 'assets/screens/screen_3.html'},
-    {'label': 'الطلبات',    'icon': Icons.shopping_bag_outlined,      'activeIcon': Icons.shopping_bag,           'asset': 'assets/screens/screen_2.html'},
+    {'label': 'الرئيسية', 'icon': Icons.home_outlined,                  'activeIcon': Icons.home,                   'asset': 'screen_4.html'},
+    {'label': 'الأصناف',  'icon': Icons.grid_view_outlined,             'activeIcon': Icons.grid_view,              'asset': 'screen_10.html'},
+    {'label': 'المحفظة',  'icon': Icons.account_balance_wallet_outlined, 'activeIcon': Icons.account_balance_wallet, 'asset': 'screen_5.html'},
+    {'label': 'الحرفي',   'icon': Icons.gavel_outlined,                 'activeIcon': Icons.gavel,                  'asset': 'screen_3.html'},
+    {'label': 'الطلبات',  'icon': Icons.shopping_bag_outlined,          'activeIcon': Icons.shopping_bag,           'asset': 'screen_2.html'},
   ];
 
   @override
@@ -56,7 +55,9 @@ class _AlHirfaHomeState extends State<AlHirfaHome> {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF1A1208),
-          border: Border(top: BorderSide(color: const Color(0xFFD4AF37).withOpacity(0.3), width: 0.5)),
+          border: Border(
+            top: BorderSide(color: const Color(0xFFD4AF37).withOpacity(0.3), width: 0.5),
+          ),
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
@@ -90,20 +91,33 @@ class HtmlScreen extends StatefulWidget {
 class _HtmlScreenState extends State<HtmlScreen> {
   InAppWebViewController? _controller;
   bool _loading = true;
+  String _htmlContent = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHtml();
+  }
 
   @override
   void didUpdateWidget(HtmlScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.assetPath != widget.assetPath) {
-      _loadAsset();
+      _loadHtml();
     }
   }
 
-  Future<void> _loadAsset() async {
-    if (_controller == null) return;
+  Future<void> _loadHtml() async {
     setState(() => _loading = true);
     final html = await rootBundle.loadString(widget.assetPath);
-    await _controller!.loadData(data: html, mimeType: 'text/html', encoding: 'utf-8');
+    setState(() => _htmlContent = html);
+    if (_controller != null) {
+      await _controller!.loadData(
+        data: html,
+        mimeType: 'text/html',
+        encoding: 'utf-8',
+      );
+    }
   }
 
   @override
@@ -111,17 +125,23 @@ class _HtmlScreenState extends State<HtmlScreen> {
     return Stack(
       children: [
         InAppWebView(
-          initialFile: widget.assetPath,
+          initialData: _htmlContent.isNotEmpty
+              ? InAppWebViewInitialData(data: _htmlContent, mimeType: 'text/html', encoding: 'utf-8')
+              : null,
           initialSettings: InAppWebViewSettings(
             javaScriptEnabled: true,
             useWideViewPort: true,
             loadWithOverviewMode: true,
             supportZoom: false,
-            disableHorizontalScroll: false,
             verticalScrollBarEnabled: false,
             transparentBackground: true,
           ),
-          onWebViewCreated: (c) => _controller = c,
+          onWebViewCreated: (c) {
+            _controller = c;
+            if (_htmlContent.isNotEmpty) {
+              c.loadData(data: _htmlContent, mimeType: 'text/html', encoding: 'utf-8');
+            }
+          },
           onLoadStop: (c, url) => setState(() => _loading = false),
           onLoadError: (c, url, code, msg) => setState(() => _loading = false),
         ),
@@ -132,8 +152,18 @@ class _HtmlScreenState extends State<HtmlScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('AL-HIRFA', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 4)),
-                  SizedBox(height: 24),
+                  Text(
+                    'AL-HIRFA',
+                    style: TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 4,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text('الحرفة', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 16)),
+                  SizedBox(height: 32),
                   CircularProgressIndicator(color: Color(0xFFD4AF37), strokeWidth: 2),
                 ],
               ),
