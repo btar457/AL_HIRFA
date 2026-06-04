@@ -118,6 +118,9 @@ class _HtmlScreenState extends State<HtmlScreen> {
         encoding: 'utf-8',
       );
     }
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _loading = false);
+    });
   }
 
   @override
@@ -142,8 +145,14 @@ class _HtmlScreenState extends State<HtmlScreen> {
               c.loadData(data: _htmlContent, mimeType: 'text/html', encoding: 'utf-8');
             }
           },
-          onLoadStop: (c, url) => setState(() => _loading = false),
-          onLoadError: (c, url, code, msg) => setState(() => _loading = false),
+          onLoadStop: (c, url) {
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) setState(() => _loading = false);
+            });
+          },
+          onLoadError: (c, url, code, msg) {
+            if (mounted) setState(() => _loading = false);
+          },
         ),
         if (_loading)
           Container(
