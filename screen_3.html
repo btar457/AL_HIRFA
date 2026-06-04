@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>لوحة تحكم الحرفة | Al-Hirfa Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed-dim": "#e9c349",
+                    "inverse-primary": "#eabcb8",
+                    "secondary": "#735c00",
+                    "tertiary-fixed-dim": "#d1c5ae",
+                    "inverse-surface": "#313030",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#eabcb8",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed": "#241a00",
+                    "on-surface": "#1c1b1b",
+                    "error-container": "#ffdad6",
+                    "outline": "#827472",
+                    "tertiary-fixed": "#ede1c9",
+                    "surface-container-high": "#eae7e7",
+                    "surface-tint": "#795553",
+                    "surface": "#fcf9f8",
+                    "surface-container-low": "#f6f3f2",
+                    "on-surface-variant": "#504443",
+                    "on-error-container": "#93000a",
+                    "surface-bright": "#fcf9f8",
+                    "on-error": "#ffffff",
+                    "background": "#fcf9f8",
+                    "on-tertiary-fixed-variant": "#4d4634",
+                    "on-tertiary-container": "#a59b85",
+                    "on-secondary": "#ffffff",
+                    "primary": "#321716",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#dcd9d9",
+                    "on-secondary-fixed-variant": "#574500",
+                    "surface-container": "#f0eded",
+                    "secondary-container": "#fed65b",
+                    "inverse-on-surface": "#f3f0ef",
+                    "on-primary-fixed": "#2e1413",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#4a2c2a",
+                    "outline-variant": "#d4c3c1",
+                    "secondary-fixed": "#ffe088",
+                    "primary-fixed": "#ffdad7",
+                    "on-primary-container": "#bd928f",
+                    "surface-variant": "#e5e2e1",
+                    "on-secondary-container": "#745c00",
+                    "tertiary-container": "#3a3323",
+                    "on-primary-fixed-variant": "#5f3e3c",
+                    "tertiary": "#241e0f",
+                    "surface-container-highest": "#e5e2e1",
+                    "on-background": "#1c1b1b",
+                    "on-tertiary-fixed": "#211b0c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "section-gap": "48px",
+                    "container-margin": "24px",
+                    "unit": "8px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Playfair Display"],
+                    "headline-md": ["Playfair Display"],
+                    "body-md": ["Be Vietnam Pro"],
+                    "body-lg": ["Be Vietnam Pro"],
+                    "caption": ["Be Vietnam Pro"],
+                    "label-md": ["Be Vietnam Pro"],
+                    "headline-lg-mobile": ["Playfair Display"],
+                    "headline-lg": ["Playfair Display"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+            background-attachment: fixed;
+        }
+        .cinematic-shadow {
+            box-shadow: 20px 20px 60px rgba(50, 23, 22, 0.05), -20px -20px 60px rgba(255, 255, 255, 0.8);
+        }
+        .grain-overlay {
+            pointer-events: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            z-index: 9999;
+        }
+        .arabic-numbers {
+            font-feature-settings: "tnum";
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md antialiased overflow-x-hidden">
+<div class="grain-overlay"></div>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 backdrop-blur-md bg-surface/80 dark:bg-surface-dim/80 shadow-sm flex justify-between items-center px-container-margin h-16">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer active:opacity-80 transition-all duration-300">menu</span>
+<h1 class="font-display-lg text-headline-lg-mobile tracking-tighter text-primary">سوق التراث</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="h-10 w-10 rounded-full bg-secondary-container flex items-center justify-center border border-outline-variant overflow-hidden">
+<img alt="Admin" class="h-full w-full object-cover" data-alt="A professional studio portrait of a sophisticated Middle Eastern male administrator in high-end office attire. The lighting is warm and directional, reminiscent of a classic film still, casting soft shadows against a textured desert sand-colored wall. The overall mood is authoritative yet approachable, aligned with a premium digital management aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOEs0pdBdRGQqJupvlR7QzFL0j3O24l7lASvxheVgAu5MSHPkZ6SO04myF3t_pNYCbtLlb2YHqRdB3K1ZCW0FX_5Zt21I_A-NNtBi1PW2hn_olJKTMwHkhMQBcz6e2QaDNRzrmxT0leubRwee2WUaI3467KwxL_bVVowmuDuDsit5e3s5Ir8N07-57Xp4oIZXK5FP0XYlndVL4lrcQKKFgLBQctgOXR9LGNCPRuFNIOPwpjvAe8KUUKMQUM55Zyuq88wT5j6Yp5Nli"/>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-container-margin max-w-7xl mx-auto">
+<!-- Dashboard Header -->
+<section class="mb-section-gap">
+<h2 class="font-display-lg text-display-lg text-primary mb-2">لوحة الإدارة</h2>
+<p class="text-on-surface-variant font-body-lg">نظرة عامة على أداء المنصة والحرفيين.</p>
+</section>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-section-gap">
+<!-- Total Sales -->
+<div class="bg-surface-container-low p-6 rounded-xl cinematic-shadow border border-outline-variant/30 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-6xl text-primary" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<p class="font-label-md text-on-surface-variant uppercase tracking-widest mb-4">إجمالي المبيعات</p>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-4xl text-primary font-bold arabic-numbers">١٢٤,٥٠٠</span>
+<span class="text-secondary font-label-md">ر.س</span>
+</div>
+<div class="mt-4 flex items-center gap-2 text-green-700">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-caption font-bold">+١٢٪ عن الشهر الماضي</span>
+</div>
+</div>
+<!-- Active Artisans -->
+<div class="bg-surface-container-low p-6 rounded-xl cinematic-shadow border border-outline-variant/30 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-6xl text-primary" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+</div>
+<p class="font-label-md text-on-surface-variant uppercase tracking-widest mb-4">الحرفيين النشطين</p>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-4xl text-primary font-bold arabic-numbers">٨٤٢</span>
+</div>
+<div class="mt-4 flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-sm">group</span>
+<span class="text-caption font-bold">بينما المستخدمين: ٣.٢ ألف</span>
+</div>
+</div>
+<!-- Pending Approvals -->
+<div class="bg-primary-container p-6 rounded-xl cinematic-shadow border border-outline-variant/30 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-6xl text-on-primary-container" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+</div>
+<p class="font-label-md text-on-primary-container uppercase tracking-widest mb-4">طلبات معلقة</p>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-4xl text-on-primary-fixed-variant font-bold arabic-numbers text-white">٢٧</span>
+</div>
+<div class="mt-4">
+<button class="bg-secondary-fixed text-on-secondary-fixed px-4 py-2 rounded-full font-label-md hover:scale-105 transition-transform">مراجعة الآن</button>
+</div>
+</div>
+</div>
+<!-- Analytics Preview (Asymmetric Layout) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter mb-section-gap items-start">
+<div class="lg:col-span-8 bg-surface-container-lowest p-8 rounded-xl cinematic-shadow border border-outline-variant/20">
+<div class="flex justify-between items-center mb-8">
+<h3 class="font-headline-md text-primary">نمو المنصة</h3>
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-surface-variant rounded text-caption cursor-pointer">أسبوعي</span>
+<span class="px-3 py-1 bg-primary text-white rounded text-caption cursor-pointer">شهري</span>
+</div>
+</div>
+<!-- Mock Chart with CSS Gradients -->
+<div class="h-64 w-full flex items-end gap-2 px-2 relative">
+<div class="absolute inset-0 flex flex-col justify-between opacity-5">
+<div class="border-b border-on-surface w-full"></div>
+<div class="border-b border-on-surface w-full"></div>
+<div class="border-b border-on-surface w-full"></div>
+<div class="border-b border-on-surface w-full"></div>
+</div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all duration-300 h-[40%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all duration-300 h-[55%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all duration-300 h-[45%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all duration-300 h-[70%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all duration-300 h-[60%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all duration-300 h-[85%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all duration-300 h-[95%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary transition-all duration-300 h-[75%] rounded-t-sm"></div>
+</div>
+</div>
+<div class="lg:col-span-4 grid gap-gutter">
+<div class="bg-surface-container-high p-6 rounded-xl border border-outline-variant/30">
+<h4 class="font-label-md text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">star</span> الفئات الأكثر مبيعاً
+                    </h4>
+<ul class="space-y-4">
+<li class="flex justify-between items-center border-b border-outline-variant/30 pb-2">
+<span class="font-body-md">الخزف اليدوي</span>
+<span class="font-bold arabic-numbers text-primary">٤٢٪</span>
+</li>
+<li class="flex justify-between items-center border-b border-outline-variant/30 pb-2">
+<span class="font-body-md">المنسوجات</span>
+<span class="font-bold arabic-numbers text-primary">٢٨٪</span>
+</li>
+<li class="flex justify-between items-center">
+<span class="font-body-md">صناعة العطور</span>
+<span class="font-bold arabic-numbers text-primary">١٥٪</span>
+</li>
+</ul>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden relative group">
+<img alt="Craftsmanship" class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110" data-alt="A cinematic, high-contrast photograph of traditional Arabic pottery craftsmanship. Intricate clay vases are displayed on a rustic wooden table with soft, golden sunlight streaming through a mashrabiya window. The scene is filled with warm, earthy tones like burnt umber and sand, capturing a serene, timeless atmosphere that emphasizes quality and heritage." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZSJMhFDB_u5YvJavW_IUkb0pBb2OxODhKOUaQCGlOOK7QPPfj52_pEYBFo5scUuRQ7qzlBWR_ibbnRNoxi5i3fYaH3HoH0qX-F4cmHtGvTcfhj8y9nwLmyuSjLXD19we4xR886HaszdPQEB_pyClGzLFUjBzrp0E79zf7jNMFl7yIiXQzYlQ5ejeZdVNyvjCiQwZ5dEXebtFBpk2nrX9uoekT4EwZrs_o4OKpsmtK2FXRbNpp5unQQjUQeHN8N64PWm1WZfEXJVXo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex flex-col justify-end p-6">
+<p class="text-white font-headline-md">تقرير الجودة الأسبوعي</p>
+<p class="text-on-primary-container text-caption">تم فحص ٤٥ ورشة عمل هذا الأسبوع.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Pending Approvals Table-ish List -->
+<section class="mb-section-gap">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-primary">طلبات انضمام الحرفيين الجدد</h3>
+<a class="text-secondary font-label-md underline underline-offset-4" href="#">عرض الكل</a>
+</div>
+<div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/30">
+<div class="divide-y divide-outline-variant/20">
+<!-- Item 1 -->
+<div class="p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-surface-variant/20 transition-colors">
+<div class="flex items-center gap-4">
+<div class="h-14 w-14 rounded-lg bg-surface-dim overflow-hidden border border-outline-variant/50">
+<img alt="Artisan" class="h-full w-full object-cover" data-alt="Close-up of a master artisan's weathered hands working on a piece of intricate heritage weaving. The lighting is low-key and dramatic, highlighting the texture of the natural fibers and the deep lines of experience on the skin. The color palette is composed of rich browns, deep terracottas, and warm golds, creating a feeling of profound material depth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMz76tK3GidDdoSSaOUkgYbx2Sz7JKlZOq6Kg0BhtoPMKwYhrfG-agmhaj219zg6eSuvUqqspRfhjSH2Z7Pk4u5WfkAkxYAIiD6mL3OUDepewHZDmWoqElivZm94FXAgsmPgQbnjUUSoG8X1VJ-yR5XPITZk_CRzcGbAj1w-2oXaQPgT-Fj8CQPUOmhXL3bRwYjVC5smGh92biBAgRgw4XvoZ9sknGi1hTrP0jv6X3tlHKLSYsD-jw3RY6XDoHCHOAlek8hzzSSPWr"/>
+</div>
+<div>
+<h4 class="font-bold text-primary">أحمد العمودي</h4>
+<p class="text-caption text-on-surface-variant">نقش على النحاس • جدة، السعودية</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-6 py-2 bg-primary text-white rounded-full font-label-md active:scale-95 transition-all">قبول</button>
+<button class="px-6 py-2 border border-outline text-on-surface-variant rounded-full font-label-md active:scale-95 transition-all">رفض</button>
+<span class="material-symbols-outlined text-outline-variant cursor-pointer hover:text-primary">more_vert</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-surface-variant/20 transition-colors">
+<div class="flex items-center gap-4">
+<div class="h-14 w-14 rounded-lg bg-surface-dim overflow-hidden border border-outline-variant/50">
+<img alt="Artisan" class="h-full w-full object-cover" data-alt="A macro cinematic shot of hand-dyed silk fabrics hanging in a traditional drying room. Dust motes dance in the heavy shafts of sunlight piercing through small high windows. The fabrics feature rich indigo and saffron hues, with a textured parchment-like quality to the air. The mood is contemplative, artisanal, and highly premium." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBafwwv0hYSFQV6NbzxOjxnSMn8GHPJf0_IpeBDUcfqUilDUekvT1r-B4oXTLfHBMZYRsIpR8fNVjnclFBH4cTNsWeUuJ20u_0JldFqotP3brxqd6xXfigH3EiLxFIGmep2rzidvyVLBTK-I5ss0fZi-HgZAPJ9JdG615j-XGcSaikLyDXUQ5wxchQFck2TUQq_w5hXdlQhrz71O2fN5qqrVCSRbZ80fee52Jk3yfKXI-z_DKge99YqiAO2tOW3VwANEq1O6b5SS3vX"/>
+</div>
+<div>
+<h4 class="font-bold text-primary">فاطمة الزهراني</h4>
+<p class="text-caption text-on-surface-variant">حياكة السدو • أبها، السعودية</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-6 py-2 bg-primary text-white rounded-full font-label-md active:scale-95 transition-all">قبول</button>
+<button class="px-6 py-2 border border-outline text-on-surface-variant rounded-full font-label-md active:scale-95 transition-all">رفض</button>
+<span class="material-symbols-outlined text-outline-variant cursor-pointer hover:text-primary">more_vert</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface/90 dark:bg-surface-container-highest/90 border-t border-outline-variant/30 shadow-[0_-4px_12px_rgba(50,23,22,0.05)] backdrop-blur-md">
+<div class="flex justify-around items-center h-20 pb-safe px-4">
+<a class="flex flex-col items-center justify-center text-primary dark:text-secondary-fixed-dim font-bold scale-110 active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-md text-label-md">إحصائيات</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 dark:text-on-tertiary-container/70 hover:text-secondary active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">المستخدمين</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 dark:text-on-tertiary-container/70 hover:text-secondary active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="font-label-md text-label-md">الطلبات</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 dark:text-on-tertiary-container/70 hover:text-secondary active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">الإعدادات</span>
+</a>
+</div>
+</nav>
+<script>
+        // Micro-interactions for stats cards hover effects
+        document.querySelectorAll('.bg-surface-container-low').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+                card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0px)';
+            });
+        });
+
+        // Simple Arabic Numbers transformation if font doesn't support them natively
+        // (Just as a visual touch for the demo)
+        const arabicMap = {'0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩'};
+        // Note: Real apps would use Intl.NumberFormat
+    </script>
+</body></html>
