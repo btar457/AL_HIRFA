@@ -9,9 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-  # مكتبات إدارة الأيقونات والتصميم الجمالي التراثي
   cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -20,11 +19,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  # إعداد الخط العربي الاحترافي لضمان جمالية النصوص السينمائية بالتطبيق
-  fonts:
-    - family: Cairo
-      fonts:
-        - asset: fonts/Cairo-Regular.ttf
-        - asset: fonts/Cairo-Bold.ttf
-          weight: 700
