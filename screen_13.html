@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f6f3f2",
+                        "surface-container-highest": "#e5e2e1",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-surface": "#1c1b1b",
+                        "outline": "#827472",
+                        "on-error": "#ffffff",
+                        "primary-container": "#4a2c2a",
+                        "on-tertiary-container": "#a59b85",
+                        "on-tertiary-fixed-variant": "#4d4634",
+                        "surface-dim": "#dcd9d9",
+                        "on-secondary-fixed-variant": "#574500",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#ede1c9",
+                        "surface-variant": "#e5e2e1",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#313030",
+                        "surface": "#fcf9f8",
+                        "surface-container-high": "#eae7e7",
+                        "tertiary-container": "#3a3323",
+                        "on-primary-fixed-variant": "#5f3e3c",
+                        "on-primary-container": "#bd928f",
+                        "on-surface-variant": "#504443",
+                        "secondary": "#735c00",
+                        "outline-variant": "#d4c3c1",
+                        "on-primary-fixed": "#2e1413",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#321716",
+                        "primary-fixed": "#ffdad7",
+                        "inverse-primary": "#eabcb8",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#ffe088",
+                        "surface-bright": "#fcf9f8",
+                        "surface-tint": "#795553",
+                        "on-secondary-container": "#745c00",
+                        "on-background": "#1c1b1b",
+                        "secondary-container": "#fed65b",
+                        "background": "#fcf9f8",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#eabcb8",
+                        "on-secondary-fixed": "#241a00",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#211b0c",
+                        "tertiary-fixed-dim": "#d1c5ae",
+                        "surface-container": "#f0eded",
+                        "tertiary": "#241e0f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "container-margin": "24px",
+                        "section-gap": "48px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "caption": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "headline-md": ["Playfair Display"],
+                        "headline-lg": ["Playfair Display"],
+                        "label-md": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "400", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-image: radial-gradient(#d4c3c1 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+            background-color: #fcf9f8;
+        }
+        .grain-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            opacity: 0.03;
+            background: url('https://www.transparenttextures.com/patterns/p6.png');
+            z-index: 99;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased min-h-screen flex flex-col">
+<div class="grain-overlay"></div>
+<!-- Header / TopAppBar (Static/Transactional Mode: Simplified) -->
+<header class="w-full top-0 sticky bg-surface/80 backdrop-blur-md shadow-sm shadow-primary/5 z-50 flex justify-between items-center px-container-margin py-4">
+<div class="font-display-lg text-headline-md tracking-widest text-primary uppercase">AL-HIRFA</div>
+<button class="material-symbols-outlined text-primary p-2 hover:bg-surface-container-high transition-colors rounded-full" data-icon="close">close</button>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center px-container-margin py-section-gap">
+<div class="w-full max-w-lg space-y-unit * 6">
+<!-- Cinematic Intro -->
+<div class="text-center space-y-4">
+<span class="inline-block px-4 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-md text-label-md">
+                    انضم إلى شبكة التراث
+                </span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary leading-tight">
+                    التسجيل كشريك شحن
+                </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md mx-auto">
+                    ساعدنا في ربط الحرفيين بالعالم. كن جزءاً من رحلة نقل الأصالة والإبداع عبر الحدود.
+                </p>
+</div>
+<!-- Registration Form Card -->
+<section class="bg-surface-container-lowest border border-outline-variant p-8 md:p-10 shadow-2xl shadow-primary/5 relative overflow-hidden">
+<!-- Subtle Geometric Motif (Mashrabiya inspired) -->
+<div class="absolute top-0 right-0 opacity-5 pointer-events-none">
+<svg class="text-primary" fill="none" height="120" stroke="currentColor" viewbox="0 0 100 100" width="120">
+<path d="M0 50L50 0L100 50L50 100L0 50Z"></path>
+<path d="M25 50L50 25L75 50L50 75L25 50Z"></path>
+</svg>
+</div>
+<form class="space-y-8">
+<!-- Email Field -->
+<div class="relative group">
+<label class="block font-label-md text-label-md text-outline mb-2 transition-all group-focus-within:text-primary" for="email">
+                            البريد الإلكتروني للشركة
+                        </label>
+<div class="flex items-center border-b border-outline-variant group-focus-within:border-primary transition-all pb-2">
+<span class="material-symbols-outlined text-on-surface-variant mr-3" data-icon="mail">mail</span>
+<input class="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md text-primary placeholder-outline-variant/60" id="email" name="email" placeholder="company@example.com" type="email"/>
+</div>
+</div>
+<!-- Country Selection -->
+<div class="relative group">
+<label class="block font-label-md text-label-md text-outline mb-2 transition-all group-focus-within:text-primary" for="country">
+                            دولة المقر
+                        </label>
+<div class="flex items-center border-b border-outline-variant group-focus-within:border-primary transition-all pb-2">
+<span class="material-symbols-outlined text-on-surface-variant mr-3" data-icon="public">public</span>
+<select class="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md text-primary appearance-none cursor-pointer" id="country" name="country">
+<option disabled="" selected="" value="">اختر الدولة...</option>
+<option value="lb">لبنان</option>
+<option value="jo">الأردن</option>
+<option value="eg">مصر</option>
+<option value="sa">المملكة العربية السعودية</option>
+<option value="ae">الإمارات العربية المتحدة</option>
+<option value="ma">المغرب</option>
+</select>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="expand_more">expand_more</span>
+</div>
+</div><div class="relative group transition-all duration-300">
+<label class="block font-label-md text-label-md text-outline mb-2 transition-all group-focus-within:text-primary" for="city">
+        المدينة
+    </label>
+<div class="flex items-center border-b border-outline-variant group-focus-within:border-primary transition-all pb-2">
+<span class="material-symbols-outlined text-on-surface-variant mr-3" data-icon="location_city">location_city</span>
+<select class="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md text-primary appearance-none cursor-pointer" id="city" name="city">
+<option disabled="" selected="" value="">اختر المدينة...</option>
+<option value="beirut">بيروت</option>
+<option value="riyadh">الرياض</option>
+<option value="dubai">دبي</option>
+<option value="cairo">القاهرة</option>
+<option value="amman">عمان</option>
+<option value="casablanca">الدار البيضاء</option>
+</select>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<!-- CTA Button -->
+<button class="w-full bg-primary text-surface-container-lowest font-label-md text-label-md py-5 transition-all hover:bg-primary/90 active:scale-95 shadow-lg shadow-primary/20 flex justify-center items-center gap-3" type="submit">
+                        إرسال طلب الانضمام
+                        <span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+</form>
+<!-- Cinematic visual element -->
+<div class="mt-10 pt-8 border-t border-outline-variant/30 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 grayscale">
+<img alt="Artisan Profile" data-alt="A close-up portrait of a Lebanese artisan working in a sun-drenched workshop, his hands covered in fine dust. The lighting is dramatic and cinematic, casting deep shadows that emphasize the texture of his weathered skin. The scene is shot in a high-end editorial style with warm, earthy tones consistent with a luxury craftsmanship brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCem-iOOA3qdrZd1doygNRWQYT7Zp7zrxh4Av3_jBtMKEYKDhxEA0GmvISGgfsTZbl66Xr_jNu5t7qBJZGYEoycD3XlQBvttrbbVH47C9rq86HfzsUGY1rciY9ZCcrJxS_s-pt7NN6CkG-KkcC1TcoQHg9oM-wPKFS4Bg1ZCQaXnreqyhmXyBrBqSriiz09AvHJNoYgnLObiND8Jea5y4YHkd020f5H2UdMovp6VK4YfGtSyl8EDEQvpIJXWm4-Zkuyun6mV6iLPVqp"/>
+</div>
+<p class="font-caption text-caption text-on-surface-variant italic">
+                        "الشحن ليس مجرد نقل بضائع، بل هو نقل لقصصنا وهويتنا إلى العالم."
+                    </p>
+</div>
+</section>
+<!-- Secondary Links -->
+</div>
+</main>
+<!-- Contextual Footer Decoration -->
+<div class="w-full h-1.5 bg-gradient-to-r from-primary via-secondary to-primary opacity-20"></div>
+<script>
+        // Simple Interaction logic
+        document.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('focus', () => {
+                element.closest('.group').classList.add('scale-[1.02]');
+            });
+            element.addEventListener('blur', () => {
+                element.closest('.group').classList.remove('scale-[1.02]');
+            });
+        });
+
+        // Form submission animation
+        document.querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin" data-icon="progress_activity">progress_activity</span>';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerHTML = 'تم الإرسال بنجاح';
+                btn.classList.replace('bg-primary', 'bg-secondary');
+            }, 1500);
+        });
+    </script>
+<button aria-label="الدعم الفني" class="fixed bottom-8 left-8 bg-secondary text-on-secondary w-14 h-14 rounded-full shadow-xl flex items-center justify-center hover:scale-110 transition-transform z-[100] group">
+<span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+<span class="absolute right-full mr-4 bg-surface px-4 py-2 rounded-lg shadow-md text-label-md font-label-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none text-on-surface border border-outline-variant">
+        الدعم الفني
+    </span>
+</button></body></html>
