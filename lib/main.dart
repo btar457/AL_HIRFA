@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'artisan_chat_screen.dart';
 
 void main() {
@@ -37,7 +38,7 @@ class _AlHirfaAppState extends State<AlHirfaApp> {
           surface: Color(0xFF161616),
           error: Color(0xFFCF6679),
         ),
-        fontFamily: 'Cairo',
+        fontFamily: GoogleFonts.cairo().fontFamily,
         textTheme: TextTheme(
           displayLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37)),
           titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
@@ -56,7 +57,7 @@ class _AlHirfaAppState extends State<AlHirfaApp> {
           surface: Color(0xFFF5F0E6),
           error: Colors.redAccent,
         ),
-        fontFamily: 'Cairo',
+        fontFamily: GoogleFonts.cairo().fontFamily,
         textTheme: const TextTheme(
           displayLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2C1A04)),
           titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2C1A04)),
@@ -135,7 +136,6 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
   }
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class BuyerSystemRoot extends StatefulWidget {
   const BuyerSystemRoot({super.key});
   @override
@@ -297,7 +297,6 @@ class _BuyerSystemRootState extends State<BuyerSystemRoot> {
   }
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class ArtisanSystemRoot extends StatefulWidget {
   const ArtisanSystemRoot({super.key});
   @override
@@ -434,7 +433,6 @@ class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
   }
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class LogisticsSystemRoot extends StatelessWidget {
   const LogisticsSystemRoot({super.key});
 
@@ -504,7 +502,6 @@ class LogisticsSystemRoot extends StatelessWidget {
   }
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class FounderSystemRoot extends StatelessWidget {
   const FounderSystemRoot({super.key});
 
