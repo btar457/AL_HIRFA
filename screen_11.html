@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>الأصناف - الحرفة</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .vault-inset {
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .metallic-glint {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metallic-glint::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -150%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transform: rotate(30deg);
+            transition: all 0.6s ease;
+        }
+
+        .metallic-glint:hover::after {
+            left: 150%;
+        }
+
+        .heritage-bg {
+            background-image: linear-gradient(rgba(18, 20, 22, 0.92), rgba(18, 20, 22, 0.92)), url('https://lh3.googleusercontent.com/aida/AP1WRLteVF-cIT4V4hPTNsbWcEwk13wP_-g49YCcjKnuZYuSifYtMURWQeDyKjDE1vekcDCN2ruLhHoF77hvHTjawDOoNVcsw_WmE2X4DxTFvttc5VXaOeJ9258CPOWIMned7bxEfhtVEhi567-VAo3wcL8EvQlbl6YI-ynPqeKO13-QkcLuxd0fMvHAUrTuP1J4lT_l1f9ljN7dWvN2W2TU9YOTJfxJvj3qdWWJc9l243DT0_9fUCgMWy7puWbj');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#333537",
+                        "secondary-container": "#454749",
+                        "surface-container-lowest": "#0c0e10",
+                        "surface-dim": "#121416",
+                        "on-secondary-fixed": "#1a1c1e",
+                        "outline-variant": "#4d4635",
+                        "primary-fixed": "#ffe088",
+                        "secondary": "#c6c6c9",
+                        "inverse-surface": "#e2e2e5",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#36485b",
+                        "on-primary": "#3c2f00",
+                        "inverse-primary": "#735c00",
+                        "tertiary-container": "#a2b5cb",
+                        "on-primary-fixed": "#241a00",
+                        "secondary-fixed": "#e2e2e5",
+                        "inverse-on-surface": "#2f3133",
+                        "secondary-fixed-dim": "#c6c6c9",
+                        "surface": "#121416",
+                        "error-container": "#93000a",
+                        "on-surface": "#e2e2e5",
+                        "on-error": "#690005",
+                        "on-secondary-container": "#b4b5b7",
+                        "tertiary": "#bed0e7",
+                        "on-secondary-fixed-variant": "#454749",
+                        "on-secondary": "#2f3133",
+                        "on-primary-container": "#554300",
+                        "surface-container-high": "#282a2c",
+                        "on-primary-fixed-variant": "#574500",
+                        "tertiary-fixed-dim": "#b5c8df",
+                        "tertiary-fixed": "#d1e4fb",
+                        "outline": "#99907c",
+                        "on-error-container": "#ffdad6",
+                        "surface-tint": "#e9c349",
+                        "primary-container": "#d4af37",
+                        "on-tertiary": "#203243",
+                        "background": "#121416",
+                        "primary": "#f2ca50",
+                        "surface-container-low": "#1a1c1e",
+                        "primary-fixed-dim": "#e9c349",
+                        "on-surface-variant": "#d0c5af",
+                        "on-tertiary-container": "#354759",
+                        "surface-bright": "#38393c",
+                        "surface-container": "#1e2022",
+                        "on-background": "#e2e2e5",
+                        "surface-container-highest": "#333537",
+                        "on-tertiary-fixed": "#091d2e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "64px",
+                        "container-max": "1200px",
+                        "margin-mobile": "20px",
+                        "gutter": "24px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "security-code": ["JetBrains Mono"],
+                        "label-caps": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "security-code": ["20px", {"lineHeight": "24px", "letterSpacing": "0.25em", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md heritage-bg min-h-screen pb-24">
+<!-- Top AppBar -->
+<header class="w-full top-0 sticky bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm shadow-primary/5 z-50 flex justify-between items-center px-6 py-4">
+<button class="active:scale-95 transition-transform duration-200 text-on-surface-variant dark:text-outline">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-display-lg text-headline-md tracking-widest text-primary dark:text-primary-fixed-dim uppercase">AL-HIRFA</h1>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">account_circle</span>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8">
+<!-- Secure State Header -->
+<div class="flex items-center justify-center gap-2 mb-8 opacity-60">
+<span class="material-symbols-outlined text-[14px] text-primary">lock</span>
+<span class="font-label-caps text-label-caps text-primary tracking-[0.2em]">جلسة مشفرة بقوة 256 بت</span>
+</div>
+<!-- Search Section -->
+<div class="mb-12 max-w-2xl mx-auto">
+<div class="vault-inset bg-surface-container-low rounded-lg p-1 flex items-center border border-white/5">
+<span class="material-symbols-outlined px-4 text-outline">search</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-on-surface placeholder:text-outline/50 font-body-md py-3 text-right" placeholder="ابحث عن الحرفة أو الفنان..." type="text"/>
+</div>
+</div>
+<!-- Categories Section Title -->
+<div class="mb-10 text-center">
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-2">التصنيفات</h2>
+<div class="h-[1px] w-24 bg-primary/30 mx-auto"></div>
+</div>
+<!-- Bento-style Grid -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-gutter">
+<!-- Category Card 1: Sculptures -->
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="A macro photograph of an intricate stone sculpture inspired by Sumerian art, captured with dramatic side-lighting that emphasizes the textured chisel marks. The color palette consists of deep grays, charcoal, and subtle bronze highlights. The atmosphere is prestigious and historical, reflecting a luxury editorial style for the Al-Hirfa brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuArKw5HKkuvqU1ymKI73j1Ew4JfckybXPWpFyMt12f_-wPAj30qJZMSFNTTIlTuWmzSRP5GBEnrlVTSRiXaLUHTaK8IpNaGGUvAKbm6k-G0QFFodnbkic_B78lmSdGaL0sq69Az0Dxx34_zB-JyE7A99DUZp-77mCZIkMnuJRsY0JmsMS3n3HxXi0e2izh0lGuJMXHgTakGhGiioY1cjJicdTugwweSnTFJ14jNsTcgct8gfx9vaALfQaTF0XPsSoZSim0MfmwOigD3"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">منحوتات</h3>
+</div>
+</div>
+<!-- Category Card 2: Carpets -->
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="Detailed close-up of a hand-woven silk carpet featuring complex geometric patterns in deep burgundy and gold. The lighting is soft and luxurious, highlighting the rich sheen of the fibers. The composition is artistic and editorial, evoking a sense of ancient craftsmanship and high-end heritage within a dark, cinematic environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvHMSM6mCQpk5ZprF9r6T-i0qOB9dWypqlv_FEdld5VkwEPj6_6Tg1F_FMWOP7EKywDI3OvVhIfK2gNMJ_LIbPIAjOvkwMjLnrIgaoAl4i6iR8q-k6pampcnsKXA-1Xv6sEFdCb7nEPb5OUya9xLAVCQ5SQf-M1Ic-jr0NjtoIh1oZF8rnAMs383l31sYI9g1WFExJMD0YJOPUXQA67nxZyDwgIR9N5Wh85cyZav3fTawIjOr4hGGKJ611faYWwwTWNhs_JVgrMxz8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">سجادات</h3>
+</div>
+</div>
+<!-- Category Card 3: Clothing -->
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="High-fashion shot of a traditional embroidered garment with golden threads on a dark, heavy fabric. The focus is on the intricate needlework and the tactile quality of the textile. The lighting is moody and focused, creating a dramatic interplay of light and shadow that emphasizes the prestige and longevity of the craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_Ah60rgKx1GGul6UV4mU7sPGBSQrqKe0tJgIqpho3Vc05gTg0A66vJbxydXXvfdQy1_rmsjU-XlvtuQpn94Pags8yT-n9CuJTfmKUN4-WwYRumhBpRax1sNIPZxBfknhVDA7K2irwXFGFtxClAhwLe_o81XwPowkGDEAG820KF7jGnufkouE9KdM37Clpkee2BvFC42k7GwHhZ_1sl1Q-x-n_S-D945Gw9D_ptQZ40xY1qdYaG0CTiekn8MVmhaw0FtCDhptFo2SF"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">ملابس</h3>
+</div>
+</div>
+<!-- Category Card 4: Rings -->
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="Exquisite silver ring with an engraved carnelian gemstone, photographed on a dark, reflective surface with a subtle grain texture. The lighting creates a sharp metallic glint on the edge of the ring. The style is that of a premium concierge service, where every detail of the jewelry is crisp, authoritative, and timeless." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCre8iNYsg8xPuvhDfS3BZZMe_LUl73LbSHhEwPB1shd2goRw0NAZqLbqJPBWNxQibkvRoKWCA4s5rrtzZe-8k6lcXbNiRTJko2bmET5-re5F8CZ1Z-6_5LYM4Ujkbhw_Y40FLwMTSKI3w_4MLpI2qeBuiu0HYlqyV_Zxe6JuzhsPmkgeQHgAcfApYP5CjfYLb8xost6E7mPwH3EDOVB3fYyx_JjIh8DxRPUFu8ZzqmNxW-YJHM5ZyHHwnFU1YC3ku_XN4bd2hkPOlj"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">محابس</h3>
+</div>
+</div>
+<!-- Category Card 5: Rosaries -->
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="A collection of amber rosary beads with a silk tassel, laid out on a dark velvet cloth. The beads glow with an internal warmth, captured with shallow depth of field. The image exudes absolute financial security and inherited trust, styled with the sophistication of a high-end vault or a private heritage collection." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUJitZZjCOX_-8e2-ntN3is-UJD9trhQCyGoMQlUHyush0QhKOKbK3JLkeLjpQOGGaCqF3orNHOMp4m6czhGrbd6L5SeBhIBFNlnQi4smjNkQuGcpU6DI8neDY6aET0rKSh2y76Nd4dFCVZ44SZW8rRpaKEhVvdr4fbxkK9W8BllxqDKYVhgNgMEYx5jY-NeJaPVx5XOrNVZSUTDd6ISdGfXZR9NmeTaRXWTUGWL2cqkz2wdX2LrHlTuwRJIWs93BQiNoC_Q5VlgcJ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">مسابح</h3>
+</div>
+</div>
+<!-- Category Card 6: Perfumes -->
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="A heavy glass perfume bottle with a golden cap and Arabic calligraphy engraving. The scene is dark and atmospheric, with subtle wisps of incense smoke in the background. The visual style is luxury editorial, using a palette of deep blacks and burnished golds to evoke a sense of prestigious, permanent fragrance heritage." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGXApQdK89uro3NZpjf9LKD_7uCMwi_2wG3SOiwSzOPmgy-UI_xL_RZMvt4MfCOcjZY06Ge7kCQSSXJjHmrA5mZbvxjCXg0cBsL7PlvMYX4-aCeozMqd_W3GwUqL4dawnVYS6x1TtFSHlD_-oGGPqAlMCfFiZOoiwaR5Vdj3TMwENzx-_mpR5PW0h16xzWQJmX-6HFwyIxzYkSpSL3hqiXsW7ZU6c4-Unj2l-_F3je5xRY0cO8SzHUdlKLSPq93MqvnV_qIjjffIpQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">عطور</h3>
+</div>
+</div>
+<!-- Category Card 7: Vases -->
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="A hand-painted ceramic vase with traditional Mesopotamian rosettes and motifs, displayed against a dark, textured wall. The lighting is architectural and dramatic, emphasizing the vase's silhouette. The overall mood is serene yet technologically advanced, reflecting the brand's fusion of tradition and modern excellence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKoDlynRlEhcl0NTialHV2uT24SlKQGxH5EYUlYo-7cgIOvVdfW5u8cFNG6TYKLYSQBbQi5AFZi58BhUXi8Lqk5Rb29YIbysknHSeLSQCIz2BtJEMQzgFg6uC4KbdD6TWNMu9A6Qizu-o2ZfRYOnBesVKW-JkyLWlExHCv5OJxyZ4MZv6B7xlT4AU0VJ4wYeKG0SouYpiwBgYE856LqSnVCqM1s8kVsak2kzKVo2Ypyfle8lKE3B_XLNWmNM5BzLndZ3oRPZIpcjx"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">مزهريات</h3>
+</div>
+</div>
+<!-- Category Card 8: Handicrafts -->
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="Close-up of artisan hands working on a palm-frond weaving, captured in a warm, low-key lighting. The skin texture and the natural fibers of the craft are rendered in sharp detail. The atmosphere is one of absolute discretion and the tactile weight of tradition, presented with a modern, high-end editorial aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEQAxERkciZFtN0ibvruztyNUiVCObpsIoMAImYryhMqMrp7YE1mrCFiY_ui5z4OXs0NOwTTO_0sFtq7xmK5KNz8H445H4iZ5vJRAeGiCiTcYgnG8LmvPwi2M1LDhJlRbxWYs-31wb-ACjdR7FXVqMcamNWCHJd6V0wfNrG0wqKGfD-rjvAn0ntFEYFL4dtF5xmtYYPc6BH7AIIHyc8o_eNvyCNRg_lGAZPwzj7TtxXlleIJ_5EhTSV7Qzi0TG1DVPFGUg7JGEjQHT"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">أعمال يدوية</h3>
+</div>
+</div>
+<!-- Category Card 9: Copper Engravings (Full width on mobile grid if needed) -->
+<div class="group relative aspect-[3/4] md:col-span-2 lg:col-span-1 overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="Macro view of a copper plate with intricate hand-engraved geometric and floral designs. The surface has a warm, burnished metallic glow with high-contrast shadows highlighting the depth of the engravings. The style is evocative of a private vault, where every detail represents inherited trust and financial security." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGFo9SofYo8a2xxTAA2WUtnyM-pg9HnwLag8nol4Z11osxjimmAAw_zySSXxHofuHQf4JpZKBM5HVqOuPETwmS3WoRcDB_-RPs67_aPTI-mGhNuZ0eLHtxeK7V3PTw3XNOIK0iDzSx-eOfh0aAhCzlbK-z3OeDMn2vqZWUfb9e8cRb6L6WkEUGl6OGWnpp-jgcwX6FoYCglm5sdX9dP5oOHQMS077Znz2pnEPZapyjCzxSFfEXOeZWXP4FVFNTPO6-6axTiFimESTL"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">نقوش على النحاس</h3>
+</div>
+</div>
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="Macro photograph of handcrafted clay pottery with Mesopotamian motifs, captured in a moody, low-key lighting setting. The texture of the raw clay and the detailed carvings are highlighted with dramatic shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8Q58vV6yM_W-vJvFwz1s-u_J9S0V0G_u7_S1V2U3X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">الفئار</h3>
+</div>
+</div>
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="Elegant Arabic calligraphy on aged parchment, written with deep black ink and gold leaf accents. The lighting is cinematic, focusing on the fluid motion of the script and the texture of the paper." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8Q58vV6yM_W-vJvFwz1s-u_J9S0V0G_u7_S1V2U3X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">الئط العربى</h3>
+</div>
+</div>
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="Close-up of the wooden hull of a traditional Iraqi dhow under construction, with detailed wood grain and hand-carved joints. The atmosphere is industrial yet artisanal, with warm evening light catching the sawdust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8Q58vV6yM_W-vJvFwz1s-u_J9S0V0G_u7_S1V2U3X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">صناعة القوارب</h3>
+</div>
+</div>
+<div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" data-alt="A collection of traditional musical instruments like the Oud and Rebab, crafted from dark polished wood with mother-of-pearl inlays. The shot is moody and artistic, suggesting a deep musical heritage." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8Q58vV6yM_W-vJvFwz1s-u_J9S0V0G_u7_S1V2U3X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">الآلاأ الموسفقفة</h3>
+</div>
+</div><div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img alt="تمائم وأحجار كريمة" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxnahcb99oQpz7Nzv6jjt0b5B8t-tBSDuQCCJ8nYpfkQ0c_35b7mQ4tgyhGkFBcEBcZTAc5JEtjMtxqpOdAn8Q6JnDdAHSYEF_ByewFACtgj1Mn3GgVuhaxn93p85_-pBT7QT0HWvwyvL7r13il0iDWtC6xHT0kvLmEEvyAxGDDFAZ1MbXKNKP1n0qVEXkThJ8SgxcHmCRRuFH5V4rfbR1gvvRLiKIO438vq0WJqlBq9w3K3HMUbdqS0SXKa20KCKMVq9a_Uygfxsu"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">تمائم وأحجار كريمة</h3>
+</div>
+</div><div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img alt="لوحات وخط عربي" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCb1hekw3Yk0E3leY7U5n3tdS8rBMzwCsQ1JOoX-5Hb48L0CTqcKMTfVVcTun-1SAkMycmkZRM610xp6AtjE0KcVMwIZkmW3ST_UuCauZWb8JW1oodmCjnuYBF1jkGZFLTbxhGbCvHMS9vu5Ae1FbNyJZnEVvbbgnr_FKnunLUuxl7Hc989FcnhWuEtfEgPuU-GMpKFM-4QMir_LPUtR3_EmWVjFKMmn_jfO3RNxGEXvsLekkuLGVmIMssgCQMHYaP0j9PFo1ArCsB2"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">لوحات وخط عربي</h3>
+</div>
+</div><div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img alt="أعمال النحاس والمعادن" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoT6YRcZNWsjgmzUhzmkH6iQSWpSR0wCDdcJqsX6MouwTM-Ooz4EmQb6PKe6hJsOufSV_XLKUr4vU6eZaEzgU3MqLrCJkXhLOWc9DWT8QnA7J0f76XbUGj6eeUBgmORV6hAIDHMAYZA-nj3q77AskRWwW-_TVaUSaPUoPywnMjKiuYmsmwUrUmyQwqY3SuZ5oBFD1oV5xvtR75YyO8Qnac3qCfWRU7nc8B8KJHVClvvRdROuUOecKvxEIWoGxsA8uNeVLdLWTXL17U"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">أعمال النحاس والمعادن</h3>
+</div>
+</div><div class="group relative aspect-[3/4] overflow-hidden rounded-lg bg-surface-container border border-white/10 metallic-glint cursor-pointer">
+<img alt="خزف وفخار" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmXpT0Z47UiczQ28MBSHZ9PdzbTVFM5sTKKTtLNRMm5z9AEOmQ5mp8fihSqadM5ELD5bTHdMybfnblXiUYVKr-BmC4yYgqXRPW264DOhwqRI7L8ojTy5qVOeWcT4_3QaWZTMW48teFV0On7DmWJxVr-7JfhwoTlk0aZZCuVXWupZf8nP26ZZDCWRV_sGjqLm_Aag5O54efEm3W_8aGQdGeF1wNiqKeZTtQgs8N90fi5KtLR18vEf7Kx8uhTJZBqZHQ_85SZf7Aqka8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-6 right-6">
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-fixed transition-colors">خزف وفخار</h3>
+</div>
+</div></div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-6 bg-surface/80 backdrop-blur-lg shadow-lg">
+<!-- Market Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-5 py-1.5 active:scale-90 transition-all duration-300 ease-out hover:text-primary" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="font-label-md text-label-md mt-1">Market</span>
+</a>
+<!-- Studio (Active) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-5 py-1.5 active:scale-90 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+<span class="font-label-md text-label-md mt-1">Studio</span>
+</a>
+<!-- Orders -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-5 py-1.5 active:scale-90 transition-all duration-300 ease-out hover:text-primary" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md text-label-md mt-1">Orders</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-5 py-1.5 active:scale-90 transition-all duration-300 ease-out hover:text-primary" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md mt-1">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions for category cards
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('mousedown', () => {
+                card.classList.add('scale-95');
+            });
+            card.addEventListener('mouseup', () => {
+                card.classList.remove('scale-95');
+            });
+            card.addEventListener('mouseleave', () => {
+                card.classList.remove('scale-95');
+            });
+        });
+    </script>
+</body></html>
