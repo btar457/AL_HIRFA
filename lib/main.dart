@@ -1,566 +1,145 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'artisan_chat_screen.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(const AlHirfaApp());
 }
 
-class AlHirfaApp extends StatefulWidget {
+class AlHirfaApp extends StatelessWidget {
   const AlHirfaApp({super.key});
-  @override
-  State<AlHirfaApp> createState() => _AlHirfaAppState();
-}
-
-class _AlHirfaAppState extends State<AlHirfaApp> {
-  ThemeMode _themeMode = ThemeMode.dark;
-
-  void toggleTheme() {
-    setState(() {
-      _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Al-Hirfa | الحرفة',
+      title: 'AL-HIRFA | الحرفة',
       debugShowCheckedModeBanner: false,
-      themeMode: _themeMode,
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F0F0F),
-        primaryColor: const Color(0xFFD4AF37),
-        cardColor: const Color(0xFF1A1A1A),
+      theme: ThemeData(
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFFD4AF37),
-          secondary: Color(0xFF8B5A2B),
-          surface: Color(0xFF161616),
-          error: Color(0xFFCF6679),
+          surface: Color(0xFF0F0F0F),
         ),
         fontFamily: GoogleFonts.cairo().fontFamily,
-        textTheme: TextTheme(
-          displayLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37)),
-          titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-          bodyLarge: TextStyle(fontSize: 14, color: Color(0xCCFFFFFF)),
-          bodySmall: TextStyle(fontSize: 12, color: Colors.white54),
-        ),
       ),
-      theme: ThemeData(
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFFDFBF7),
-        primaryColor: const Color(0xFF8B5A2B),
-        cardColor: Colors.white,
-        colorScheme: const ColorScheme.light(
-          primary: Color(0xFF8B5A2B),
-          secondary: Color(0xFFD4AF37),
-          surface: Color(0xFFF5F0E6),
-          error: Colors.redAccent,
-        ),
-        fontFamily: GoogleFonts.cairo().fontFamily,
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2C1A04)),
-          titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2C1A04)),
-          bodyLarge: TextStyle(fontSize: 14, color: Colors.black87),
-          bodySmall: TextStyle(fontSize: 12, color: Colors.black54),
-        ),
-      ),
-      home: MainNavigationHub(toggleTheme: toggleTheme),
+      home: const AlHirfaHome(),
     );
   }
 }
 
-class MainNavigationHub extends StatefulWidget {
-  final VoidCallback toggleTheme;
-  const MainNavigationHub({super.key, required this.toggleTheme});
+class AlHirfaHome extends StatefulWidget {
+  const AlHirfaHome({super.key});
+
   @override
-  State<MainNavigationHub> createState() => _MainNavigationHubState();
+  State<AlHirfaHome> createState() => _AlHirfaHomeState();
 }
 
-class _MainNavigationHubState extends State<MainNavigationHub> {
-  int _selectedSystemIndex = 0;
-  final List<Widget> _systems = [
-    const BuyerSystemRoot(),
-    const ArtisanSystemRoot(),
-    const LogisticsSystemRoot(),
-    const FounderSystemRoot(),
+class _AlHirfaHomeState extends State<AlHirfaHome> {
+  int _currentIndex = 0;
+
+  final List<Map<String, dynamic>> _screens = [
+    {'label': 'الرئيسية',   'icon': Icons.home_outlined,              'activeIcon': Icons.home,                   'asset': 'assets/screens/screen_4.html'},
+    {'label': 'الأصناف',    'icon': Icons.grid_view_outlined,         'activeIcon': Icons.grid_view,              'asset': 'assets/screens/screen_10.html'},
+    {'label': 'المحفظة',    'icon': Icons.account_balance_wallet_outlined, 'activeIcon': Icons.account_balance_wallet, 'asset': 'assets/screens/screen_5.html'},
+    {'label': 'الحرفي',     'icon': Icons.gavel_outlined,             'activeIcon': Icons.gavel,                  'asset': 'assets/screens/screen_3.html'},
+    {'label': 'الطلبات',    'icon': Icons.shopping_bag_outlined,      'activeIcon': Icons.shopping_bag,           'asset': 'assets/screens/screen_2.html'},
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AL - HIRFA | الـحـرفـة', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-        centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.brightness_6_outlined), onPressed: widget.toggleTheme),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: Center(
-              child: Text(_getSystemName(_selectedSystemIndex),
-                style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 13)),
-            ),
-          )
-        ],
+      backgroundColor: const Color(0xFF0F0F0F),
+      body: SafeArea(
+        child: HtmlScreen(assetPath: _screens[_currentIndex]['asset']),
       ),
-      body: Directionality(textDirection: TextDirection.rtl, child: _systems[_selectedSystemIndex]),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedSystemIndex,
-        onTap: (index) => setState(() => _selectedSystemIndex = index),
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Colors.grey.withOpacity(0.6),
-        selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-        unselectedLabelStyle: const TextStyle(fontSize: 11),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag_outlined), activeIcon: Icon(Icons.shopping_bag), label: 'المشتري'),
-          BottomNavigationBarItem(icon: Icon(Icons.gavel_outlined), activeIcon: Icon(Icons.gavel), label: 'الحرفي'),
-          BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), activeIcon: Icon(Icons.local_shipping), label: 'الشحن'),
-          BottomNavigationBarItem(icon: Icon(Icons.admin_panel_settings_outlined), activeIcon: Icon(Icons.admin_panel_settings), label: 'المؤسس'),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1208),
+          border: Border(top: BorderSide(color: const Color(0xFFD4AF37).withOpacity(0.3), width: 0.5)),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (i) => setState(() => _currentIndex = i),
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          selectedItemColor: const Color(0xFFD4AF37),
+          unselectedItemColor: Colors.white38,
+          selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: GoogleFonts.cairo().fontFamily),
+          unselectedLabelStyle: TextStyle(fontSize: 11, fontFamily: GoogleFonts.cairo().fontFamily),
+          items: _screens.map((s) => BottomNavigationBarItem(
+            icon: Icon(s['icon'] as IconData),
+            activeIcon: Icon(s['activeIcon'] as IconData),
+            label: s['label'] as String,
+          )).toList(),
+        ),
       ),
     );
   }
+}
 
-  String _getSystemName(int index) {
-    switch (index) {
-      case 0: return 'معرض التحف';
-      case 1: return 'لوحة الحرفي';
-      case 2: return 'لوحة اللوجستيات';
-      case 3: return 'التحكم والأمن';
-      default: return '';
+class HtmlScreen extends StatefulWidget {
+  final String assetPath;
+  const HtmlScreen({super.key, required this.assetPath});
+
+  @override
+  State<HtmlScreen> createState() => _HtmlScreenState();
+}
+
+class _HtmlScreenState extends State<HtmlScreen> {
+  InAppWebViewController? _controller;
+  bool _loading = true;
+
+  @override
+  void didUpdateWidget(HtmlScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.assetPath != widget.assetPath) {
+      _loadAsset();
     }
   }
-}
 
-class BuyerSystemRoot extends StatefulWidget {
-  const BuyerSystemRoot({super.key});
-  @override
-  State<BuyerSystemRoot> createState() => _BuyerSystemRootState();
-}
-
-class _BuyerSystemRootState extends State<BuyerSystemRoot> {
-  final List<Map<String, dynamic>> _products = [
-    {'id': '1', 'title': 'إناء نحاسي منقوش يدوياً', 'artisan': 'الحرفي أبو مصطفى', 'price': 125000, 'category': 'نحاسيات', 'stock': 3, 'rating': 4.9},
-    {'id': '2', 'title': 'سجادة صوفية بنمط بابلي', 'artisan': 'حرفيو ذي قار', 'price': 450000, 'category': 'سجاد وتطريز الرافدين', 'stock': 1, 'rating': 5.0},
-    {'id': '3', 'title': 'لوحة خط عربي بماء الذهب', 'artisan': 'محترف الخط العربي', 'price': 320000, 'category': 'النحت والخط العربي', 'stock': 2, 'rating': 4.8},
-  ];
-  final List<Map<String, dynamic>> _cart = [];
-
-  void _addToCart(Map<String, dynamic> product) {
-    setState(() { _cart.add(product); });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('تم إضافة ${product['title']} إلى سلة التسوق'), backgroundColor: Theme.of(context).colorScheme.primary),
-    );
+  Future<void> _loadAsset() async {
+    if (_controller == null) return;
+    setState(() => _loading = true);
+    final html = await rootBundle.loadString(widget.assetPath);
+    await _controller!.loadData(data: html, mimeType: 'text/html', encoding: 'utf-8');
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(50.0),
-          child: AppBar(
-            bottom: TabBar(
-              indicatorColor: Theme.of(context).colorScheme.primary,
-              labelColor: Theme.of(context).colorScheme.primary,
-              tabs: const [Tab(text: 'المعرض الحالي'), Tab(text: 'التصنيفات التراثية'), Tab(text: 'سلة الشراء الموحدة')],
-            ),
+    return Stack(
+      children: [
+        InAppWebView(
+          initialFile: widget.assetPath,
+          initialSettings: InAppWebViewSettings(
+            javaScriptEnabled: true,
+            useWideViewPort: true,
+            loadWithOverviewMode: true,
+            supportZoom: false,
+            disableHorizontalScroll: false,
+            verticalScrollBarEnabled: false,
+            transparentBackground: true,
           ),
+          onWebViewCreated: (c) => _controller = c,
+          onLoadStop: (c, url) => setState(() => _loading = false),
+          onLoadError: (c, url, code, msg) => setState(() => _loading = false),
         ),
-        body: TabBarView(children: [_buildGalleryView(), _buildCategoriesView(), _buildCartView()]),
-      ),
-    );
-  }
-
-  Widget _buildGalleryView() {
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.75),
-      itemCount: _products.length,
-      itemBuilder: (context, index) {
-        final product = _products[index];
-        return Card(
-          color: Theme.of(context).cardColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    color: Colors.grey.withOpacity(0.1),
-                    child: Icon(Icons.image, size: 50, color: Theme.of(context).colorScheme.primary.withOpacity(0.5)),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(product['title'], style: Theme.of(context).textTheme.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text(product['artisan'], style: Theme.of(context).textTheme.bodySmall),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('${product['price']} د.ع', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 13)),
-                    Row(children: [const Icon(Icons.star, color: Colors.amber, size: 14), Text('${product['rating']}', style: Theme.of(context).textTheme.bodySmall)]),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity, height: 32,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
-                    onPressed: () => _addToCart(product),
-                    child: const Text('حجز واقتناء', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCategoriesView() {
-    final categories = ['نحاسيات وريازة', 'سجاد وتطريز الرافدين', 'النحت والخط العربي', 'فضيات وأعمال تراثية'];
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: categories.length,
-      itemBuilder: (context, index) {
-        return Card(
-          color: Theme.of(context).cardColor,
-          margin: const EdgeInsets.only(bottom: 10),
-          child: ListTile(
-            leading: Icon(Icons.category, color: Theme.of(context).colorScheme.primary),
-            title: Text(categories[index], style: Theme.of(context).textTheme.titleMedium),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {},
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCartView() {
-    if (_cart.isEmpty) return const Center(child: Text('سلة التسوق فارغة حالياً.'));
-    num total = _cart.fold(0, (sum, item) => sum + item['price']);
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: _cart.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  color: Theme.of(context).cardColor,
-                  child: ListTile(
-                    title: Text(_cart[index]['title']),
-                    subtitle: Text('${_cart[index]['price']} دينار عراقي'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
-                      onPressed: () => setState(() => _cart.removeAt(index)),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Divider(color: Theme.of(context).colorScheme.primary),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('إجمالي القيمة التقديرية:', style: Theme.of(context).textTheme.titleMedium),
-                Text('$total د.ع', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 18)),
-              ],
-            ),
-          ),
-          SizedBox(
-            width: double.infinity, height: 48,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
-              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الانتقال لبوابة الدفع (ZainCash / Qi Card)...'))),
-              child: const Text('إتمام الدفع الآمن', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class ArtisanSystemRoot extends StatefulWidget {
-  const ArtisanSystemRoot({super.key});
-  @override
-  State<ArtisanSystemRoot> createState() => _ArtisanSystemRootState();
-}
-
-class _ArtisanSystemRootState extends State<ArtisanSystemRoot> {
-  final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _priceController = TextEditingController();
-  final _descController = TextEditingController();
-  final List<Map<String, dynamic>> _myInventory = [
-    {'title': 'إناء نحاسي منقوش يدوياً', 'price': 125000, 'stock': 3, 'status': 'معتمد وموثق'},
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(50.0),
-          child: AppBar(
-            bottom: TabBar(
-              indicatorColor: Theme.of(context).colorScheme.primary,
-              labelColor: Theme.of(context).colorScheme.primary,
-              tabs: const [Tab(text: 'لوحة التحكم والمخزون'), Tab(text: 'إدراج عمل جديد')],
-            ),
-          ),
-        ),
-        body: TabBarView(children: [_buildInventoryDashboard(), _buildAddProductForm()]),
-      ),
-    );
-  }
-
-  Widget _buildInventoryDashboard() {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Card(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1)),
-            child: ListTile(
-              leading: Icon(Icons.psychology, color: Theme.of(context).colorScheme.primary, size: 30),
-              title: const Text('مستشار الأصالة التراثية (Gemini AI)', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('استشر الذكاء الاصطناعي لتدقيق جودة عملك الفني قبل النشر.'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.amber),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ArtisanChatScreen())),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(child: Card(color: Theme.of(context).colorScheme.surface, child: const Padding(padding: EdgeInsets.all(16.0), child: Column(children: [Text('المبيعات المستحقة'), SizedBox(height: 8), Text('١٢٥,٠٠٠ د.ع', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.green))])))),
-              Expanded(child: Card(color: Theme.of(context).colorScheme.surface, child: const Padding(padding: EdgeInsets.all(16.0), child: Column(children: [Text('فترة التسوية'), SizedBox(height: 8), Text('٧ أيام عمل', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.amber))])))),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text('إدارة المخزون:', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _myInventory.length,
-              itemBuilder: (context, index) {
-                final item = _myInventory[index];
-                return Card(
-                  color: Theme.of(context).cardColor,
-                  child: ListTile(
-                    title: Text(item['title']),
-                    subtitle: Text('السعر: ${item['price']} د.ع | الكمية: ${item['stock']}'),
-                    trailing: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(color: Colors.green.withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
-                      child: Text(item['status'], style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAddProductForm() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('إدراج عمل يدوي جديد', style: Theme.of(context).textTheme.bodyLarge),
-            const SizedBox(height: 16),
-            TextFormField(controller: _titleController, decoration: const InputDecoration(labelText: 'اسم العمل التراثي', border: OutlineInputBorder()), validator: (v) => v!.isEmpty ? 'الحقل مطلوب' : null),
-            const SizedBox(height: 12),
-            TextFormField(controller: _priceController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'السعر بالدينار العراقي', border: OutlineInputBorder()), validator: (v) => v!.isEmpty ? 'الحقل مطلوب' : null),
-            const SizedBox(height: 12),
-            TextFormField(controller: _descController, maxLines: 3, decoration: const InputDecoration(labelText: 'الوصف الفني والمواد', border: OutlineInputBorder()), validator: (v) => v!.isEmpty ? 'الحقل مطلوب' : null),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-              child: Row(children: [
-                Icon(Icons.gavel, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
-                const Expanded(child: Text('بإدراج العمل، أقر بالتزامي ببنود المادة ٢.٤ الخاصة بالأصالة.', style: TextStyle(fontSize: 11))),
-              ]),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity, height: 48,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    setState(() {
-                      _myInventory.add({'title': _titleController.text, 'price': int.parse(_priceController.text), 'stock': 1, 'status': 'قيد المراجعة'});
-                    });
-                    _titleController.clear(); _priceController.clear(); _descController.clear();
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إرسال العمل للتدقيق.')));
-                  }
-                },
-                child: const Text('رفع وتوثيق العمل في المنصة', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class LogisticsSystemRoot extends StatelessWidget {
-  const LogisticsSystemRoot({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> activeShipments = [
-      {'id': 'TRK-9082', 'from': 'الحرفي أبو مصطفى (بغداد)', 'to': 'المشتري (الناصرية)', 'status': 'جاري التوصيل', 'deadline': 'خلال ٢٤ ساعة'},
-    ];
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('لوحة متابعة الشريك اللوجستي', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
-          Expanded(
-            child: ListView.builder(
-              itemCount: activeShipments.length,
-              itemBuilder: (context, index) {
-                final shipment = activeShipments[index];
-                return Card(
-                  color: Theme.of(context).cardColor,
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('رقم الشحنة: ${shipment['id']}', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
-                            const Icon(Icons.local_shipping, size: 20),
-                          ],
-                        ),
-                        const Divider(height: 20),
-                        Text('من: ${shipment['from']}', style: Theme.of(context).textTheme.bodyLarge),
-                        Text('إلى: ${shipment['to']}', style: Theme.of(context).textTheme.bodyLarge),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('الحالة: ${shipment['status']}', style: const TextStyle(fontSize: 12, color: Colors.amber, fontWeight: FontWeight.bold)),
-                            Text('الموعد: ${shipment['deadline']}', style: Theme.of(context).textTheme.bodySmall),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity, height: 36,
-                          child: OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(side: BorderSide(color: Theme.of(context).colorScheme.primary)),
-                            icon: const Icon(Icons.camera_alt_outlined, size: 18),
-                            label: const Text('توثيق حالة الشحنة', style: TextStyle(fontSize: 12)),
-                            onPressed: () {},
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class FounderSystemRoot extends StatelessWidget {
-  const FounderSystemRoot({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('بوابة التحكم العليا للمؤسس', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 16),
-          Card(
-            color: Theme.of(context).cardColor,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
+        if (_loading)
+          Container(
+            color: const Color(0xFF0F0F0F),
+            child: const Center(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('العمولة الإجمالية (١٠%)'), const Text('١٢,٥٠٠ د.ع', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green))]),
-                  const Divider(),
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('الحرفيون النشطون'), const Text('٢٤ حرفي معتمد')]),
-                  const Divider(),
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('مستوى الامتثال القانوني'), const Text('١٠٠% مؤمن')]),
+                  Text('AL-HIRFA', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 4)),
+                  SizedBox(height: 24),
+                  CircularProgressIndicator(color: Color(0xFFD4AF37), strokeWidth: 2),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Text('إجراءات الجودة المستعجلة:', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          ListTile(
-            tileColor: Theme.of(context).cardColor,
-            leading: const Icon(Icons.gavel, color: Colors.amber),
-            title: const Text('مراجعة طلب التوثيق للعمل المرفوع حديثاً'),
-            subtitle: const Text('التحقق من أصالة العمل الفني المرفوع.'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(icon: const Icon(Icons.check_circle, color: Colors.green), onPressed: () {}),
-                IconButton(icon: const Icon(Icons.cancel, color: Colors.redAccent), onPressed: () {}),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(border: Border.all(color: Colors.redAccent.withOpacity(0.5)), borderRadius: BorderRadius.circular(6)),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('نظام العقوبات الفوري — البند ٥.٣:', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-                SizedBox(height: 4),
-                Text('في حال ثبوت التهرب أو بيع مواد مقلدة، يتم تطبيق الحظر الكلي فوراً.', style: TextStyle(fontSize: 11, color: Colors.white70)),
-              ],
-            ),
-          )
-        ],
-      ),
+      ],
     );
   }
 }
