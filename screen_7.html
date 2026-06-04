@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed-dim": "#e9c349",
+                    "inverse-primary": "#eabcb8",
+                    "secondary": "#735c00",
+                    "tertiary-fixed-dim": "#d1c5ae",
+                    "inverse-surface": "#313030",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#eabcb8",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed": "#241a00",
+                    "on-surface": "#1c1b1b",
+                    "error-container": "#ffdad6",
+                    "outline": "#827472",
+                    "tertiary-fixed": "#ede1c9",
+                    "surface-container-high": "#eae7e7",
+                    "surface-tint": "#795553",
+                    "surface": "#fcf9f8",
+                    "surface-container-low": "#f6f3f2",
+                    "on-surface-variant": "#504443",
+                    "on-error-container": "#93000a",
+                    "surface-bright": "#fcf9f8",
+                    "on-error": "#ffffff",
+                    "background": "#fcf9f8",
+                    "on-tertiary-fixed-variant": "#4d4634",
+                    "on-tertiary-container": "#a59b85",
+                    "on-secondary": "#ffffff",
+                    "primary": "#321716",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#dcd9d9",
+                    "on-secondary-fixed-variant": "#574500",
+                    "surface-container": "#f0eded",
+                    "secondary-container": "#fed65b",
+                    "inverse-on-surface": "#f3f0ef",
+                    "on-primary-fixed": "#2e1413",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#4a2c2a",
+                    "outline-variant": "#d4c3c1",
+                    "secondary-fixed": "#ffe088",
+                    "primary-fixed": "#ffdad7",
+                    "on-primary-container": "#bd928f",
+                    "surface-variant": "#e5e2e1",
+                    "on-secondary-container": "#745c00",
+                    "tertiary-container": "#3a3323",
+                    "on-primary-fixed-variant": "#5f3e3c",
+                    "tertiary": "#241e0f",
+                    "surface-container-highest": "#e5e2e1",
+                    "on-background": "#1c1b1b",
+                    "on-tertiary-fixed": "#211b0c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "section-gap": "48px",
+                    "container-margin": "24px",
+                    "unit": "8px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Playfair Display"],
+                    "headline-md": ["Playfair Display"],
+                    "body-md": ["Be Vietnam Pro"],
+                    "body-lg": ["Be Vietnam Pro"],
+                    "caption": ["Be Vietnam Pro"],
+                    "label-md": ["Be Vietnam Pro"],
+                    "headline-lg-mobile": ["Playfair Display"],
+                    "headline-lg": ["Playfair Display"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .paper-texture {
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+        }
+        .grain-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+        }
+        body {
+            background-color: #fcf9f8;
+            -webkit-font-smoothing: antialiased;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface selection:bg-secondary-container">
+<div class="grain-overlay"></div>
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 backdrop-blur-md bg-surface/80 shadow-sm flex justify-between items-center px-container-margin h-16">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer active:opacity-80 transition-all duration-300">menu</span>
+<h1 class="font-display-lg text-headline-lg-mobile tracking-tighter text-primary">سوق التراث</h1>
+</div>
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="صورة شخصية للبروفايل" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbQ9LafgazE2AkC8EQOpJqLQzZOEtgROy-3F2zfqnYIrGjqAgj1eN2stRxdTZTq5SePdz6Kxi-uwoiYBoBcNdCnEqTTl6pCxQMv9lXXFFm4hleQxjRIPiVq_VfxBfp3mvm2Pu1Vm2aR3HgSkr2zrA8eTkm-Hs1EZDrQXSzu_iRDc7Wo_MBSV-21gejEGSrhegUPcnqjx_CLNVe7VkMiDf0Kj46PvwNOirHjZxX8bTSyvnMjkDEgb6FNZhWA1mh-sOK-T4J85_ZFysf"/>
+</div>
+</header>
+<main class="pt-24 pb-32 px-container-margin max-w-5xl mx-auto space-y-section-gap">
+<!-- Profile Summary Section -->
+<section class="relative">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-outline-variant/30 pb-gutter">
+<div class="space-y-2">
+<p class="font-label-md text-label-md text-secondary uppercase tracking-widest">أهلاً بك مجدداً</p>
+<h2 class="font-display-lg text-display-lg text-primary">عبدالعزيز السالم</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">مستكشف للحرف التقليدية وداعم للمبدعين المحليين.</p>
+</div>
+<div class="flex gap-gutter">
+<div class="text-center">
+<span class="block font-headline-md text-headline-md text-primary">١٢</span>
+<span class="font-caption text-caption text-on-surface-variant">طلبات مكتملة</span>
+</div>
+<div class="w-px h-10 bg-outline-variant/30 self-center"></div>
+<div class="text-center">
+<span class="block font-headline-md text-headline-md text-primary">٨</span>
+<span class="font-caption text-caption text-on-surface-variant">متاجر مفضلة</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Active Orders Section - Bento Style -->
+<section class="space-y-gutter">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-primary">الطلبات النشطة</h3>
+<a class="font-label-md text-label-md text-secondary hover:underline transition-all" href="#">عرض الكل</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Large Card -->
+<div class="md:col-span-2 group relative overflow-hidden bg-surface-container rounded-xl p-gutter border border-outline-variant/30 hover:shadow-lg transition-all duration-500">
+<div class="flex flex-col md:flex-row gap-6">
+<div class="w-full md:w-48 h-48 rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="إناء فخار تقليدي" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCl0e1UNi45lUUtz9CynKX2R1DM1coRegQvr-2WudHv3PlcJV3wGhAO_poMWs8ruE6O2No8ZpjOtyNnJ0sY_FFMetALpIZSobk1XV7N9aRADWdslsilN3OGMGhvMTilZ_tWmntm8kzonWcJffDuv5F2NhWFMYKbpVOXjLNz4laq-1ampvEsXGlyMEWaTMB_MywSOPytSOincoa_3YqieVq3bma1yvaKVsPPknprY1uZLc6zy2uKcMMdQdgSoEmgzZODLHxLEVJBofBj"/>
+</div>
+<div class="flex-1 flex flex-col justify-between">
+<div>
+<span class="inline-block px-3 py-1 bg-secondary-container/20 text-secondary font-label-md text-caption rounded-full mb-3">قيد التحضير</span>
+<h4 class="font-headline-md text-headline-md text-primary mb-1">إناء الخزف المزخرف يدوياً</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">من متجر الفخار الأصيل</p>
+</div>
+<div class="pt-4 flex justify-between items-center">
+<div class="space-y-1">
+<p class="font-caption text-caption text-on-surface-variant">التوصيل المتوقع</p>
+<p class="font-label-md text-label-md text-primary">١٤ أكتوبر ٢٠٢٣</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md text-label-md hover:opacity-90 transition-all shadow-md">تتبع الطلب</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Small Card -->
+<div class="bg-surface-container rounded-xl p-gutter border border-outline-variant/30 flex flex-col justify-between hover:shadow-lg transition-all duration-500">
+<div>
+<span class="inline-block px-3 py-1 bg-tertiary-container/10 text-tertiary font-label-md text-caption rounded-full mb-3">تم الشحن</span>
+<h4 class="font-body-lg font-bold text-primary mb-1">سجادة منسوجة يدوياً</h4>
+<p class="font-caption text-on-surface-variant">نسيج الصحراء</p>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/30">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+<span class="font-label-md text-caption">في الطريق إليك</span>
+</div>
+</div>
+<button class="mt-4 w-full bg-secondary text-white py-2 rounded-full font-label-md text-label-md hover:opacity-90 transition-all shadow-sm" onclick="document.getElementById('rating-modal').classList.remove('hidden')">تم الاستلام</button></div>
+</div>
+</section>
+<!-- Favorite Artisans Section -->
+<section class="space-y-gutter overflow-hidden">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-primary">الحرفيون المفضلون</h3>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">arrow_forward_ios</span>
+</div>
+<div class="flex gap-gutter overflow-x-auto pb-6 no-scrollbar -mx-container-margin px-container-margin">
+<!-- Artisan Card 1 -->
+<div class="min-w-[280px] bg-white rounded-xl overflow-hidden border border-outline-variant/20 hover:shadow-xl transition-all duration-300 group">
+<div class="h-40 relative">
+<img class="w-full h-full object-cover" data-alt="ورشة نقش النحاس" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDitWNF40HssRRF8cZDMdy9n26mx0JMIrPOqDZIXfXhtnPs1aOLU68jVLIgw2XDsc9LRed-OnDEIbGc00OeBAXgLK4VRArFnQh5BC338oSnBSKmvrtGJ-xUxM5vdhv6DOmvq5V614uyoS9OGn8Mx681Y7amow302rD6y8p5n8YA8mcKnONJVQNz8hCZRTZvqRIOJEGiHgyRyU9lcYjdt-aHjGQGSwtKY7DHfHEALWBSGkSBP52cbQwtzQa1V5QL1bEh9zBGcTaGfr_b"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent"></div>
+<div class="absolute bottom-4 right-4 flex items-center gap-2">
+<div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="ناصر الحربي" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBn3sRujGGecZuLT4CRAmT8wwukSjQdWcdcAMSImLrjbvWCRX7BT6s3OtiTeD4pE-cj4fgNgJJ7PXzmuOQ5oOF4isDDYnZJmjb86ifEG5V57_h9audCaeuFmG9fPJVs_3llDQQPAKT04Ce2taCESwIEraRe-I6g_geZfQ-Wu52YW_7pboeedNKALo9E85rXdlV-ygibAZXFRnf90WMH8eE4z8C6IZcOH_wouLtJLF6fu1kPvpS_je2MZMpUCmIkkFSSNPA5FsOJc6fx"/>
+</div>
+<span class="text-white font-label-md text-label-md">ناصر الحربي</span>
+</div>
+</div>
+<div class="p-4 space-y-2">
+<h4 class="font-body-lg font-bold text-primary">نقوش النحاس</h4>
+<p class="font-caption text-on-surface-variant line-clamp-2">خبير في فن الطرق على النحاس وتشكيل المعادن التراثية بأسلوب عصري.</p>
+<button class="w-full mt-2 py-2 border border-secondary text-secondary rounded-full font-label-md text-label-md group-hover:bg-secondary group-hover:text-white transition-all">زيارة المتجر</button>
+</div>
+</div>
+<!-- Artisan Card 2 -->
+<div class="min-w-[280px] bg-white rounded-xl overflow-hidden border border-outline-variant/20 hover:shadow-xl transition-all duration-300 group">
+<div class="h-40 relative">
+<img class="w-full h-full object-cover" data-alt="عطور طبيعية" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQQbWUgUWqq3-QVJ9iVgwC6l-ifp3gfXnCTdR8phL1OyegI4XDiH8Fi_xRi5FLehO0-ThqUj4fsNeA59wElgD4Uga4UrN80cFGW2G64jMwq80n4zgz37U_JtsnDGP1zrp53MY6UlrEUSXei0ULNR9iweMsiYycjzf6GluV-rX8Z1vj0Vq5H0rarYZa30_f-nA4v4fVdE98FsRMbaxdoRkn_JyvzYvXp-KMsMJZePQF9J2q3xsumkuy1z0J7FAtJVPNJh3z4Zwz8T5Q"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent"></div>
+<div class="absolute bottom-4 right-4 flex items-center gap-2">
+<div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="نورة العبدالله" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvnVu9CocxLFMr_kr5Ey9IlHyQIl8KVdjwoXyGoiR9NQnNIBwqdeZcU_P-VBdfdok7ryf0SBoIzlGUn1fDhp0gzRluzEgZaQle6o4KqZV6sCpzaKuj5ifLDlNtUW_2Jlj14okgizxtRRO6rcwIjfqEjPIoevVUyGRsqlzg7tYXplEaRvwhNrpT0f7_gG5BXN2KGkQAFr5JBWtbP6m821voCLqSNBJLMkLUTvjHZfgyws6HSrKuw8caQpzgbCZhuiQFsDY9ep0Mm1jL"/>
+</div>
+<span class="text-white font-label-md text-label-md">نورة العبدالله</span>
+</div>
+</div>
+<div class="p-4 space-y-2">
+<h4 class="font-body-lg font-bold text-primary">عبق الطبيعة</h4>
+<p class="font-caption text-on-surface-variant line-clamp-2">صناعة العطور والزيوت الطبيعية المستوحاة من تضاريس شبه الجزيرة العربية.</p>
+<button class="w-full mt-2 py-2 border border-secondary text-secondary rounded-full font-label-md text-label-md group-hover:bg-secondary group-hover:text-white transition-all">زيارة المتجر</button>
+</div>
+</div>
+<!-- Artisan Card 3 -->
+<div class="min-w-[280px] bg-white rounded-xl overflow-hidden border border-outline-variant/20 hover:shadow-xl transition-all duration-300 group">
+<div class="h-40 relative">
+<img class="w-full h-full object-cover" data-alt="تحف خشبية" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5EM3SLFIjvzHp8ets0uWwrfoRaoO3PKw7ceqe6kC6kH1WhkOV-iL9NbZm5FDDqoUdhKggjfr--XH0ybNuH1T4vD-ugO3FpSN-Ot9qIcPmxCFadtwTo1_klfopNpM4iUttfuPwqhE4AxKjjvmTcWnblqEaj_BZuVHmufkavW11MCnCzia11Z4SaT2UEVTQpY1VsnFkWPqKVZxWiUON20xQJaCPI2HPbj6H74Eh1QECU_OtRDgcwxDCCgwPUu2wJlT87ZuOQajeGITa"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent"></div>
+<div class="absolute bottom-4 right-4 flex items-center gap-2">
+<div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="محمد السعيد" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjhZ8hVRcf4rQciI00A3K7HZiwhVzNcgR9S-Grja--mPWWKIqlUP-tfe5EBR1kjZeNBoVZtxhjPD4mdnxe7BDN6yaB5l7oQhLrpj41zZ1buogCPTaXZ6CptxuZIW5FMwP2NaTD0g9Q4zSZxW-marZNo11JNIlz0SX4FS6Zi-b7YTwO8yZ2gRCOdhSYBSbJOgmv55puMATu_bB1HD7BYmgegjRMJmOwS9GKW7Q50ddi7SiIAi_4liVTXmK7HAudapC3CR_bDfqT3Ft5"/>
+</div>
+<span class="text-white font-label-md text-label-md">محمد السعيد</span>
+</div>
+</div>
+<div class="p-4 space-y-2">
+<h4 class="font-body-lg font-bold text-primary">تحف خشبية</h4>
+<p class="font-caption text-on-surface-variant line-clamp-2">إعادة إحياء فن الأبواب والشبابيك الخشبية المنقوشة بلمسات فنية نادرة.</p>
+<button class="w-full mt-2 py-2 border border-secondary text-secondary rounded-full font-label-md text-label-md group-hover:bg-secondary group-hover:text-white transition-all">زيارة المتجر</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Insights/Stats Section -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="p-6 rounded-xl bg-tertiary-fixed border border-outline-variant/20 text-center space-y-2">
+<span class="material-symbols-outlined text-primary text-3xl">loyalty</span>
+<p class="font-label-md text-label-md text-primary">نقاط الولاء</p>
+<p class="font-headline-md text-headline-md text-primary">٤٥٠</p>
+</div>
+<div class="p-6 rounded-xl bg-secondary-fixed border border-outline-variant/20 text-center space-y-2">
+<span class="material-symbols-outlined text-secondary text-3xl">account_balance_wallet</span>
+<p class="font-label-md text-label-md text-secondary">الرصيد</p>
+<p class="font-headline-md text-headline-md text-secondary">٢٣٠ ر.س</p>
+</div>
+<div class="p-6 rounded-xl bg-surface-container-highest border border-outline-variant/20 text-center space-y-2">
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">reviews</span>
+<p class="font-label-md text-label-md text-on-surface-variant">التقييمات</p>
+<p class="font-headline-md text-headline-md text-on-surface-variant">٩</p>
+</div>
+<div class="p-6 rounded-xl bg-primary-container border border-outline-variant/20 text-center space-y-2">
+<span class="material-symbols-outlined text-on-primary-container text-3xl">redeem</span>
+<p class="font-label-md text-label-md text-on-primary-container">كوبونات</p>
+<p class="font-headline-md text-headline-md text-on-primary-container">٣</p>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface/90 backdrop-blur-md border-t border-outline-variant/30 shadow-[0_-4px_12px_rgba(50,23,22,0.05)] flex justify-around items-center h-20 pb-safe px-4">
+<div class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-secondary transition-transform active:scale-95 duration-200">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-label-md text-label-md">اكتشف</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-secondary transition-transform active:scale-95 duration-200">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="font-label-md text-label-md">الحرفيون</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-secondary transition-transform active:scale-95 duration-200">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span class="font-label-md text-label-md">الطلبات</span>
+</div>
+<div class="flex flex-col items-center justify-center text-primary font-bold scale-110 active:scale-95 transition-all duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-label-md">حسابي</span>
+</div>
+</nav>
+<script>
+    // Micro-interactions for smooth scrolling or hover effects
+    document.querySelectorAll('button').forEach(button => {
+        button.addEventListener('mousedown', () => {
+            button.style.transform = 'scale(0.98)';
+        });
+        button.addEventListener('mouseup', () => {
+            button.style.transform = 'scale(1)';
+        });
+    });
+
+    // Horizontal scroll animation for artisans
+    const artisanContainer = document.querySelector('.overflow-x-auto');
+    if (artisanContainer) {
+        artisanContainer.addEventListener('wheel', (evt) => {
+            evt.preventDefault();
+            artisanContainer.scrollLeft += evt.deltaY;
+        });
+    }
+</script>
+<div class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" id="rating-modal">
+<div class="bg-surface w-full max-w-md rounded-xl p-6 shadow-2xl space-y-6">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-primary">تقييم الطلب</h3>
+<button class="material-symbols-outlined text-on-surface-variant" onclick="document.getElementById('rating-modal').classList.add('hidden')">close</button>
+</div>
+<div class="space-y-4">
+<div>
+<p class="font-label-md text-on-surface mb-2">جودة المنتج</p>
+<div class="flex gap-1 text-secondary-fixed-dim">
+<span class="material-symbols-outlined cursor-pointer hover:fill-1">star</span>
+<span class="material-symbols-outlined cursor-pointer hover:fill-1">star</span>
+<span class="material-symbols-outlined cursor-pointer hover:fill-1">star</span>
+<span class="material-symbols-outlined cursor-pointer hover:fill-1">star</span>
+<span class="material-symbols-outlined cursor-pointer hover:fill-1">star</span>
+</div>
+</div>
+<div>
+<p class="font-label-md text-on-surface mb-2">خدمة شركة الشحن</p>
+<div class="flex gap-1 text-secondary-fixed-dim">
+<span class="material-symbols-outlined cursor-pointer hover:fill-1">star</span>
+<span class="material-symbols-outlined cursor-pointer hover:fill-1">star</span>
+<span class="material-symbols-outlined cursor-pointer hover:fill-1">star</span>
+<span class="material-symbols-outlined cursor-pointer hover:fill-1">star</span>
+<span class="material-symbols-outlined cursor-pointer hover:fill-1">star</span>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-on-surface mb-2">أضف تعليقك</label>
+<textarea class="w-full bg-surface-container rounded-lg border-outline-variant/30 focus:ring-secondary focus:border-secondary p-3 text-body-md" placeholder="اكتب تجربتك هنا..." rows="3"></textarea>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary py-3 rounded-full font-label-md text-label-md shadow-md" onclick="document.getElementById('rating-modal').classList.add('hidden')">إرسال التقييم</button>
+</div>
+</div></body></html>
