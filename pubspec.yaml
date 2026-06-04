@@ -21,4 +21,16 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/screens/
+    - screen_2.html
+    - screen_3.html
+    - screen_4.html
+    - screen_5.html
+    - screen_6.html
+    - screen_7.html
+    - screen_8.html
+    - screen_9.html
+    - screen_10.html
+    - screen_11.html
+    - screen_12.html
+    - screen_13.html
+    - screen_14.html
