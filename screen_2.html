@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AL-HIRFA | إتمام الطلب</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-tertiary": "#ffffff",
+                "on-error-container": "#93000a",
+                "primary-fixed-dim": "#eabcb8",
+                "primary": "#321716",
+                "inverse-surface": "#313030",
+                "tertiary": "#241e0f",
+                "surface-container-high": "#eae7e7",
+                "on-tertiary-fixed-variant": "#4d4634",
+                "surface-dim": "#dcd9d9",
+                "surface-container-lowest": "#ffffff",
+                "surface-container-low": "#f6f3f2",
+                "on-tertiary-container": "#a59b85",
+                "on-surface": "#1c1b1b",
+                "tertiary-container": "#3a3323",
+                "on-tertiary-fixed": "#211b0c",
+                "tertiary-fixed-dim": "#d1c5ae",
+                "background": "#fcf9f8",
+                "surface-container": "#f0eded",
+                "on-secondary": "#ffffff",
+                "primary-fixed": "#ffdad7",
+                "surface-variant": "#e5e2e1",
+                "on-secondary-container": "#745c00",
+                "outline": "#827472",
+                "on-background": "#1c1b1b",
+                "secondary-fixed": "#ffe088",
+                "tertiary-fixed": "#ede1c9",
+                "on-primary": "#ffffff",
+                "on-primary-fixed-variant": "#5f3e3c",
+                "on-error": "#ffffff",
+                "surface-bright": "#fcf9f8",
+                "secondary-container": "#fed65b",
+                "on-primary-container": "#bd928f",
+                "secondary": "#735c00",
+                "on-surface-variant": "#504443",
+                "outline-variant": "#d4c3c1",
+                "surface-tint": "#795553",
+                "on-secondary-fixed": "#241a00",
+                "inverse-on-surface": "#f3f0ef",
+                "primary-container": "#4a2c2a",
+                "secondary-fixed-dim": "#e9c349",
+                "inverse-primary": "#eabcb8",
+                "error": "#ba1a1a",
+                "on-secondary-fixed-variant": "#574500",
+                "on-primary-fixed": "#2e1413",
+                "error-container": "#ffdad6",
+                "surface": "#fcf9f8",
+                "surface-container-highest": "#e5e2e1"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "gutter": "16px",
+                "unit": "8px",
+                "section-gap": "48px",
+                "container-margin": "24px"
+            },
+            "fontFamily": {
+                "display-lg": ["Playfair Display"],
+                "headline-md": ["Playfair Display"],
+                "headline-lg": ["Playfair Display"],
+                "label-md": ["Be Vietnam Pro"],
+                "caption": ["Be Vietnam Pro"],
+                "body-md": ["Be Vietnam Pro"],
+                "headline-lg-mobile": ["Playfair Display"],
+                "body-lg": ["Be Vietnam Pro"]
+            },
+            "fontSize": {
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .grainy-surface {
+            position: relative;
+        }
+        .grainy-surface::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: url("https://www.transparenttextures.com/patterns/felt.png");
+        }
+        .cinematic-shadow {
+            box-shadow: 0 20px 40px -15px rgba(50, 23, 22, 0.08);
+        }
+        .scroll-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md grainy-surface min-h-screen">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md shadow-sm h-16 flex items-center justify-between px-container-margin">
+<button class="flex items-center justify-center w-10 h-10 hover:bg-surface-variant transition-colors rounded-full" onclick="window.history.back()">
+<span class="material-symbols-outlined text-primary">arrow_forward</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-wide">إتمام الطلب</h1>
+<div class="w-10"></div> <!-- Spacer for symmetry -->
+</nav>
+<main class="pt-24 pb-32 px-container-margin max-w-xl mx-auto space-y-gutter">
+<!-- Delivery Address Section -->
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<h2 class="font-headline-md text-headline-md text-primary">عنوان التوصيل</h2>
+<button class="text-secondary font-label-md text-label-md hover:underline decoration-secondary/30 transition-all">تعديل</button>
+</div>
+<div class="bg-surface-container-low border border-outline-variant/30 p-5 rounded-xl cinematic-shadow flex items-start gap-4">
+<span class="material-symbols-outlined text-secondary mt-1">location_on</span>
+<div>
+<p class="font-label-md text-label-md text-on-surface">جدة، حي البلد التاريخي</p>
+<p class="font-body-md text-on-surface-variant leading-relaxed text-sm mt-1">شارع الذهب، مبنى التراث رقم ٤٢<br/>+966 50 123 4567</p>
+</div>
+</div>
+</section>
+<!-- Shipping Method -->
+<section class="space-y-4 pt-4">
+<h2 class="font-headline-md text-headline-md text-primary">طريقة الشحن</h2>
+<div class="grid grid-cols-1 gap-3">
+<!-- Option 1: Heritage Express -->
+<label class="relative flex items-center p-4 bg-surface rounded-xl border-2 border-primary cursor-pointer transition-all duration-300">
+<input checked="" class="hidden" name="shipping" type="radio"/>
+<div class="flex-1 flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-primary-fixed rounded-lg">
+<span class="material-symbols-outlined text-primary">speed</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">إكسبريس التراث</p>
+<p class="text-caption text-on-surface-variant">توصيل خلال ٢٤-٤٨ ساعة</p>
+</div>
+</div>
+<span class="font-label-md text-label-md text-primary">$10</span>
+</label>
+<!-- Option 2: Standard Shipping -->
+<label class="relative flex items-center p-4 bg-surface-container-lowest border border-outline-variant/50 rounded-xl cursor-pointer hover:border-secondary-container transition-all">
+<input class="hidden" name="shipping" type="radio"/>
+<div class="flex-1 flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-surface-container rounded-lg">
+<span class="material-symbols-outlined text-on-surface-variant">local_shipping</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">شحن قياسي</p>
+<p class="text-caption text-on-surface-variant">٣-٥ أيام عمل</p>
+</div>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">مجاني</span>
+</label>
+</div>
+</section>
+<!-- Payment Method -->
+<section class="space-y-4 pt-4">
+<h2 class="font-headline-md text-headline-md text-primary">طريقة الدفع</h2>
+<div class="flex gap-3 overflow-x-auto pb-2 scroll-hide">
+<!-- Apple Pay -->
+<button class="flex-shrink-0 flex flex-col items-center justify-center w-28 h-20 bg-surface rounded-xl border border-primary cinematic-shadow">
+<span class="material-symbols-outlined text-primary text-3xl">contactless</span>
+<span class="text-caption mt-1 font-label-md">Apple Pay</span>
+</button>
+<!-- Credit Card -->
+<button class="flex-shrink-0 flex flex-col items-center justify-center w-28 h-20 bg-surface-container-lowest border border-outline-variant rounded-xl opacity-60">
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">credit_card</span>
+<span class="text-caption mt-1">بطاقة ائتمان</span>
+</button>
+<!-- Mada -->
+<button class="flex-shrink-0 flex flex-col items-center justify-center w-28 h-20 bg-surface-container-lowest border border-outline-variant rounded-xl opacity-60">
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">account_balance_wallet</span>
+<span class="text-caption mt-1">مدى</span>
+</button>
+</div>
+</section>
+<!-- Order Summary -->
+<section class="space-y-4 pt-4">
+<div class="flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-primary">ملخص الطلب (٣ قطع)</h2>
+<span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+</div>
+<div class="space-y-4">
+<!-- Item 1 -->
+<div class="flex items-center gap-4 p-3 bg-white/50 rounded-lg">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="سجادة حرير فارسية منسوجة يدوياً" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcPhfvHtYwi91OCb3IN462qFCdrzA8RFYrudKELPxOwr8PtRgFX-VbX7zWKIxIvZ45F91zSr3N2NDL01E--4jb0vQV58V5hz1W0Ae2lv5PW-hwGe-EXNf1WWwjM5ugf-hHy3Y2ExfPGVizPuTnXIi1z-6ZCXTNw8CMocXSxdLEQm_uGwUTwMqSeM0ye8NPAF7UHUovNha-xWW6vRYuGxqx7meA29vwJKPqmMGwDiKt8jkKZKWKFev22qun4HtW3itZVNdLMinMlYGP"/>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-on-surface truncate">سجادة "نقوش المطر" يدوية</p>
+<p class="text-caption text-on-surface-variant">اللون: رملي داكن</p>
+</div>
+<span class="font-label-md text-primary">$320</span>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4 p-3 bg-white/50 rounded-lg">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="مزهرية سيراميك مصنوعة يدوياً" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3-ta_Za1MYWYmyw8hX7To8U7i1psi9c_9d5XRw61nyvETPPbOSjCaQF9zzyUmZTP-1Z4L5yM1BATZmta4K3AXAVurkc-oxlUU60A2QaFu39rK9B5AWGqIK1tCqjeE5Z8rKwiRTUFbVSXI9vv2M_yakRO6CWKFd6Gcijr13P28L-4TsAF9g4zD8ZOj-_gr6_69948DE85O2tsfg9QOFkAUszJEyHH3Ycgaup6SZrMBadBafgigbefGZlPVK4C-xFdDQL1tJmZH2qVO"/>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-on-surface truncate">مزهرية الطين العتيق</p>
+<p class="text-caption text-on-surface-variant">الحجم: كبير</p>
+</div>
+<span class="font-label-md text-primary">$120</span>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center gap-4 p-3 bg-white/50 rounded-lg">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="مبخرة نحاسية عصرية" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDk04-zHVDu6iZB2r8FHrD31cJdqcCS7efBFenCh0Je89Zkq4eJm3qs86-NApvadKR5wu1vwnAan9CyEwRq22Y9R4AyJb1kEOV8-qBbUUPedt84BJJ0MKdmN-eYct-PY9vZqb9lxLgAPJ29H3MBazIwv8b2guF04gBxnO-_OumFGOeo64XItCtI5x5W6s-zxKLn_aZ7tdfN5c0Bpnw-7zG3gwGw9BKkhdghpm4MSabIqHyA_eIi1VrRDnIDGnCeyfQibOSuavk_WUFU"/>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-on-surface truncate">مبخرة "نجم" النحاسية</p>
+<p class="text-caption text-on-surface-variant">المادة: نحاس خالص</p>
+</div>
+<span class="font-label-md text-primary">$75</span>
+</div>
+</div>
+</section>
+<!-- Final Calculation -->
+<section class="mt-8 pt-6 border-t border-outline-variant/30 space-y-3">
+<div class="flex justify-between text-on-surface-variant">
+<span class="font-body-md">المجموع الفرعي</span>
+<span class="font-label-md">$515</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span class="font-body-md">رسوم الشحن</span>
+<span class="font-label-md">$10</span>
+</div>
+<div class="flex justify-between text-primary pt-3">
+<span class="font-headline-md">الإجمالي</span>
+<span class="font-headline-md tracking-tight">$525</span>
+</div>
+</section>
+</main>
+<!-- Bottom CTA Bar -->
+<div class="fixed bottom-0 w-full bg-surface/90 backdrop-blur-xl px-container-margin pt-4 pb-8 border-t border-outline-variant/10 z-50">
+<div class="max-w-xl mx-auto">
+<button class="w-full bg-primary text-secondary-fixed py-5 rounded-full font-label-md text-lg cinematic-shadow hover:scale-[1.02] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span>تأكيد ودفع</span>
+</button>
+<p class="text-center text-caption text-on-surface-variant mt-4 opacity-70">
+                تسوق آمن مشفر بمعايير عالمية
+            </p>
+</div>
+</div>
+<script>
+        // Simple Interaction for Shipping Selection
+        document.querySelectorAll('input[name="shipping"]').forEach(input => {
+            input.addEventListener('change', function() {
+                // Reset all
+                document.querySelectorAll('label').forEach(label => {
+                    label.classList.remove('border-primary', 'bg-surface');
+                    label.classList.add('border-outline-variant/50', 'bg-surface-container-lowest');
+                    const icon = label.querySelector('.material-symbols-outlined');
+                    if(icon) {
+                        icon.classList.add('text-on-surface-variant');
+                        icon.classList.remove('text-primary');
+                    }
+                });
+                // Set active
+                if (this.checked) {
+                    const parent = this.closest('label');
+                    parent.classList.add('border-primary', 'bg-surface');
+                    parent.classList.remove('border-outline-variant/50', 'bg-surface-container-lowest');
+                    const icon = parent.querySelector('.material-symbols-outlined');
+                    if(icon) {
+                        icon.classList.remove('text-on-surface-variant');
+                        icon.classList.add('text-primary');
+                    }
+                }
+            });
+        });
+    </script>
+</body></html>
