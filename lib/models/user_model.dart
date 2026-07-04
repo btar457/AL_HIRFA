@@ -8,6 +8,14 @@ class UserModel {
   final String phone;
   final String role; // customer/artisan/shipping/admin
   final String city;
+
+  // حقول الموافقة القانونية (PART 11.6 من AL-HIRFA-Legal-Rules.md)
+  final bool termsAccepted;
+  final DateTime? termsAcceptedAt;
+  final String termsVersion;
+  final bool? artisanTermsAccepted; // للحرفي فقط
+  final bool? shippingTermsAccepted; // لشركة الشحن فقط
+
   final DateTime createdAt;
 
   const UserModel({
@@ -18,6 +26,11 @@ class UserModel {
     required this.role,
     required this.city,
     required this.createdAt,
+    this.termsAccepted = false,
+    this.termsAcceptedAt,
+    this.termsVersion = '',
+    this.artisanTermsAccepted,
+    this.shippingTermsAccepted,
   });
 
   factory UserModel.fromMap(String uid, Map<String, dynamic> map) {
@@ -29,6 +42,11 @@ class UserModel {
       role: map['role'] as String? ?? 'customer',
       city: map['city'] as String? ?? '',
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      termsAccepted: map['termsAccepted'] as bool? ?? false,
+      termsAcceptedAt: (map['termsAcceptedAt'] as Timestamp?)?.toDate(),
+      termsVersion: map['termsVersion'] as String? ?? '',
+      artisanTermsAccepted: map['artisanTermsAccepted'] as bool?,
+      shippingTermsAccepted: map['shippingTermsAccepted'] as bool?,
     );
   }
 
@@ -40,6 +58,11 @@ class UserModel {
       'role': role,
       'city': city,
       'createdAt': Timestamp.fromDate(createdAt),
+      'termsAccepted': termsAccepted,
+      'termsAcceptedAt': termsAcceptedAt != null ? Timestamp.fromDate(termsAcceptedAt!) : null,
+      'termsVersion': termsVersion,
+      'artisanTermsAccepted': artisanTermsAccepted,
+      'shippingTermsAccepted': shippingTermsAccepted,
     };
   }
 }
