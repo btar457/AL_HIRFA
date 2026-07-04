@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../../models/categories.dart';
 import '../../models/marketplace_product.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'product_detail_screen.dart';
@@ -12,6 +13,7 @@ class MarketplaceScreen extends StatefulWidget {
 
 class _MarketplaceScreenState extends State<MarketplaceScreen> {
   String _selectedCity = 'الكل';
+  String _selectedCategory = 'all';
   final Set<String> _favoriteNames = {};
   int _navIndex = 1;
   final bool _hasNotifications = true;
@@ -42,6 +44,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             children: [
               _buildHeader(),
               _buildSearchBar(),
+              _buildCategoryCards(),
               _buildCityFilters(),
               Expanded(
                 child: GridView.builder(
@@ -116,6 +119,55 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryCards() {
+    return SizedBox(
+      height: 130,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Row(
+          children: kAppCategories.map((category) {
+            final selected = _selectedCategory == category.id;
+            return Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedCategory = category.id),
+                child: Container(
+                  width: 100,
+                  height: 120,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: selected ? AppColors.gold : Colors.transparent, width: 2),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.asset(category.imagePath, fit: BoxFit.cover),
+                      Container(color: Colors.black.withOpacity(0.4)),
+                      Positioned(
+                        bottom: 8,
+                        left: 4,
+                        right: 4,
+                        child: Text(
+                          category.nameAr,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ),
     );
