@@ -4,7 +4,8 @@ import '../shared/main_nav.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  final int? initialRoleIndex;
+  const RegisterScreen({super.key, this.initialRoleIndex});
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
@@ -20,6 +21,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   int _selectedRole = 0;
 
   final _roles = const ['مشتري', 'حرفي', 'شركة شحن'];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedRole = widget.initialRoleIndex ?? 0;
+  }
 
   Widget _buildField({required String hint, TextEditingController? controller, bool obscure = false, Widget? suffix, TextInputType? keyboardType}) {
     return TextField(

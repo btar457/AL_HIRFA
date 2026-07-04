@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
-import '../shared/main_nav.dart';
+import 'register_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -15,20 +15,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     {'emoji': '🛒', 'name': 'مشتري'},
     {'emoji': '🎨', 'name': 'حرفي'},
     {'emoji': '🚚', 'name': 'شركة شحن'},
-    {'emoji': '👑', 'name': 'مؤسس/إدارة'},
   ];
 
-  void _startJourney() {
-    switch (_selectedRole) {
-      case 1:
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainNav(initialIndex: 3)));
-        break;
-      case 3:
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainNav(initialIndex: 4)));
-        break;
-      default:
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainNav()));
-    }
+  void _continueToRegister() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen(initialRoleIndex: _selectedRole)));
   }
 
   @override
@@ -48,11 +38,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text('مرحباً في عالم الحرفة العراقية', textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontSize: 24, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text('اختر نوع حسابك للبدء', style: TextStyle(color: AppColors.subText, fontSize: 14)),
                     const SizedBox(height: 40),
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 16, mainAxisSpacing: 16, childAspectRatio: 1.1),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.85),
                       itemCount: _roles.length,
                       itemBuilder: (context, i) {
                         final selected = _selectedRole == i;
@@ -67,9 +59,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(_roles[i]['emoji']!, style: const TextStyle(fontSize: 36)),
-                                const SizedBox(height: 10),
-                                Text(_roles[i]['name']!, style: const TextStyle(color: AppColors.text, fontSize: 14, fontWeight: FontWeight.bold)),
+                                Text(_roles[i]['emoji']!, style: const TextStyle(fontSize: 32)),
+                                const SizedBox(height: 8),
+                                Text(_roles[i]['name']!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -81,7 +73,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                        onPressed: _selectedRole == null ? null : _startJourney,
+                        onPressed: _selectedRole == null ? null : _continueToRegister,
                         child: const Text('ابدأ رحلتك', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
                     ),

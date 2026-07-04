@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../core/constants/strings.dart';
+import '../shared/main_nav.dart';
 import 'forgot_password_screen.dart';
-import 'register_screen.dart';
+import 'onboarding_screen.dart';
 
 /// شاشة تسجيل الدخول (تصميم على شكل بطاقة فوق خلفية ضبابية داكنة).
 class LoginScreen extends StatefulWidget {
@@ -12,9 +13,20 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // TODO: يُستبدل باكتشاف دور المستخدم الفعلي عبر Firebase عند دمج المصادقة الحقيقية.
+  static const _founderEmail = 'founder@alhirfa.iq';
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+
+  void _signIn() {
+    final isFounder = _emailController.text.trim().toLowerCase() == _founderEmail;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => MainNav(initialIndex: isFounder ? 4 : 0)),
+    );
+  }
 
   Widget _buildField({required IconData icon, required String hint, TextEditingController? controller, bool obscure = false, Widget? suffix, TextInputType? keyboardType}) {
     return Container(
@@ -125,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 8),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                            onPressed: () {},
+                            onPressed: _signIn,
                             child: const Text('تسجيل الدخول', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                           ),
                           const SizedBox(height: 20),
@@ -134,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               Text('ليس لديك حساب؟', style: TextStyle(color: AppColors.subText, fontSize: 13)),
                               TextButton(
-                                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OnboardingScreen())),
                                 child: const Text('انضم إلينا', style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
                               ),
                             ],
