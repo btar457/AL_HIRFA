@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'artisan_chat_screen.dart';
 
 const kBg        = Color(0xFF0D0D0D);
 const kCard      = Color(0xFF1A1A1A);
@@ -403,7 +404,7 @@ class StudioScreen extends StatelessWidget {
             const SizedBox(height: 32),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: kGold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14)),
-              onPressed: () {},
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanChatScreen())),
               child: const Text('ابدأ المحادثة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
           ]),

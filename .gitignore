@@ -1,0 +1,39 @@
+# Flutter/Dart/Pub related
+**/doc/api/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+
+# Android related
+**/android/**/gradle-wrapper.jar
+**/android/.gradle
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+
+# iOS/macOS related
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/GeneratedPluginRegistrant.*
+**/ios/Flutter/.last_build_id
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Web related
+**/lib/generated_plugin_registrant.dart
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+*.log
