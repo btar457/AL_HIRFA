@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import 'artisan_orders_screen.dart';
+import 'artisan_wallet_screen.dart';
 
 class _MiniOrder {
   final String productName;
@@ -44,7 +45,7 @@ class ArtisanDashboardScreen extends StatelessWidget {
               const SizedBox(height: 20),
               _buildGreeting(),
               const SizedBox(height: 24),
-              _buildStatsGrid(),
+              _buildStatsGrid(context),
               const SizedBox(height: 28),
               _buildNewOrdersSection(context),
               const SizedBox(height: 28),
@@ -99,7 +100,7 @@ class ArtisanDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsGrid() {
+  Widget _buildStatsGrid(BuildContext context) {
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -108,8 +109,8 @@ class ArtisanDashboardScreen extends StatelessWidget {
       mainAxisSpacing: 12,
       childAspectRatio: 1.5,
       children: [
-        _buildStatCard(icon: Icons.payments_outlined, label: 'إجمالي المبيعات', value: '١,٢٥٠,٠٠٠ د.ع', valueColor: AppColors.gold),
-        _buildStatCard(icon: Icons.inventory_2_outlined, label: 'طلبات جديدة', value: '٤', valueColor: AppColors.text, showBadge: true),
+        _buildStatCard(icon: Icons.payments_outlined, label: 'إجمالي المبيعات', value: '١,٢٥٠,٠٠٠ د.ع', valueColor: AppColors.gold, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanWalletScreen()))),
+        _buildStatCard(icon: Icons.inventory_2_outlined, label: 'طلبات جديدة', value: '٤', valueColor: AppColors.text, showBadge: true, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanOrdersScreen()))),
         _buildStatCard(
           icon: Icons.star,
           label: 'تقييمك',
@@ -117,33 +118,36 @@ class ArtisanDashboardScreen extends StatelessWidget {
           value: '٤.٨',
           trailing: Row(mainAxisSize: MainAxisSize.min, children: List.generate(5, (i) => Icon(i < 4 ? Icons.star : Icons.star_half, color: AppColors.gold, size: 12))),
         ),
-        _buildStatCard(icon: Icons.account_balance_wallet_outlined, label: 'رصيد المحفظة', value: '٨٥٠,٠٠٠ د.ع', valueColor: Colors.green),
+        _buildStatCard(icon: Icons.account_balance_wallet_outlined, label: 'رصيد المحفظة', value: '٨٥٠,٠٠٠ د.ع', valueColor: Colors.green, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanWalletScreen()))),
       ],
     );
   }
 
-  Widget _buildStatCard({required IconData icon, required String label, required String value, required Color valueColor, bool showBadge = false, Widget? trailing}) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.2))),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: AppColors.gold, size: 18),
-              if (showBadge) ...[
-                const SizedBox(width: 6),
-                Container(width: 7, height: 7, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+  Widget _buildStatCard({required IconData icon, required String label, required String value, required Color valueColor, bool showBadge = false, Widget? trailing, VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.2))),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: AppColors.gold, size: 18),
+                if (showBadge) ...[
+                  const SizedBox(width: 6),
+                  Container(width: 7, height: 7, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+                ],
               ],
-            ],
-          ),
-          const Spacer(),
-          Text(value, style: TextStyle(color: valueColor, fontWeight: FontWeight.bold, fontSize: 15)),
-          const SizedBox(height: 2),
-          Text(label, style: TextStyle(color: AppColors.subText, fontSize: 11)),
-          if (trailing != null) ...[const SizedBox(height: 4), trailing],
-        ],
+            ),
+            const Spacer(),
+            Text(value, style: TextStyle(color: valueColor, fontWeight: FontWeight.bold, fontSize: 15)),
+            const SizedBox(height: 2),
+            Text(label, style: TextStyle(color: AppColors.subText, fontSize: 11)),
+            if (trailing != null) ...[const SizedBox(height: 4), trailing],
+          ],
+        ),
       ),
     );
   }
