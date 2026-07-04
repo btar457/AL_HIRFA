@@ -3,8 +3,6 @@ import '../../core/constants/colors.dart';
 import '../../models/categories.dart';
 import '../../models/marketplace_product.dart';
 import '../../widgets/common/marketplace_product_card.dart';
-import 'customer_profile_screen.dart';
-import 'orders_history_screen.dart';
 import 'product_detail_screen.dart';
 
 class MarketplaceScreen extends StatefulWidget {
@@ -17,7 +15,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   String _selectedCity = 'الكل';
   String _selectedCategory = 'all';
   final Set<String> _favoriteNames = {};
-  int _navIndex = 1;
   final bool _hasNotifications = true;
 
   final _cities = const ['الكل', 'نجف', 'بصرة', 'بغداد', 'أربيل', 'موصل', 'كربلاء', 'الديوانية'];
@@ -73,7 +70,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             ],
           ),
         ),
-        bottomNavigationBar: _buildBottomNav(),
       ),
     );
   }
@@ -205,41 +201,4 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     );
   }
 
-  Future<void> _onNavTap(int index) async {
-    switch (index) {
-      case 2:
-        await Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()));
-        setState(() => _navIndex = 1);
-        break;
-      case 3:
-        await Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerProfileScreen()));
-        setState(() => _navIndex = 1);
-        break;
-      default:
-        setState(() => _navIndex = index); // "الرئيسية" لا شاشة مخصصة لها بعد
-    }
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: const BoxDecoration(color: Color(0xFF111111)),
-      child: BottomNavigationBar(
-        currentIndex: _navIndex,
-        onTap: _onNavTap,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor: AppColors.gold,
-        unselectedItemColor: const Color(0xFF888888),
-        selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-        unselectedLabelStyle: const TextStyle(fontSize: 11),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'الرئيسية'),
-          BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), activeIcon: Icon(Icons.storefront), label: 'المتجر'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'طلباتي'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'الحساب'),
-        ],
-      ),
-    );
-  }
 }

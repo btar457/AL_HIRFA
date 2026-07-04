@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/marketplace_product.dart';
 import '../../widgets/common/marketplace_product_card.dart';
-import 'marketplace_screen.dart';
+import 'customer_nav.dart';
 import 'product_detail_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -53,7 +53,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-              onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MarketplaceScreen())),
+              onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const CustomerNav())),
               child: const Text('تصفح المتجر', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
