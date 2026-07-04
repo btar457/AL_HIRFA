@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/marketplace_product.dart';
 import '../../widgets/common/marketplace_product_card.dart';
+import 'product_detail_screen.dart';
 
 class MarketplaceScreen extends StatefulWidget {
   const MarketplaceScreen({super.key});
@@ -52,7 +53,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                     return MarketplaceProductCard(
                       product: product,
                       isFavorite: _favoriteNames.contains(product.name),
-                      onTap: () {}, // TODO: فتح product_detail_screen عند بنائها
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product))),
                       onFavoriteToggle: () => setState(() {
                         if (_favoriteNames.contains(product.name)) {
                           _favoriteNames.remove(product.name);
