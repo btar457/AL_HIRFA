@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../models/gemini_audit_result.dart';
 
 /// برومبت التدقيق المعتمد لمنصة AL-HIRFA (مطابق لـ gemini_authenticator_prompt.txt)
 const String kGeminiAuditSystemPrompt = r'''
@@ -18,29 +19,6 @@ const String kGeminiAuditSystemPrompt = r'''
   "suggested_category": "التصنيف التراثي الأنسب للمنتج"
 }
 ''';
-
-class GeminiAuditResult {
-  final String status;
-  final int confidenceScore;
-  final String reasonArabic;
-  final String suggestedCategory;
-
-  GeminiAuditResult({
-    required this.status,
-    required this.confidenceScore,
-    required this.reasonArabic,
-    required this.suggestedCategory,
-  });
-
-  factory GeminiAuditResult.fromJson(Map<String, dynamic> json) {
-    return GeminiAuditResult(
-      status: json['status'] as String? ?? 'NEEDS_REVIEW',
-      confidenceScore: (json['confidence_score'] as num?)?.toInt() ?? 0,
-      reasonArabic: json['reason_arabic'] as String? ?? '',
-      suggestedCategory: json['suggested_category'] as String? ?? 'غير محدد',
-    );
-  }
-}
 
 class GeminiService {
   static const String _apiKey = String.fromEnvironment('GEMINI_API_KEY');
