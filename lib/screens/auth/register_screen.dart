@@ -1,6 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../core/navigation/role_router.dart';
+import '../shared/privacy_policy_screen.dart';
+import '../shared/terms_screen.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -18,6 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _termsAccepted = false;
   int _selectedRole = 0;
 
   final _roles = const ['مشتري', 'حرفي', 'شركة شحن'];
@@ -108,10 +112,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     );
                   }),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 20),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Checkbox(
+                      value: _termsAccepted,
+                      activeColor: AppColors.gold,
+                      onChanged: (val) => setState(() => _termsAccepted = val ?? false),
+                    ),
+                    Expanded(
+                      child: RichText(
+                        text: TextSpan(
+                          style: TextStyle(color: AppColors.subText, fontSize: 12),
+                          children: [
+                            const TextSpan(text: 'أوافق على '),
+                            TextSpan(
+                              text: 'الشروط والأحكام',
+                              style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen())),
+                            ),
+                            const TextSpan(text: ' و'),
+                            TextSpan(
+                              text: 'سياسة الخصوصية',
+                              style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen())),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                  onPressed: _createAccount,
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, disabledBackgroundColor: AppColors.gold.withOpacity(0.3), padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                  onPressed: _termsAccepted ? _createAccount : null,
                   child: const Text('إنشاء الحساب', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
                 const SizedBox(height: 20),
