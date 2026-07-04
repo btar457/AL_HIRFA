@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 
@@ -67,20 +66,12 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: AppColors.background,
         body: Stack(
           children: [
-            // خلفية ضبابية داكنة ترمز لأجواء الحرفي العراقي (لا يوجد أصل صورة حقيقي بعد، تمثيل زخرفي مؤقت)
+            // خلفية الحرفي العراقي الضبابية الداكنة
             Positioned.fill(
-              child: Opacity(
-                opacity: 0.22,
-                child: ImageFiltered(
-                  imageFilter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: RadialGradient(center: Alignment.topCenter, radius: 1.3, colors: [Color(0xFF6B4A2A), AppColors.background]),
-                    ),
-                    child: const Center(child: Icon(Icons.mosque, size: 280, color: AppColors.goldLight)),
-                  ),
-                ),
-              ),
+              child: Image.asset('assets/images/login_bg.jpg', fit: BoxFit.cover),
+            ),
+            Positioned.fill(
+              child: Container(color: Colors.black.withOpacity(0.7)),
             ),
             SafeArea(
               child: SingleChildScrollView(
