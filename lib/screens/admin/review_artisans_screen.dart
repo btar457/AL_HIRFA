@@ -9,8 +9,8 @@ class _PendingArtisan {
   final String craft;
   final int experienceYears;
   final int sampleCount;
-  _ArtisanReviewStatus status;
-  _PendingArtisan({required this.name, required this.city, required this.craft, required this.experienceYears, required this.sampleCount, this.status = _ArtisanReviewStatus.pending});
+  _ArtisanReviewStatus status = _ArtisanReviewStatus.pending;
+  _PendingArtisan({required this.name, required this.city, required this.craft, required this.experienceYears, required this.sampleCount});
 }
 
 /// مراجعة طلبات الحرفيين الجدد (ADMIN-4).
