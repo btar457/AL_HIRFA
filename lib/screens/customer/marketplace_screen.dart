@@ -3,6 +3,8 @@ import '../../core/constants/colors.dart';
 import '../../models/categories.dart';
 import '../../models/marketplace_product.dart';
 import '../../widgets/common/marketplace_product_card.dart';
+import 'customer_profile_screen.dart';
+import 'orders_history_screen.dart';
 import 'product_detail_screen.dart';
 
 class MarketplaceScreen extends StatefulWidget {
@@ -203,12 +205,27 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     );
   }
 
+  Future<void> _onNavTap(int index) async {
+    switch (index) {
+      case 2:
+        await Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()));
+        setState(() => _navIndex = 1);
+        break;
+      case 3:
+        await Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerProfileScreen()));
+        setState(() => _navIndex = 1);
+        break;
+      default:
+        setState(() => _navIndex = index); // "الرئيسية" لا شاشة مخصصة لها بعد
+    }
+  }
+
   Widget _buildBottomNav() {
     return Container(
       decoration: const BoxDecoration(color: Color(0xFF111111)),
       child: BottomNavigationBar(
         currentIndex: _navIndex,
-        onTap: (i) => setState(() => _navIndex = i),
+        onTap: _onNavTap,
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.transparent,
         elevation: 0,

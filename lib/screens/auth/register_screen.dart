@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../customer/marketplace_screen.dart';
 import '../shared/main_nav.dart';
 import 'login_screen.dart';
 
@@ -45,6 +46,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _createAccount() {
+    if (_selectedRole == 0) {
+      // مشتري → تجربة المتجر المفصّلة الجديدة.
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MarketplaceScreen()));
+      return;
+    }
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => MainNav(initialIndex: _selectedRole == 1 ? 3 : 0)),

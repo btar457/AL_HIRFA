@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../core/constants/strings.dart';
+import '../customer/marketplace_screen.dart';
 import '../shared/main_nav.dart';
 import 'forgot_password_screen.dart';
 import 'onboarding_screen.dart';
@@ -22,10 +23,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _signIn() {
     final isFounder = _emailController.text.trim().toLowerCase() == _founderEmail;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => MainNav(initialIndex: isFounder ? 4 : 0)),
-    );
+    if (isFounder) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainNav(initialIndex: 4)));
+      return;
+    }
+    // المستخدم العادي (بلا تمييز دور حقيقي بعد) يدخل مباشرة إلى تجربة المتجر المفصّلة.
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MarketplaceScreen()));
   }
 
   Widget _buildField({required IconData icon, required String hint, TextEditingController? controller, bool obscure = false, Widget? suffix, TextInputType? keyboardType}) {
