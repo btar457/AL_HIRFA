@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../auth/login_screen.dart';
+import '../shared/about_screen.dart';
+import '../shared/change_password_screen.dart';
+import '../shared/notifications_screen.dart';
+import '../shared/privacy_policy_screen.dart';
+import '../shared/terms_screen.dart';
 import 'favorites_screen.dart';
 import 'orders_history_screen.dart';
+import 'payment_methods_screen.dart';
 
 class CustomerProfileScreen extends StatelessWidget {
   const CustomerProfileScreen({super.key});
@@ -57,11 +63,12 @@ class CustomerProfileScreen extends StatelessWidget {
             _buildSettingsTile(context, icon: Icons.person_outline, title: 'تعديل البيانات الشخصية'),
             _buildSettingsTile(context, icon: Icons.inventory_2_outlined, title: 'سجل طلباتي', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()))),
             _buildSettingsTile(context, icon: Icons.favorite_border, title: 'المفضلة', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen()))),
-            _buildSettingsTile(context, icon: Icons.notifications_outlined, title: 'إعدادات الإشعارات'),
-            _buildSettingsTile(context, icon: Icons.lock_outline, title: 'تغيير كلمة المرور'),
-            _buildSettingsTile(context, icon: Icons.description_outlined, title: 'الشروط والأحكام'),
-            _buildSettingsTile(context, icon: Icons.privacy_tip_outlined, title: 'سياسة الخصوصية'),
-            _buildSettingsTile(context, icon: Icons.info_outline, title: 'عن التطبيق'),
+            _buildSettingsTile(context, icon: Icons.payment_outlined, title: 'طرق الدفع', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentMethodsScreen()))),
+            _buildSettingsTile(context, icon: Icons.notifications_outlined, title: 'الإشعارات', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()))),
+            _buildSettingsTile(context, icon: Icons.lock_outline, title: 'تغيير كلمة المرور', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()))),
+            _buildSettingsTile(context, icon: Icons.description_outlined, title: 'الشروط والأحكام', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen()))),
+            _buildSettingsTile(context, icon: Icons.privacy_tip_outlined, title: 'سياسة الخصوصية', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()))),
+            _buildSettingsTile(context, icon: Icons.info_outline, title: 'عن التطبيق', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()))),
             Divider(color: AppColors.subText.withOpacity(0.2)),
             _buildSettingsTile(context, icon: Icons.logout, title: 'تسجيل الخروج', color: Colors.redAccent, onTap: () => _confirmLogout(context)),
             const SizedBox(height: 24),

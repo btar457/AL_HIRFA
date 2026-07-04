@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/marketplace_product.dart';
+import 'order_review_screen.dart';
 import 'order_tracking_screen.dart';
 
 enum _OrderStatus { active, completed, cancelled }
@@ -156,7 +157,7 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
                     )
                   : OutlinedButton(
                       style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                      onPressed: () {}, // TODO: فتح order_review_screen عند بنائها
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => OrderReviewScreen(product: order.product))),
                       child: const Text('تقييم', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                     ),
             ),

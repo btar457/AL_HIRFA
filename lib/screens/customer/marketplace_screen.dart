@@ -4,6 +4,7 @@ import '../../models/categories.dart';
 import '../../models/marketplace_product.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'product_detail_screen.dart';
+import 'search_screen.dart';
 
 class MarketplaceScreen extends StatefulWidget {
   const MarketplaceScreen({super.key});
@@ -103,7 +104,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: GestureDetector(
-        onTap: () {}, // TODO: فتح search_screen عند بنائها
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchScreen())),
         child: Container(
           height: 46,
           padding: const EdgeInsets.symmetric(horizontal: 14),
