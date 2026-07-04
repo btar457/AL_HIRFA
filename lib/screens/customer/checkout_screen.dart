@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/marketplace_product.dart';
+import 'order_tracking_screen.dart';
 
 const int _kDeliveryFee = 5000;
 
@@ -80,7 +81,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              onPressed: () {}, // TODO: فتح order_tracking_screen عند بنائها
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => OrderTrackingScreen(product: widget.product)));
+              },
               child: const Text('تأكيد', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
