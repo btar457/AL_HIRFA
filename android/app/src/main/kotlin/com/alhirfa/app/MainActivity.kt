@@ -1,4 +1,4 @@
-package com.alhirfa.al_hirfa
+package com.alhirfa.app
 
 import io.flutter.embedding.android.FlutterActivity
 

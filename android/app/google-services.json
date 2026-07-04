@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "70070116975",
+    "project_id": "al-hirfa",
+    "storage_bucket": "al-hirfa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:70070116975:android:2de919a8e98b74101c639a",
+        "android_client_info": {
+          "package_name": "com.alhirfa.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVbxr4wxNb5zg7IAfVFOeujo88wd54P-c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
