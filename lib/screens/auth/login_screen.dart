@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/colors.dart';
 
 /// شاشة تسجيل الدخول (تصميم على شكل بطاقة فوق خلفية ضبابية داكنة).
@@ -89,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 32),
-                    Text('AL-HIRFA', style: GoogleFonts.cinzel(color: AppColors.gold, fontSize: 40, fontWeight: FontWeight.bold, letterSpacing: 4)),
+                    const Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontSize: 40, fontWeight: FontWeight.bold, letterSpacing: 4)),
                     const SizedBox(height: 8),
                     Text('HERITAGE IRAQI CRAFTSMANSHIP', style: TextStyle(color: AppColors.subText, fontSize: 11, letterSpacing: 2, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 20),
