@@ -42,4 +42,7 @@ class AppRules {
 
   // صندوق الضمان
   static const double guaranteeFundRate = 0.05;
+
+  // إصدار الشروط والأحكام (PART 11.5) — يُغيَّر عند تحديث الشروط
+  static const String currentTermsVersion = 'v1.0';
 }

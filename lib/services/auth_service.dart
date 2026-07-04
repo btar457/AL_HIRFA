@@ -55,4 +55,13 @@ class AuthService {
     final doc = await _firestore.collection(_usersCollection).doc(uid).get();
     return doc.data()?['role'] as String?;
   }
+
+  /// يحدّث إصدار الشروط المقبول من المستخدم بعد موافقته على الشروط الجديدة (PART 11.5).
+  Future<void> updateTermsVersion(String uid, String version) {
+    return _firestore.collection(_usersCollection).doc(uid).update({
+      'termsAccepted': true,
+      'termsAcceptedAt': Timestamp.now(),
+      'termsVersion': version,
+    });
+  }
 }
