@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import '../../screens/artisan/artisan_nav.dart';
 import '../../screens/customer/customer_nav.dart';
 import '../../screens/shared/main_nav.dart';
 
 /// ينقل المستخدم إلى الشاشة الرئيسية المناسبة لدوره بعد تسجيل الدخول أو إنشاء الحساب.
 ///
 /// القيم المتوقعة لـ [role]: customer / artisan / shipping / admin
-/// (نفس قيم UserModel.role). لا توجد بعد شاشات "ArtisanDashboardScreen" أو
-/// "ShippingDashboardScreen" مستقلة، فتُستخدم مؤقتاً تبويبات MainNav الحالية.
+/// (نفس قيم UserModel.role). لا توجد بعد شاشة "ShippingDashboardScreen"
+/// مستقلة، فتُستخدم مؤقتاً تبويبات MainNav الحالية.
 void navigateByRole(BuildContext context, String role) {
   late final Widget destination;
   switch (role) {
@@ -14,7 +15,7 @@ void navigateByRole(BuildContext context, String role) {
       destination = const CustomerNav();
       break;
     case 'artisan':
-      destination = const MainNav(initialIndex: 3); // TODO: استبدالها بـ ArtisanDashboardScreen عند بنائها
+      destination = const ArtisanNav();
       break;
     case 'shipping':
       destination = const MainNav(); // TODO: استبدالها بـ ShippingDashboardScreen عند بنائها
