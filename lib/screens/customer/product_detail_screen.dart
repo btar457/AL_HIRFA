@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/marketplace_product.dart';
+import 'artisan_public_profile_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final MarketplaceProduct product;
@@ -160,7 +161,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
           OutlinedButton(
             style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-            onPressed: () {}, // TODO: فتح artisan_public_profile_screen عند بنائها
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanPublicProfileScreen())),
             child: const Text('زيارة الملف', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
           ),
         ],
