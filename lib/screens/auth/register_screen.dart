@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../shared/main_nav.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -33,6 +34,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
         focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
       ),
+    );
+  }
+
+  void _createAccount() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => MainNav(initialIndex: _selectedRole == 1 ? 3 : 0)),
     );
   }
 
@@ -98,7 +106,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 28),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                  onPressed: () {},
+                  onPressed: _createAccount,
                   child: const Text('إنشاء الحساب', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
                 const SizedBox(height: 20),

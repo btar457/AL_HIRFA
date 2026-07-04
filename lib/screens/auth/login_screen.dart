@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../core/constants/strings.dart';
 import 'forgot_password_screen.dart';
-import 'onboarding_screen.dart';
+import 'register_screen.dart';
 
 /// شاشة تسجيل الدخول (تصميم على شكل بطاقة فوق خلفية ضبابية داكنة).
 class LoginScreen extends StatefulWidget {
@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               Text('ليس لديك حساب؟', style: TextStyle(color: AppColors.subText, fontSize: 13)),
                               TextButton(
-                                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OnboardingScreen())),
+                                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
                                 child: const Text('انضم إلينا', style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
                               ),
                             ],
