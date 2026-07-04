@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
+import '../../screens/admin/admin_nav.dart';
 import '../../screens/artisan/artisan_nav.dart';
 import '../../screens/customer/customer_nav.dart';
-import '../../screens/shared/main_nav.dart';
 import '../../screens/shared/terms_screen.dart';
+import '../../screens/shipping/shipping_nav.dart';
 import '../../services/auth_service.dart';
 import '../constants/app_rules.dart';
 import '../constants/colors.dart';
@@ -11,8 +12,7 @@ import '../constants/colors.dart';
 /// ينقل المستخدم إلى الشاشة الرئيسية المناسبة لدوره بعد تسجيل الدخول أو إنشاء الحساب.
 ///
 /// القيم المتوقعة لـ [role]: customer / artisan / shipping / admin
-/// (نفس قيم UserModel.role). لا توجد بعد شاشة "ShippingDashboardScreen"
-/// مستقلة، فتُستخدم مؤقتاً تبويبات MainNav الحالية.
+/// (نفس قيم UserModel.role).
 ///
 /// إن مُرِّر [user] وكان إصدار الشروط المخزّن لديه مختلفاً عن
 /// [AppRules.currentTermsVersion] (PART 11.5)، يُعرض BottomSheet إلزامي
@@ -37,10 +37,10 @@ void _pushDestination(BuildContext context, String role) {
       destination = const ArtisanNav();
       break;
     case 'shipping':
-      destination = const MainNav(); // TODO: استبدالها بـ ShippingDashboardScreen عند بنائها
+      destination = const ShippingNav();
       break;
     case 'admin':
-      destination = const MainNav(initialIndex: 4);
+      destination = const AdminNav();
       break;
     default:
       destination = const CustomerNav();

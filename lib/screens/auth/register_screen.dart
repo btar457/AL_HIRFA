@@ -4,6 +4,7 @@ import '../../core/constants/colors.dart';
 import '../../core/navigation/role_router.dart';
 import '../shared/privacy_policy_screen.dart';
 import '../shared/terms_screen.dart';
+import '../shipping/shipping_register_screen.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -50,7 +51,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _createAccount() {
-    navigateByRole(context, _roleKeys[_selectedRole]);
+    final role = _roleKeys[_selectedRole];
+    if (role == 'shipping') {
+      // شركات الشحن تكمل التسجيل عبر نموذج إضافي (بيانات الشركة والتأمين) قبل الدخول.
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const ShippingRegisterScreen()));
+      return;
+    }
+    navigateByRole(context, role);
   }
 
   @override
