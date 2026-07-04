@@ -1,6 +1,8 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/marketplace_product.dart';
+import '../shared/terms_screen.dart';
 import 'order_tracking_screen.dart';
 
 const int _kDeliveryFee = 5000;
@@ -36,6 +38,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _neighborhoodController = TextEditingController();
   final _notesController = TextEditingController();
   String _selectedProvince = _kProvinces.first;
+  bool _cashAccepted = false;
+  bool _policyAccepted = false;
 
   Widget _buildLabeledField({
     required String label,
@@ -168,12 +172,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               _buildInvoiceCard(productPrice, total),
               const SizedBox(height: 16),
               _buildPaymentMethod(),
+              const SizedBox(height: 16),
+              _buildAcceptanceCheckboxes(),
               const SizedBox(height: 24),
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                  onPressed: _confirmOrder,
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, disabledBackgroundColor: AppColors.gold.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                  onPressed: (_cashAccepted && _policyAccepted) ? _confirmOrder : null,
                   child: const Text('تأكيد الطلب', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
@@ -248,6 +254,43 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         Text(label, style: TextStyle(color: AppColors.subText, fontSize: 14)),
         Text('$value د.ع', style: const TextStyle(color: AppColors.text, fontSize: 14)),
       ],
+    );
+  }
+
+  Widget _buildAcceptanceCheckboxes() {
+    return Container(
+      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        children: [
+          CheckboxListTile(
+            value: _cashAccepted,
+            activeColor: AppColors.gold,
+            controlAffinity: ListTileControlAffinity.leading,
+            title: const Text('أفهم أن الدفع كاشاً عند الاستلام فقط', style: TextStyle(color: AppColors.text, fontSize: 13)),
+            onChanged: (val) => setState(() => _cashAccepted = val ?? false),
+          ),
+          CheckboxListTile(
+            value: _policyAccepted,
+            activeColor: AppColors.gold,
+            controlAffinity: ListTileControlAffinity.leading,
+            title: RichText(
+              text: TextSpan(
+                style: const TextStyle(color: AppColors.text, fontSize: 13),
+                children: [
+                  const TextSpan(text: 'أوافق على '),
+                  TextSpan(
+                    text: 'سياسة الإرجاع',
+                    style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen())),
+                  ),
+                ],
+              ),
+            ),
+            onChanged: (val) => setState(() => _policyAccepted = val ?? false),
+          ),
+        ],
+      ),
     );
   }
 
