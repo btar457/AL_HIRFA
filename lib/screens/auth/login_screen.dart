@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../../core/constants/strings.dart';
+import 'onboarding_screen.dart';
 
 /// شاشة تسجيل الدخول (تصميم على شكل بطاقة فوق خلفية ضبابية داكنة).
 class LoginScreen extends StatefulWidget {
@@ -71,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Image.asset('assets/images/login_bg.jpg', fit: BoxFit.cover),
             ),
             Positioned.fill(
-              child: Container(color: Colors.black.withOpacity(0.7)),
+              child: Container(color: Colors.black.withOpacity(0.75)),
             ),
             SafeArea(
               child: SingleChildScrollView(
@@ -81,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 32),
                     const Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontSize: 40, fontWeight: FontWeight.bold, letterSpacing: 4)),
                     const SizedBox(height: 8),
-                    Text('HERITAGE IRAQI CRAFTSMANSHIP', style: TextStyle(color: AppColors.subText, fontSize: 11, letterSpacing: 2, fontWeight: FontWeight.w600)),
+                    Text(AppStrings.heritageTagline, style: TextStyle(color: AppColors.subText, fontSize: 11, letterSpacing: 2, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 20),
                     Container(width: 60, height: 2, color: AppColors.gold),
                     const SizedBox(height: 36),
@@ -131,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               Text('ليس لديك حساب؟', style: TextStyle(color: AppColors.subText, fontSize: 13)),
                               TextButton(
-                                onPressed: () {},
+                                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OnboardingScreen())),
                                 child: const Text('انضم إلينا', style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
                               ),
                             ],

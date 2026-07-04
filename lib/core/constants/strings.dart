@@ -6,6 +6,7 @@ class AppStrings {
   static const appName = 'AL-HIRFA';
   static const appNameArabic = 'الـحـرفـة';
   static const appTagline = 'تراث الرافدين بأيدٍ حرفية';
+  static const heritageTagline = 'HERITAGE IRAQI CRAFTSMANSHIP';
 
   static const navMarket = 'السوق';
   static const navOrders = 'طلباتي';
