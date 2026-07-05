@@ -46,6 +46,8 @@ class AuthService {
       termsAccepted: true,
       termsAcceptedAt: DateTime.now(),
       termsVersion: AppRules.currentTermsVersion,
+      // الحرفيون فقط يمرّون ببوابة مراجعة الإدارة (ADMIN-4) قبل تفعيل حسابهم.
+      approvalStatus: role == 'artisan' ? 'pending' : 'approved',
     );
     await _firestore.collection(_usersCollection).doc(uid).set(user.toMap());
     await saveFCMToken(uid);
@@ -53,8 +55,20 @@ class AuthService {
     return user;
   }
 
-  /// تسجيل الدخول، جلب بيانات المستخدم من Firestore، والتحقق من أن الحساب
-  /// غير معلَّق (isActive) قبل السماح بالدخول.
+  /// يتحقق مما إذا كانت حالة الحساب (المراجعة/التفعيل) تمنع الدخول، ويعيد
+  /// رمز السبب أو null إن كان الحساب سليماً. يُستخدم عند تسجيل الدخول
+  /// الصريح (signIn) وأيضاً عند استعادة الجلسة تلقائياً في AuthProvider،
+  /// كي لا تبقى حسابات مُعلَّقة أو محظورة أو مرفوضة مسجّلة دخولها فعلياً
+  /// لمجرّد أن جلستها في Firebase Auth ما تزال سارية.
+  static String? accessBlockCode(UserModel user) {
+    if (user.approvalStatus == 'rejected') return 'account-rejected';
+    if (user.approvalStatus == 'pending') return 'account-pending';
+    if (!user.isActive) return user.banned ? 'account-banned' : 'account-suspended';
+    return null;
+  }
+
+  /// تسجيل الدخول، جلب بيانات المستخدم من Firestore، والتحقق من حالة
+  /// الحساب (المراجعة/التعليق/الحظر) قبل السماح بالدخول.
   Future<UserModel> signIn({
     required String email,
     required String password,
@@ -69,9 +83,10 @@ class AuthService {
     }
 
     final user = UserModel.fromMap(uid, doc.data()!);
-    if (!user.isActive) {
+    final blockCode = accessBlockCode(user);
+    if (blockCode != null) {
       await _auth.signOut();
-      throw FirebaseAuthException(code: 'user-disabled', message: 'تم تعليق هذا الحساب');
+      throw FirebaseAuthException(code: blockCode, message: 'تعذّر تسجيل الدخول');
     }
 
     await saveFCMToken(uid);

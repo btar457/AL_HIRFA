@@ -29,7 +29,14 @@ class AppError {
       case 'too-many-requests':
         return 'محاولات كثيرة، حاول لاحقاً';
       case 'user-disabled':
-        return 'تم تعليق هذا الحساب';
+      case 'account-suspended':
+        return 'تم تعليق هذا الحساب مؤقتاً، تواصل مع الدعم';
+      case 'account-banned':
+        return 'تم حظر هذا الحساب نهائياً';
+      case 'account-pending':
+        return 'حسابك قيد المراجعة من الإدارة، سيصلك إشعار عند الموافقة';
+      case 'account-rejected':
+        return 'تم رفض طلب انضمامك، تواصل مع الدعم لمزيد من التفاصيل';
       default:
         return 'حدث خطأ، حاول مرة أخرى';
     }

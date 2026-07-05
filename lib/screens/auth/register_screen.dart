@@ -70,6 +70,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.push(context, MaterialPageRoute(builder: (_) => const ShippingRegisterScreen()));
         return;
       }
+      if (role == 'artisan') {
+        // الحرفيون الجدد بانتظار مراجعة الإدارة (ADMIN-4) قبل تفعيل حسابهم.
+        await auth.signOut();
+        if (!mounted) return;
+        _showPendingReviewDialog();
+        return;
+      }
       final user = auth.currentUser;
       if (user == null) return;
       navigateByRole(context, user.role, user: user);
@@ -77,6 +84,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
       AppError.showSnackbar(context, AppError.getFirebaseError(e));
     }
+  }
+
+  void _showPendingReviewDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: const Text('تم استلام طلبك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          content: Text('سيراجع فريق AL-HIRFA حسابك كحرفي وسنُعلمك عند الموافقة.', style: TextStyle(color: AppColors.subText)),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false),
+              child: const Text('حسناً', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override

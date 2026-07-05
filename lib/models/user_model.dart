@@ -10,7 +10,9 @@ class UserModel {
   final String city;
   final String photoUrl;
   final String? fcmToken;
-  final bool isActive;
+  final bool isActive; // false = محسوب أو معلّق مؤقتاً (راجع banned للتمييز بينهما)
+  final bool banned; // true = حظر نهائي (isActive تكون false أيضاً)
+  final String approvalStatus; // pending/approved/rejected — بوابة مراجعة الحرفيين الجدد فقط
   final int warningCount;
 
   // حقول الموافقة القانونية (PART 11.6 من AL-HIRFA-Legal-Rules.md)
@@ -33,6 +35,8 @@ class UserModel {
     this.photoUrl = '',
     this.fcmToken,
     this.isActive = true,
+    this.banned = false,
+    this.approvalStatus = 'approved',
     this.warningCount = 0,
     this.termsAccepted = false,
     this.termsAcceptedAt,
@@ -53,6 +57,8 @@ class UserModel {
       photoUrl: map['photoUrl'] as String? ?? '',
       fcmToken: map['fcmToken'] as String?,
       isActive: map['isActive'] as bool? ?? true,
+      banned: map['banned'] as bool? ?? false,
+      approvalStatus: map['approvalStatus'] as String? ?? 'approved',
       warningCount: map['warningCount'] as int? ?? 0,
       termsAccepted: map['termsAccepted'] as bool? ?? false,
       termsAcceptedAt: (map['termsAcceptedAt'] as Timestamp?)?.toDate(),
@@ -73,6 +79,8 @@ class UserModel {
       'photoUrl': photoUrl,
       'fcmToken': fcmToken,
       'isActive': isActive,
+      'banned': banned,
+      'approvalStatus': approvalStatus,
       'warningCount': warningCount,
       'termsAccepted': termsAccepted,
       'termsAcceptedAt': termsAcceptedAt != null ? Timestamp.fromDate(termsAcceptedAt!) : null,

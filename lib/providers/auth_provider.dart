@@ -84,12 +84,20 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// يحمّل UserModel الكامل للمستخدم الحالي من Firestore.
+  /// يحمّل UserModel الكامل للمستخدم الحالي من Firestore. يُخرج تلقائياً أي
+  /// حساب أصبح معلّقاً/محظوراً/مرفوضاً بعد أن سُجّل دخوله فعلياً (جلسة
+  /// Firebase Auth قد تبقى سارية رغم تغيّر حالة الحساب لاحقاً من الإدارة).
   Future<void> loadCurrentUser() async {
     _isLoading = true;
     notifyListeners();
     try {
-      _currentUser = await AuthService.instance.getCurrentUser();
+      final user = await AuthService.instance.getCurrentUser();
+      if (user != null && AuthService.accessBlockCode(user) != null) {
+        await AuthService.instance.signOut();
+        _currentUser = null;
+      } else {
+        _currentUser = user;
+      }
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
