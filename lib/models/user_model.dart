@@ -8,6 +8,10 @@ class UserModel {
   final String phone;
   final String role; // customer/artisan/shipping/admin
   final String city;
+  final String photoUrl;
+  final String? fcmToken;
+  final bool isActive;
+  final int warningCount;
 
   // حقول الموافقة القانونية (PART 11.6 من AL-HIRFA-Legal-Rules.md)
   final bool termsAccepted;
@@ -26,6 +30,10 @@ class UserModel {
     required this.role,
     required this.city,
     required this.createdAt,
+    this.photoUrl = '',
+    this.fcmToken,
+    this.isActive = true,
+    this.warningCount = 0,
     this.termsAccepted = false,
     this.termsAcceptedAt,
     this.termsVersion = '',
@@ -42,6 +50,10 @@ class UserModel {
       role: map['role'] as String? ?? 'customer',
       city: map['city'] as String? ?? '',
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      photoUrl: map['photoUrl'] as String? ?? '',
+      fcmToken: map['fcmToken'] as String?,
+      isActive: map['isActive'] as bool? ?? true,
+      warningCount: map['warningCount'] as int? ?? 0,
       termsAccepted: map['termsAccepted'] as bool? ?? false,
       termsAcceptedAt: (map['termsAcceptedAt'] as Timestamp?)?.toDate(),
       termsVersion: map['termsVersion'] as String? ?? '',
@@ -58,6 +70,10 @@ class UserModel {
       'role': role,
       'city': city,
       'createdAt': Timestamp.fromDate(createdAt),
+      'photoUrl': photoUrl,
+      'fcmToken': fcmToken,
+      'isActive': isActive,
+      'warningCount': warningCount,
       'termsAccepted': termsAccepted,
       'termsAcceptedAt': termsAcceptedAt != null ? Timestamp.fromDate(termsAcceptedAt!) : null,
       'termsVersion': termsVersion,

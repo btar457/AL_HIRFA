@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 
@@ -12,21 +13,21 @@ class AuthService {
 
   static const _usersCollection = 'users';
 
-  User? getCurrentUser() => _auth.currentUser;
+  /// مستخدم Firebase Auth الحالي (null إن لم يسجّل الدخول).
+  User? get firebaseUser => _auth.currentUser;
 
-  Future<UserCredential> signIn({
+  /// تيار حالة تسجيل الدخول — يُستخدم لإعادة التوجيه التلقائي عند بدء التطبيق.
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+  /// تسجيل مستخدم جديد: إنشاء الحساب في Firebase Auth، حفظ بياناته الكاملة
+  /// في Firestore، وحفظ FCM token الخاص بالجهاز.
+  Future<UserModel> signUp({
     required String email,
     required String password,
-  }) {
-    return _auth.signInWithEmailAndPassword(email: email.trim(), password: password);
-  }
-
-  Future<UserCredential> signUp({
-    required String email,
-    required String password,
-    required String role,
     required String name,
     required String phone,
+    required String role,
+    String city = '',
   }) async {
     final credential = await _auth.createUserWithEmailAndPassword(email: email.trim(), password: password);
     final uid = credential.user!.uid;
@@ -37,15 +38,71 @@ class AuthService {
       email: email.trim(),
       phone: phone,
       role: role,
-      city: '',
+      city: city,
       createdAt: DateTime.now(),
     );
     await _firestore.collection(_usersCollection).doc(uid).set(user.toMap());
+    await saveFCMToken(uid);
 
-    return credential;
+    return user;
   }
 
+  /// تسجيل الدخول، جلب بيانات المستخدم من Firestore، والتحقق من أن الحساب
+  /// غير معلَّق (isActive) قبل السماح بالدخول.
+  Future<UserModel> signIn({
+    required String email,
+    required String password,
+  }) async {
+    final credential = await _auth.signInWithEmailAndPassword(email: email.trim(), password: password);
+    final uid = credential.user!.uid;
+
+    final doc = await _firestore.collection(_usersCollection).doc(uid).get();
+    if (!doc.exists) {
+      await _auth.signOut();
+      throw FirebaseAuthException(code: 'user-not-found', message: 'تعذّر العثور على بيانات الحساب');
+    }
+
+    final user = UserModel.fromMap(uid, doc.data()!);
+    if (!user.isActive) {
+      await _auth.signOut();
+      throw FirebaseAuthException(code: 'user-disabled', message: 'تم تعليق هذا الحساب');
+    }
+
+    await saveFCMToken(uid);
+    return user;
+  }
+
+  /// تسجيل الخروج من Firebase Auth.
   Future<void> signOut() => _auth.signOut();
+
+  /// إرسال بريد إعادة تعيين كلمة المرور.
+  Future<void> resetPassword(String email) {
+    return _auth.sendPasswordResetEmail(email: email.trim());
+  }
+
+  /// جلب بيانات المستخدم الحالي الكاملة (UserModel) من Firestore.
+  Future<UserModel?> getCurrentUser() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return null;
+
+    final doc = await _firestore.collection(_usersCollection).doc(uid).get();
+    if (!doc.exists) return null;
+    return UserModel.fromMap(uid, doc.data()!);
+  }
+
+  /// تحديث بيانات المستخدم الحالي في Firestore.
+  Future<void> updateProfile(Map<String, dynamic> data) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+    await _firestore.collection(_usersCollection).doc(uid).update(data);
+  }
+
+  /// جلب FCM token الخاص بالجهاز الحالي وحفظه في مستند المستخدم.
+  Future<void> saveFCMToken(String uid) async {
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token == null) return;
+    await _firestore.collection(_usersCollection).doc(uid).update({'fcmToken': token});
+  }
 
   /// يقرأ دور المستخدم الحالي من Firestore (customer/artisan/shipping/admin).
   Future<String?> getUserRole() async {
