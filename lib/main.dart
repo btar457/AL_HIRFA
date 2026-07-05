@@ -11,6 +11,7 @@ import 'providers/notification_provider.dart';
 import 'providers/order_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/splash_screen.dart';
+import 'widgets/common/connectivity_banner.dart';
 
 /// معالج إشعارات FCM أثناء تشغيل التطبيق في الخلفية أو إغلاقه.
 @pragma('vm:entry-point')
@@ -44,6 +45,7 @@ class AlHirfaApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       home: const AuthGate(),
+      builder: (context, child) => ConnectivityBanner(child: child!),
     );
   }
 }
