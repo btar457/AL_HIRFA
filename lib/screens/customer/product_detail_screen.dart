@@ -1,10 +1,21 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
-import '../../models/marketplace_product.dart';
+import '../../models/product_model.dart';
 import 'artisan_public_profile_screen.dart';
 
+String _formatPrice(int value) {
+  final str = value.toString();
+  final buffer = StringBuffer();
+  for (int i = 0; i < str.length; i++) {
+    if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(str[i]);
+  }
+  return buffer.toString();
+}
+
 class ProductDetailScreen extends StatefulWidget {
-  final MarketplaceProduct product;
+  final ProductModel product;
   const ProductDetailScreen({super.key, required this.product});
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -16,6 +27,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final product = widget.product;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -24,27 +36,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildHeroImage(),
+              _buildHeroImage(product),
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildInfo(),
+                    _buildInfo(product),
                     const SizedBox(height: 16),
-                    _buildArtisanCard(),
+                    _buildArtisanCard(product),
                     const SizedBox(height: 20),
                     _buildQuantitySelector(),
                     const SizedBox(height: 16),
                     _buildAddToCartButton(),
                     const SizedBox(height: 28),
-                    _buildNarrative(),
+                    _buildNarrative(product),
                     const SizedBox(height: 24),
                     _buildAuthenticityCertificate(),
                     const SizedBox(height: 24),
-                    _buildMaterialsAndOrigin(),
-                    const SizedBox(height: 24),
-                    _buildTechnicalDetails(),
+                    _buildMaterialsAndOrigin(product),
+                    if (product.images.length > 1) ...[
+                      const SizedBox(height: 24),
+                      _buildImageGallery(product),
+                    ],
                   ],
                 ),
               ),
@@ -55,18 +69,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildHeroImage() {
+  Widget _buildHeroImage(ProductModel product) {
     return SizedBox(
       height: 320,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(colors: [Color(0xFF3A2A10), Color(0xFF1A1208)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-            ),
-            child: const Center(child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 72)),
-          ),
+          if (product.images.isNotEmpty)
+            CachedNetworkImage(
+              imageUrl: product.images.first,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF3A2A10), Color(0xFF1A1208)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+                child: const Center(child: CircularProgressIndicator(color: AppColors.gold)),
+              ),
+              errorWidget: (context, url, error) => _heroPlaceholder(),
+            )
+          else
+            _heroPlaceholder(),
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: [Colors.transparent, Colors.black.withOpacity(0.8)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
@@ -87,6 +107,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 _circleIconButton(
                   icon: _isFavorite ? Icons.favorite : Icons.favorite_border,
                   iconColor: _isFavorite ? AppColors.gold : Colors.white,
+                  // TODO: ربط دائم بمفضلة Firestore (ProductService.toggleFavorite) عند وصولنا لخطوة ربط favorites_screen.
                   onTap: () => setState(() => _isFavorite = !_isFavorite),
                 ),
               ],
@@ -94,6 +115,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _heroPlaceholder() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(colors: [Color(0xFF3A2A10), Color(0xFF1A1208)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+      ),
+      child: const Center(child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 72)),
     );
   }
 
@@ -108,36 +138,33 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildInfo() {
+  Widget _buildInfo(ProductModel product) {
+    final filledStars = product.rating.round().clamp(0, 5);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.circular(20)),
-          child: Text(widget.product.cityTag, style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+          child: Text(product.city.toUpperCase(), style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
         ),
         const SizedBox(height: 12),
-        Text(widget.product.name, style: const TextStyle(color: AppColors.text, fontSize: 24, fontWeight: FontWeight.bold)),
+        Text(product.name, style: const TextStyle(color: AppColors.text, fontSize: 24, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Row(
           children: [
-            const Icon(Icons.star, color: AppColors.gold, size: 16),
-            const Icon(Icons.star, color: AppColors.gold, size: 16),
-            const Icon(Icons.star, color: AppColors.gold, size: 16),
-            const Icon(Icons.star, color: AppColors.gold, size: 16),
-            const Icon(Icons.star_border, color: AppColors.gold, size: 16),
+            ...List.generate(5, (i) => Icon(i < filledStars ? Icons.star : Icons.star_border, color: AppColors.gold, size: 16)),
             const SizedBox(width: 8),
-            Text('(١٢ تقييم)', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+            Text(product.reviewCount > 0 ? '(${product.reviewCount} تقييم)' : 'لا توجد تقييمات بعد', style: TextStyle(color: AppColors.subText, fontSize: 13)),
           ],
         ),
         const SizedBox(height: 12),
-        Text('د.ع ${widget.product.price}', style: const TextStyle(color: AppColors.gold, fontSize: 28, fontWeight: FontWeight.bold)),
+        Text('د.ع ${_formatPrice(product.price)}', style: const TextStyle(color: AppColors.gold, fontSize: 28, fontWeight: FontWeight.bold)),
       ],
     );
   }
 
-  Widget _buildArtisanCard() {
+  Widget _buildArtisanCard(ProductModel product) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
@@ -154,8 +181,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('أبو مصطفى', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-                Text('صنع بيدي في بغداد', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                Text(product.artisanName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+                Text('صنع بيدي في ${product.city}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
               ],
             ),
           ),
@@ -197,7 +224,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       height: 56,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-        onPressed: () {}, // TODO: إضافة فعلية للسلة عند بناء cart_screen
+        onPressed: () {}, // TODO: ربط CartProvider.addItem عند تنفيذ "المرحلة 4 — الطلبات" (cart_provider + checkout معاً).
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -210,7 +237,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildNarrative() {
+  Widget _buildNarrative(ProductModel product) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -221,7 +248,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         Divider(color: AppColors.gold.withOpacity(0.3)),
         const SizedBox(height: 12),
         Text(
-          'وُلدت هذه القطعة بين يدي حرفي عراقي أصيل توارث الصنعة عن أجداده، يشكّل المادة بصبر وأناة ليحوّلها إلى عمل فني يحمل عبق الرافدين وتفاصيل الحضارة العراقية العريقة.',
+          product.narrative.isNotEmpty
+              ? product.narrative
+              : 'وُلدت هذه القطعة بين يدي حرفي عراقي أصيل توارث الصنعة عن أجداده، يشكّل المادة بصبر وأناة ليحوّلها إلى عمل فني يحمل عبق الرافدين وتفاصيل الحضارة العراقية العريقة.',
           style: TextStyle(color: AppColors.subText, fontSize: 14, height: 24 / 14),
         ),
       ],
@@ -243,7 +272,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           const SizedBox(height: 14),
           OutlinedButton(
             style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-            onPressed: () {},
+            onPressed: () {}, // TODO: توليد وعرض QR الحقيقي عند تنفيذ qr_service.dart (PART 7 — اللمسات النهائية).
             child: const Text('عرض الوثيقة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           ),
         ],
@@ -251,7 +280,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildMaterialsAndOrigin() {
+  Widget _buildMaterialsAndOrigin(ProductModel product) {
     return Row(
       children: [
         Expanded(
@@ -259,7 +288,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             children: [
               const Icon(Icons.category_outlined, color: AppColors.gold),
               const SizedBox(height: 6),
-              Text('الطين', style: TextStyle(color: AppColors.text, fontSize: 13)),
+              Text(product.material.isNotEmpty ? product.material : 'غير محدد', style: TextStyle(color: AppColors.text, fontSize: 13), textAlign: TextAlign.center),
             ],
           ),
         ),
@@ -269,7 +298,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             children: [
               const Icon(Icons.location_on_outlined, color: AppColors.gold),
               const SizedBox(height: 6),
-              Text('حي الرشيد، بغداد', style: TextStyle(color: AppColors.text, fontSize: 13)),
+              Text(product.originPlace.isNotEmpty ? product.originPlace : product.city, style: TextStyle(color: AppColors.text, fontSize: 13), textAlign: TextAlign.center),
             ],
           ),
         ),
@@ -277,25 +306,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildTechnicalDetails() {
+  Widget _buildImageGallery(ProductModel product) {
+    final extraImages = product.images.skip(1).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('تفاصيل فنية', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+        const Text('صور إضافية', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 12),
         SizedBox(
           height: 70,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: 4,
+            itemCount: extraImages.length,
             separatorBuilder: (context, i) => const SizedBox(width: 10),
-            itemBuilder: (context, i) => Container(
-              width: 70,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-                gradient: LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)]),
+            itemBuilder: (context, i) => ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: CachedNetworkImage(
+                imageUrl: extraImages[i],
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(width: 70, height: 70, color: AppColors.card),
+                errorWidget: (context, url, error) => Container(width: 70, height: 70, color: AppColors.card, child: const Icon(Icons.broken_image_outlined, color: AppColors.subText)),
               ),
-              child: const Icon(Icons.image_outlined, color: AppColors.gold, size: 22),
             ),
           ),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/marketplace_product.dart';
+import '../../models/product_model.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'product_detail_screen.dart';
 
@@ -206,7 +207,7 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
         final product = _products[i];
         return MarketplaceProductCard(
           product: product,
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product))),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: ProductModel.fromMarketplaceProduct(product)))),
         );
       },
     );

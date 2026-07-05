@@ -77,7 +77,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                         return MarketplaceProductCard(
                           product: _toMarketplaceProduct(product),
                           isFavorite: _favoriteIds.contains(product.id),
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: _toMarketplaceProduct(product)))),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product))),
                           onFavoriteToggle: () => setState(() {
                             if (_favoriteIds.contains(product.id)) {
                               _favoriteIds.remove(product.id);

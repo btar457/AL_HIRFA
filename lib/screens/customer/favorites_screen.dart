@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/marketplace_product.dart';
+import '../../models/product_model.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'customer_nav.dart';
 import 'product_detail_screen.dart';
@@ -82,7 +83,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           child: MarketplaceProductCard(
             product: product,
             isFavorite: true,
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product))),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: ProductModel.fromMarketplaceProduct(product)))),
             onFavoriteToggle: () => _removeFavorite(product),
           ),
         );

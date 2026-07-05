@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'marketplace_product.dart';
 
 /// منتج موحّد للاستخدام عبر الأدوار (لوحات الإدارة والبحث)، إلى جانب
 /// MarketplaceProduct وArtisanProductListing المستخدمين في شاشات محدّدة.
@@ -18,6 +19,7 @@ class ProductModel {
   final String technique;
   final String status; // pending, active, rejected, suspended
   final double rating;
+  final int reviewCount;
   final int salesCount;
   final DateTime createdAt;
 
@@ -37,6 +39,7 @@ class ProductModel {
     this.technique = '',
     required this.status,
     this.rating = 0,
+    this.reviewCount = 0,
     this.salesCount = 0,
     required this.createdAt,
   });
@@ -58,8 +61,29 @@ class ProductModel {
       technique: map['technique'] as String? ?? '',
       status: map['status'] as String? ?? 'pending',
       rating: (map['rating'] as num?)?.toDouble() ?? 0,
+      reviewCount: map['reviewCount'] as int? ?? 0,
       salesCount: map['salesCount'] as int? ?? 0,
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    );
+  }
+
+  /// جسر مؤقت لبناء ProductModel من MarketplaceProduct القديم، تحتاجه
+  /// الشاشات التي لم تُربط بعد بـ Firestore (search/favorites/
+  /// artisan_public_profile) لتمرير منتج إلى ProductDetailScreen. يُحذف
+  /// عندما تُربط تلك الشاشات بدورها بمصدر بيانات حقيقي.
+  factory ProductModel.fromMarketplaceProduct(MarketplaceProduct product) {
+    return ProductModel(
+      id: '',
+      name: product.name,
+      description: '',
+      price: int.tryParse(product.price.replaceAll(',', '')) ?? 0,
+      category: '',
+      city: product.city,
+      images: const [],
+      artisanUid: '',
+      artisanName: 'أبو مصطفى',
+      status: 'active',
+      createdAt: DateTime.now(),
     );
   }
 
@@ -79,6 +103,7 @@ class ProductModel {
       'technique': technique,
       'status': status,
       'rating': rating,
+      'reviewCount': reviewCount,
       'salesCount': salesCount,
       'createdAt': Timestamp.fromDate(createdAt),
     };

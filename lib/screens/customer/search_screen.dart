@@ -3,6 +3,7 @@ import '../../core/constants/colors.dart';
 import '../../core/constants/categories.dart';
 import '../../models/categories.dart';
 import '../../models/marketplace_product.dart';
+import '../../models/product_model.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'product_detail_screen.dart';
 
@@ -323,7 +324,7 @@ class _SearchScreenState extends State<SearchScreen> {
         return MarketplaceProductCard(
           product: product,
           isFavorite: _favoriteNames.contains(product.name),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product))),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: ProductModel.fromMarketplaceProduct(product)))),
           onFavoriteToggle: () => setState(() {
             if (_favoriteNames.contains(product.name)) {
               _favoriteNames.remove(product.name);
