@@ -79,6 +79,13 @@ class OrderService {
     // TODO: إنشاء transaction records وبدء عداد 72 ساعة (wallet_service.dart لاحقاً).
   }
 
+  /// بث حالة طلب واحد حياً — يُستخدم في order_tracking_screen.dart.
+  Stream<OrderModel?> watchOrder(String orderId) {
+    return _firestore.collection(_ordersCollection).doc(orderId).snapshots().map(
+      (doc) => doc.exists ? OrderModel.fromMap(doc.id, doc.data()!) : null,
+    );
+  }
+
   Stream<List<OrderModel>> getBuyerOrders(String buyerUid) {
     return _firestore.collection(_ordersCollection).where('buyerUid', isEqualTo: buyerUid).orderBy('createdAt', descending: true).snapshots().map(
       (snapshot) => snapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data())).toList(),
