@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/app_rules.dart';
 import '../models/order_model.dart';
+import 'notification_service.dart';
 
 /// طبقة إدارة الطلبات ودورة حياتها الكاملة عبر Firestore.
 class OrderService {
@@ -24,28 +25,61 @@ class OrderService {
       sellerApprovalDeadline: DateTime.now().add(Duration(hours: AppRules.sellerApprovalHours)),
     );
     await docRef.set(newOrder.toMap());
-    // TODO: إشعار الحرفي "طلب جديد ينتظر موافقتك" (بعد بناء notification_service.dart).
+    await NotificationService.instance.sendToUser(
+      userUid: newOrder.artisanUid,
+      title: 'طلب جديد ينتظر موافقتك',
+      body: '${newOrder.productName} — ${newOrder.orderNumber}',
+      type: 'new_order',
+      data: {'orderId': docRef.id},
+    );
     return docRef.id;
   }
 
   /// الحرفي يوافق على الطلب — يفتح نافذة 5 دقائق لشركات الشحن للقبول.
   Future<void> sellerApproveOrder(String orderId) async {
+    final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
+    final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+
     await _firestore.collection(_ordersCollection).doc(orderId).update({
       'status': 'seller_approved',
       'shippingAcceptDeadline': Timestamp.fromDate(DateTime.now().add(Duration(minutes: AppRules.shippingAcceptMinutes))),
     });
-    // TODO: إرسال FCM لشركات الشحن في نفس المحافظة + إشعار المشتري (notification_service.dart).
+
+    await NotificationService.instance.sendToShippingCompanies(
+      city: order.governorate,
+      orderId: orderId,
+      title: 'طلب توصيل جديد في ${order.governorate}',
+      body: '${order.productName} — أجر التوصيل ${order.shippingEarnings} د.ع',
+    );
+    await NotificationService.instance.sendToUser(
+      userUid: order.buyerUid,
+      title: 'البائع وافق على طلبك',
+      body: 'نبحث الآن عن شركة شحن لطلبك ${order.orderNumber}',
+      type: 'shipping_assigned',
+      data: {'orderId': orderId},
+    );
   }
 
   /// الحرفي يرفض الطلب مع ذكر السبب.
   Future<void> sellerRejectOrder(String orderId, String reason) async {
+    final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
+    final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+
     await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'cancelled', 'rejectionReason': reason});
-    // TODO: إشعار المشتري بالسبب + تحديث warningCount للحرفي (admin_service.dart لاحقاً).
+
+    await NotificationService.instance.sendToUser(
+      userUid: order.buyerUid,
+      title: 'تم إلغاء طلبك',
+      body: reason,
+      type: 'order_rejected',
+      data: {'orderId': orderId},
+    );
+    // TODO: تحديث warningCount للحرفي وتطبيق عقوبات تراكمية (admin_service.dart لاحقاً).
   }
 
   /// شركة الشحن تقبل الطلب — Firestore Transaction تمنع قبول أكثر من شركة لنفس الطلب.
   Future<bool> shippingAcceptOrder(String orderId, String shippingUid, String shippingCompanyName) async {
-    return _firestore.runTransaction<bool>((tx) async {
+    final accepted = await _firestore.runTransaction<bool>((tx) async {
       final orderRef = _firestore.collection(_ordersCollection).doc(orderId);
       final orderSnap = await tx.get(orderRef);
 
@@ -61,22 +95,39 @@ class OrderService {
       });
       return true;
     });
-    // TODO: إشعار المشتري والحرفي أن الشحن بدأ (notification_service.dart).
+
+    if (accepted) {
+      final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
+      final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+      await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'تم تعيين شركة شحن لطلبك', body: shippingCompanyName, type: 'shipping_assigned', data: {'orderId': orderId});
+      await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'بدأ الشحن', body: 'شركة $shippingCompanyName ستستلم طلبك قريباً', type: 'shipping_assigned', data: {'orderId': orderId});
+    }
+    return accepted;
   }
 
   /// شركة الشحن استلمت المنتج من الحرفي.
   Future<void> shippingPickedUp(String orderId) async {
+    final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
+    final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+
     await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'picked_up'});
-    // TODO: إشعار المشتري "المنتج في الطريق إليك" (notification_service.dart).
+
+    await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'طلبك في الطريق إليك', body: order.productName, type: 'order_picked_up', data: {'orderId': orderId});
   }
 
   /// تأكيد التسليم — يبدأ عداد 72 ساعة لتحويل أرباح الحرفي.
   Future<void> confirmDelivery(String orderId) async {
+    final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
+    final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+
     await _firestore.collection(_ordersCollection).doc(orderId).update({
       'status': 'delivered',
       'deliveredAt': Timestamp.now(),
     });
-    // TODO: إنشاء transaction records وبدء عداد 72 ساعة (wallet_service.dart لاحقاً).
+
+    await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'تم التسليم', body: 'قيّم تجربتك مع ${order.productName}', type: 'order_delivered', data: {'orderId': orderId});
+    await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'تم التسليم', body: 'أرباحك ستُحوَّل خلال ${AppRules.holdPeriodHours} ساعة', type: 'wallet_credited', data: {'orderId': orderId});
+    // TODO: إنشاء transaction records وبدء عداد 72 ساعة الفعلي (wallet_service.dart لاحقاً).
   }
 
   /// بث حالة طلب واحد حياً — يُستخدم في order_tracking_screen.dart.
