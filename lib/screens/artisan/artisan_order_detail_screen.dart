@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/colors.dart';
-import '../../models/artisan_order.dart';
-
-const int _kDeliveryFee = 5000;
-const double _kCommissionRate = 0.10;
-
-int _parsePrice(String price) => int.parse(price.replaceAll(',', ''));
+import '../../models/order_model.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -19,7 +14,7 @@ String _formatPrice(int value) {
 }
 
 class ArtisanOrderDetailScreen extends StatelessWidget {
-  final ArtisanOrder order;
+  final OrderModel order;
   const ArtisanOrderDetailScreen({super.key, required this.order});
 
   Future<void> _call(String phone) async {
@@ -29,11 +24,6 @@ class ArtisanOrderDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productTotal = _parsePrice(order.price) * order.quantity;
-    final total = productTotal + _kDeliveryFee;
-    final commission = (productTotal * _kCommissionRate).round();
-    final net = total - commission;
-
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -52,7 +42,7 @@ class ArtisanOrderDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildShippingCard(),
             const SizedBox(height: 16),
-            _buildInvoiceCard(productTotal, commission, net),
+            _buildInvoiceCard(),
           ],
         ),
       ),
@@ -81,9 +71,7 @@ class ArtisanOrderDetailScreen extends StatelessWidget {
               children: [
                 Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
                 const SizedBox(height: 6),
-                Text('د.ع ${order.price}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 6),
-                Text('الكمية: ${order.quantity}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                Text('د.ع ${_formatPrice(order.price)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -121,10 +109,10 @@ class ArtisanOrderDetailScreen extends StatelessWidget {
           const SizedBox(height: 12),
           const Divider(color: Color(0xFF2A2A2A)),
           const SizedBox(height: 8),
-          Text('${order.province}، ${order.neighborhood}', style: const TextStyle(color: AppColors.text, fontSize: 13)),
-          if (order.notes.isNotEmpty) ...[
+          Text('${order.governorate}، ${order.district}', style: const TextStyle(color: AppColors.text, fontSize: 13)),
+          if (order.addressNotes.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(order.notes, style: TextStyle(color: AppColors.subText, fontSize: 12)),
+            Text(order.addressNotes, style: TextStyle(color: AppColors.subText, fontSize: 12)),
           ],
         ],
       ),
@@ -143,14 +131,10 @@ class ArtisanOrderDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(order.shippingCompany != null ? 'جاري الشحن' : 'بانتظار الشحن', style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-                if (order.shippingCompany != null) ...[
+                Text(order.shippingCompanyName != null ? 'جاري الشحن' : 'بانتظار الشحن', style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+                if (order.shippingCompanyName != null) ...[
                   const SizedBox(height: 4),
-                  Text(order.shippingCompany!, style: TextStyle(color: AppColors.subText, fontSize: 12)),
-                ],
-                if (order.shippingRepPhone != null) ...[
-                  const SizedBox(height: 2),
-                  Text('المندوب: ${order.shippingRepPhone}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                  Text(order.shippingCompanyName!, style: TextStyle(color: AppColors.subText, fontSize: 12)),
                 ],
               ],
             ),
@@ -160,19 +144,19 @@ class ArtisanOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInvoiceCard(int productTotal, int commission, int net) {
+  Widget _buildInvoiceCard() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.3))),
       child: Column(
         children: [
-          _invoiceRow('سعر المنتج', _formatPrice(productTotal)),
+          _invoiceRow('سعر المنتج', _formatPrice(order.price)),
           const SizedBox(height: 8),
-          _invoiceRow('سعر التوصيل', _formatPrice(_kDeliveryFee)),
+          _invoiceRow('سعر التوصيل', _formatPrice(order.deliveryFee)),
           const SizedBox(height: 8),
-          _invoiceRow('المجموع', _formatPrice(productTotal + _kDeliveryFee)),
+          _invoiceRow('المجموع', _formatPrice(order.totalAmount)),
           const SizedBox(height: 8),
-          _invoiceRow('عمولة AL-HIRFA (10%)', '- ${_formatPrice(commission)}', valueColor: Colors.redAccent),
+          _invoiceRow('عمولة AL-HIRFA', '- ${_formatPrice(order.platformFee)}', valueColor: Colors.redAccent),
           const SizedBox(height: 12),
           Divider(color: AppColors.gold.withOpacity(0.4)),
           const SizedBox(height: 4),
@@ -180,7 +164,7 @@ class ArtisanOrderDetailScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('صافي ربحك', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
-              Text('${_formatPrice(net)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
+              Text('${_formatPrice(order.artisanEarnings)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
             ],
           ),
         ],
