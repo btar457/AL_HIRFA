@@ -1,17 +1,19 @@
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../core/constants/app_rules.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 
 /// حالة المصادقة العامة للتطبيق (AL-HIRFA-Firebase-Setup.md — PART 4.1).
 ///
-/// signIn/signUp/signOut تستدعي AuthService الحالي فعلياً. تحميل بيانات
-/// المستخدم الكاملة (UserModel) وتحديث الملف الشخصي مؤجّلان لمرحلة "Auth"
-/// القادمة عند توسيع auth_service.dart بـ getCurrentUser()/updateProfile()
-/// الحقيقيين (حالياً AuthService لا يعيد سوى UserCredential/الدور فقط).
+/// يستمع إلى AuthService.authStateChanges باستمرار: عند تسجيل الدخول (من
+/// أي مصدر) يحمّل UserModel الكامل تلقائياً، وعند الخروج يمسح الحالة محلياً.
 class AuthProvider extends ChangeNotifier {
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
+  StreamSubscription<User?>? _authSubscription;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
@@ -19,15 +21,30 @@ class AuthProvider extends ChangeNotifier {
   String get role => _currentUser?.role ?? '';
   String? get errorMessage => _errorMessage;
 
+  /// true إن كان إصدار الشروط الذي وافق عليه المستخدم مختلفاً عن الإصدار
+  /// الحالي (PART 11.5) — يُتحقّق منه عند كل دخول.
+  bool get needsTermsUpdate => _currentUser != null && _currentUser!.termsVersion != AppRules.currentTermsVersion;
+
+  AuthProvider() {
+    _authSubscription = AuthService.instance.authStateChanges.listen((user) {
+      if (user == null) {
+        _currentUser = null;
+        notifyListeners();
+      } else {
+        loadCurrentUser();
+      }
+    });
+  }
+
   Future<void> signIn(String email, String password) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
     try {
-      await AuthService.instance.signIn(email: email, password: password);
-      // TODO: تحميل UserModel الكامل من Firestore عبر AuthService.getCurrentUser() (مرحلة Auth).
+      _currentUser = await AuthService.instance.signIn(email: email, password: password);
     } catch (e) {
       _errorMessage = e.toString();
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -45,10 +62,10 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      await AuthService.instance.signUp(email: email, password: password, role: role, name: name, phone: phone);
-      // TODO: تحميل UserModel الكامل بعد إنشاء الحساب (مرحلة Auth).
+      _currentUser = await AuthService.instance.signUp(email: email, password: password, role: role, name: name, phone: phone);
     } catch (e) {
       _errorMessage = e.toString();
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -58,14 +75,32 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signOut() async {
     await AuthService.instance.signOut();
     _currentUser = null;
+    _errorMessage = null;
     notifyListeners();
   }
 
+  /// يحمّل UserModel الكامل للمستخدم الحالي من Firestore.
   Future<void> loadCurrentUser() async {
-    // TODO: يُنفَّذ في مرحلة Auth القادمة (auth_service.getCurrentUser يُعيد UserModel كامل من Firestore).
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _currentUser = await AuthService.instance.getCurrentUser();
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
-    // TODO: يُنفَّذ في مرحلة Auth القادمة (auth_service.updateProfile).
+    await AuthService.instance.updateProfile(data);
+    await loadCurrentUser();
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
   }
 }
