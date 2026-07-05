@@ -59,7 +59,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               _buildCityFilters(),
               Expanded(
                 child: StreamBuilder<List<ProductModel>>(
-                  stream: ProductService.instance.getActiveProducts(city: _selectedCity == 'الكل' ? null : _selectedCity),
+                  stream: ProductService.instance.getActiveProducts(city: _selectedCity == 'الكل' ? null : _selectedCity, categoryId: _selectedCategory),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
                       return Center(child: Text('تعذّر تحميل المنتجات', style: TextStyle(color: AppColors.subText)));

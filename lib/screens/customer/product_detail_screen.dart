@@ -1,11 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/constants/colors.dart';
 import '../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/product_service.dart';
+import '../../services/qr_service.dart';
 import 'artisan_public_profile_screen.dart';
 
 String _formatPrice(int value) {
@@ -63,7 +65,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 28),
                     _buildNarrative(product),
                     const SizedBox(height: 24),
-                    _buildAuthenticityCertificate(),
+                    _buildAuthenticityCertificate(product),
                     const SizedBox(height: 24),
                     _buildMaterialsAndOrigin(product),
                     if (product.images.length > 1) ...[
@@ -274,7 +276,37 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildAuthenticityCertificate() {
+  void _showAuthenticityDialog(ProductModel product) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: const Text('شهادة موثوقية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                color: Colors.white,
+                child: QrImageView(data: QrService.instance.buildCertificatePayload(product), version: QrVersions.auto, size: 200),
+              ),
+              const SizedBox(height: 14),
+              Text(product.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+              Text('صنع يد الحرفي: ${product.artisanName}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('إغلاق', style: TextStyle(color: AppColors.gold))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAuthenticityCertificate(ProductModel product) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -289,7 +321,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           const SizedBox(height: 14),
           OutlinedButton(
             style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-            onPressed: () {}, // TODO: توليد وعرض QR الحقيقي عند تنفيذ qr_service.dart (PART 7 — اللمسات النهائية).
+            onPressed: () => _showAuthenticityDialog(product),
             child: const Text('عرض الوثيقة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           ),
         ],
