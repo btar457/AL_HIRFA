@@ -86,18 +86,48 @@ class WalletService {
     });
   }
 
-  /// يحسب تسوية الأسبوع الحالي لشركة شحن من طلباتها المُسلَّمة فعلياً، ويحفظها.
-  Future<SettlementModel> calculateSettlement(String shippingUid) async {
+  (DateTime, DateTime) _currentWeekRange() {
     final now = DateTime.now();
     final weekStart = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday % 7));
-    final weekEnd = weekStart.add(const Duration(days: 7));
+    return (weekStart, weekStart.add(const Duration(days: 7)));
+  }
 
+  Future<List<OrderModel>> _deliveredOrdersInWeek(String shippingUid, DateTime weekStart, DateTime weekEnd) async {
     final snapshot = await _firestore.collection(_ordersCollection).where('shippingUid', isEqualTo: shippingUid).where('status', isEqualTo: 'delivered').get();
-
-    final weekOrders = snapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data())).where((order) {
+    return snapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data())).where((order) {
       final completedAt = order.deliveredAt ?? order.createdAt;
       return !completedAt.isBefore(weekStart) && completedAt.isBefore(weekEnd);
     }).toList();
+  }
+
+  /// يحسب المستحق لهذا الأسبوع للعرض فقط دون حفظه — يُستخدم في شاشة
+  /// المحفظة كي لا يُنشئ كل فتح للشاشة مستند تسوية جديداً.
+  Future<SettlementModel> previewCurrentWeekSettlement(String shippingUid) async {
+    final (weekStart, weekEnd) = _currentWeekRange();
+    final weekOrders = await _deliveredOrdersInWeek(shippingUid, weekStart, weekEnd);
+    return SettlementModel(
+      id: '',
+      shippingUid: shippingUid,
+      weekStart: weekStart,
+      weekEnd: weekEnd,
+      deliveriesCount: weekOrders.length,
+      totalEarnings: weekOrders.fold<int>(0, (acc, o) => acc + o.shippingEarnings),
+      platformDue: weekOrders.fold<int>(0, (acc, o) => acc + (o.deliveryFee - o.shippingEarnings)),
+      status: 'pending',
+      createdAt: DateTime.now(),
+    );
+  }
+
+  /// مجموع الغرامات المخصومة من تأمين الشركة حتى الآن (من تسويات متأخرة فعلياً).
+  Future<int> getUsedDeposit(String shippingUid) async {
+    final snapshot = await _firestore.collection(_settlementsCollection).where('shippingUid', isEqualTo: shippingUid).where('status', isEqualTo: 'late').get();
+    return snapshot.docs.fold<int>(0, (acc, doc) => acc + (doc.data()['penaltyAmount'] as int? ?? 0));
+  }
+
+  /// يحسب تسوية الأسبوع الحالي لشركة شحن من طلباتها المُسلَّمة فعلياً، ويحفظها.
+  Future<SettlementModel> calculateSettlement(String shippingUid) async {
+    final (weekStart, weekEnd) = _currentWeekRange();
+    final weekOrders = await _deliveredOrdersInWeek(shippingUid, weekStart, weekEnd);
 
     final totalEarnings = weekOrders.fold<int>(0, (acc, o) => acc + o.shippingEarnings);
     final platformDue = weekOrders.fold<int>(0, (acc, o) => acc + (o.deliveryFee - o.shippingEarnings));
