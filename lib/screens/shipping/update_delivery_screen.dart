@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
-import '../../models/delivery_request.dart';
+import '../../core/utils/error_handler.dart';
+import '../../models/order_model.dart';
+import '../../services/order_service.dart';
 
-/// تحديث حالة توصيل عبر Timeline خطوة بخطوة (SHIPPING-5).
+String _formatPrice(int value) {
+  final str = value.toString();
+  final buffer = StringBuffer();
+  for (int i = 0; i < str.length; i++) {
+    if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(str[i]);
+  }
+  return buffer.toString();
+}
+
+/// تحديث حالة توصيل حقيقي عبر Timeline خطوة بخطوة (SHIPPING-5).
 class UpdateDeliveryScreen extends StatefulWidget {
-  final DeliveryRequest delivery;
-  const UpdateDeliveryScreen({super.key, required this.delivery});
+  final String orderId;
+  const UpdateDeliveryScreen({super.key, required this.orderId});
 
   @override
   State<UpdateDeliveryScreen> createState() => _UpdateDeliveryScreenState();
@@ -14,17 +26,23 @@ class UpdateDeliveryScreen extends StatefulWidget {
 class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
   String _selectedProblem = 'لا مشكلة';
   final _problemDetailsController = TextEditingController();
+  bool _isUpdating = false;
 
   static const _problems = ['لا مشكلة', 'المشتري غير متاح', 'العنوان خاطئ', 'أخرى'];
 
-  bool get _pickedUp => widget.delivery.status != DeliveryStatus.waitingPickup;
-  bool get _delivered => widget.delivery.status == DeliveryStatus.delivered;
-
-  void _confirmPickup() {
-    setState(() => widget.delivery.status = DeliveryStatus.inTransit);
+  Future<void> _confirmPickup() async {
+    setState(() => _isUpdating = true);
+    try {
+      await OrderService.instance.shippingPickedUp(widget.orderId);
+    } catch (e) {
+      if (!mounted) return;
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
   }
 
-  void _confirmDelivery() {
+  void _confirmDelivery(OrderModel order) {
     showDialog(
       context: context,
       builder: (context) => Directionality(
@@ -33,7 +51,7 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: const Text('تأكيد التسليم والمبلغ المحصّل', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text('المبلغ المطلوب تحصيله: ${widget.delivery.fee} د.ع', style: TextStyle(color: AppColors.subText)),
+          content: Text('المبلغ المطلوب تحصيله: ${_formatPrice(order.totalAmount)} د.ع', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -42,10 +60,19 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              onPressed: () {
-                setState(() => widget.delivery.status = DeliveryStatus.delivered);
+              onPressed: () async {
                 Navigator.pop(context);
-                Navigator.pop(context);
+                setState(() => _isUpdating = true);
+                try {
+                  await OrderService.instance.confirmDelivery(widget.orderId);
+                  if (!mounted) return;
+                  Navigator.pop(context);
+                } catch (e) {
+                  if (!mounted) return;
+                  AppError.showSnackbar(context, AppError.getFirebaseError(e));
+                } finally {
+                  if (mounted) setState(() => _isUpdating = false);
+                }
               },
               child: const Text('تأكيد', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
@@ -85,83 +112,96 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
           title: const Text('تحديث حالة التوصيل', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           iconTheme: const IconThemeData(color: AppColors.gold),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(widget.delivery.orderNumber, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              _buildStep('تم قبول الطلب', true),
-              _buildStep('استلمت من البائع', _pickedUp),
-              _buildStep('في الطريق للمشتري', _pickedUp),
-              _buildStep('تم التسليم', _delivered, isLast: true),
-              const SizedBox(height: 16),
-              if (!_pickedUp)
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    onPressed: _confirmPickup,
-                    child: const Text('تأكيد الاستلام من البائع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+        body: StreamBuilder<OrderModel?>(
+          stream: OrderService.instance.watchOrder(widget.orderId),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || snapshot.data == null) {
+              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+            }
+            final order = snapshot.data!;
+            final pickedUp = order.status != 'shipping_assigned';
+            final delivered = order.status == 'delivered';
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(order.orderNumber, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
+                  _buildStep('تم قبول الطلب', true),
+                  _buildStep('استلمت من البائع', pickedUp),
+                  _buildStep('في الطريق للمشتري', pickedUp),
+                  _buildStep('تم التسليم', delivered, isLast: true),
+                  const SizedBox(height: 16),
+                  if (!pickedUp)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        onPressed: _isUpdating ? null : _confirmPickup,
+                        child: const Text('تأكيد الاستلام من البائع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                      ),
+                    )
+                  else if (!delivered)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        onPressed: _isUpdating ? null : () => _confirmDelivery(order),
+                        child: const Text('تأكيد التسليم', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  const SizedBox(height: 28),
+                  const Text('هل واجهت مشكلة؟', style: TextStyle(color: AppColors.gold, fontSize: 14, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedProblem,
+                    dropdownColor: AppColors.card,
+                    style: const TextStyle(color: AppColors.text),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: AppColors.card,
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
+                      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    items: _problems.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
+                    onChanged: (value) => setState(() => _selectedProblem = value!),
                   ),
-                )
-              else if (!_delivered)
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    onPressed: _confirmDelivery,
-                    child: const Text('تأكيد التسليم', style: TextStyle(fontWeight: FontWeight.bold)),
+                  if (_selectedProblem != 'لا مشكلة') ...[
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _problemDetailsController,
+                      maxLines: 3,
+                      style: const TextStyle(color: AppColors.text),
+                      decoration: InputDecoration(
+                        hintText: 'اشرح المشكلة',
+                        hintStyle: TextStyle(color: AppColors.subText),
+                        filled: true,
+                        fillColor: AppColors.card,
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
+                        focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      // TODO: حفظ بلاغ المشكلة عبر dispute_service.dart عند بنائه (مرحلة Admin القادمة).
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('إرسال', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
                   ),
-                ),
-              const SizedBox(height: 28),
-              const Text('هل واجهت مشكلة؟', style: TextStyle(color: AppColors.gold, fontSize: 14, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedProblem,
-                dropdownColor: AppColors.card,
-                style: const TextStyle(color: AppColors.text),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: AppColors.card,
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-                  focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                items: _problems.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
-                onChanged: (value) => setState(() => _selectedProblem = value!),
+                ],
               ),
-              if (_selectedProblem != 'لا مشكلة') ...[
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _problemDetailsController,
-                  maxLines: 3,
-                  style: const TextStyle(color: AppColors.text),
-                  decoration: InputDecoration(
-                    hintText: 'اشرح المشكلة',
-                    hintStyle: TextStyle(color: AppColors.subText),
-                    filled: true,
-                    fillColor: AppColors.card,
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-                    focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('إرسال', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
