@@ -131,4 +131,12 @@ class ProductService {
       return products;
     });
   }
+
+  /// معرّفات منتجات المفضلة فقط (بدون جلب المنتجات الكاملة) — أخف لعرض
+  /// حالة "❤️" على بطاقات المتجر وتفاصيل المنتج.
+  Stream<Set<String>> getFavoriteIds(String userId) {
+    return _firestore.collection(_usersCollection).doc(userId).collection('favorites').snapshots().map(
+      (snapshot) => snapshot.docs.map((doc) => doc.id).toSet(),
+    );
+  }
 }

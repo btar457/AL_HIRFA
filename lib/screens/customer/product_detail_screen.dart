@@ -1,7 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../models/product_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/product_service.dart';
 import 'artisan_public_profile_screen.dart';
 
 String _formatPrice(int value) {
@@ -28,6 +31,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
+    final userId = context.watch<AuthProvider>().currentUser?.uid;
+    final canPersistFavorite = product.id.isNotEmpty && userId != null;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -36,7 +41,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildHeroImage(product),
+              canPersistFavorite
+                  ? StreamBuilder<Set<String>>(
+                      stream: ProductService.instance.getFavoriteIds(userId),
+                      builder: (context, snapshot) => _buildHeroImage(product, isFavorite: snapshot.data?.contains(product.id) ?? false, onFavoriteToggle: () => ProductService.instance.toggleFavorite(product.id, userId)),
+                    )
+                  : _buildHeroImage(product, isFavorite: _isFavorite, onFavoriteToggle: () => setState(() => _isFavorite = !_isFavorite)),
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -69,7 +79,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildHeroImage(ProductModel product) {
+  Widget _buildHeroImage(ProductModel product, {required bool isFavorite, required VoidCallback onFavoriteToggle}) {
     return SizedBox(
       height: 320,
       child: Stack(
@@ -105,10 +115,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 _circleIconButton(icon: Icons.share_outlined, onTap: () {}),
                 const SizedBox(width: 8),
                 _circleIconButton(
-                  icon: _isFavorite ? Icons.favorite : Icons.favorite_border,
-                  iconColor: _isFavorite ? AppColors.gold : Colors.white,
-                  // TODO: ربط دائم بمفضلة Firestore (ProductService.toggleFavorite) عند وصولنا لخطوة ربط favorites_screen.
-                  onTap: () => setState(() => _isFavorite = !_isFavorite),
+                  icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+                  iconColor: isFavorite ? AppColors.gold : Colors.white,
+                  onTap: onFavoriteToggle,
                 ),
               ],
             ),

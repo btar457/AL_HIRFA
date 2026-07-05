@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../models/categories.dart';
 import '../../models/marketplace_product.dart';
 import '../../models/product_model.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/product_service.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'product_detail_screen.dart';
@@ -36,13 +38,14 @@ class MarketplaceScreen extends StatefulWidget {
 class _MarketplaceScreenState extends State<MarketplaceScreen> {
   String _selectedCity = 'الكل';
   String _selectedCategory = 'all';
-  final Set<String> _favoriteIds = {};
   final bool _hasNotifications = true;
 
   final _cities = const ['الكل', 'نجف', 'بصرة', 'بغداد', 'أربيل', 'موصل', 'كربلاء', 'الديوانية'];
 
   @override
   Widget build(BuildContext context) {
+    final userId = context.watch<AuthProvider>().currentUser?.uid;
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -68,23 +71,23 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                     if (products.isEmpty) {
                       return Center(child: Text('لا توجد منتجات حالياً', style: TextStyle(color: AppColors.subText)));
                     }
-                    return GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.66),
-                      itemCount: products.length,
-                      itemBuilder: (context, i) {
-                        final product = products[i];
-                        return MarketplaceProductCard(
-                          product: _toMarketplaceProduct(product),
-                          isFavorite: _favoriteIds.contains(product.id),
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product))),
-                          onFavoriteToggle: () => setState(() {
-                            if (_favoriteIds.contains(product.id)) {
-                              _favoriteIds.remove(product.id);
-                            } else {
-                              _favoriteIds.add(product.id);
-                            }
-                          }),
+                    return StreamBuilder<Set<String>>(
+                      stream: userId == null ? Stream.value(const <String>{}) : ProductService.instance.getFavoriteIds(userId),
+                      builder: (context, favSnapshot) {
+                        final favoriteIds = favSnapshot.data ?? const <String>{};
+                        return GridView.builder(
+                          padding: const EdgeInsets.all(16),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.66),
+                          itemCount: products.length,
+                          itemBuilder: (context, i) {
+                            final product = products[i];
+                            return MarketplaceProductCard(
+                              product: _toMarketplaceProduct(product),
+                              isFavorite: favoriteIds.contains(product.id),
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product))),
+                              onFavoriteToggle: userId == null ? null : () => ProductService.instance.toggleFavorite(product.id, userId),
+                            );
+                          },
                         );
                       },
                     );
