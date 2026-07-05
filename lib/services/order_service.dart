@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/app_rules.dart';
 import '../models/order_model.dart';
+import '../models/transaction_model.dart';
 import 'notification_service.dart';
 
 /// طبقة إدارة الطلبات ودورة حياتها الكاملة عبر Firestore.
@@ -12,6 +13,7 @@ class OrderService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   static const _ordersCollection = 'orders';
+  static const _transactionsCollection = 'transactions';
 
   String _generateOrderNumber() => 'HRF-${1000 + Random().nextInt(9000)}';
 
@@ -125,9 +127,34 @@ class OrderService {
       'deliveredAt': Timestamp.now(),
     });
 
+    await _createDeliveryTransactions(orderId, order);
+
     await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'تم التسليم', body: 'قيّم تجربتك مع ${order.productName}', type: 'order_delivered', data: {'orderId': orderId});
     await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'تم التسليم', body: 'أرباحك ستُحوَّل خلال ${AppRules.holdPeriodHours} ساعة', type: 'wallet_credited', data: {'orderId': orderId});
-    // TODO: إنشاء transaction records وبدء عداد 72 ساعة الفعلي (wallet_service.dart لاحقاً).
+  }
+
+  /// يسجّل حركات مالية حقيقية عند التسليم — حصة الحرفي (بحسبان فترة احتجاز
+  /// 72 ساعة تُحتسب لاحقاً في wallet_service.dart من createdAt)، عمولة
+  /// المنصة، وحصة شركة الشحن (تُدفع كاشاً فوراً بلا احتجاز).
+  Future<void> _createDeliveryTransactions(String orderId, OrderModel order) async {
+    final batch = _firestore.batch();
+    final now = DateTime.now();
+
+    void addTransaction(String type, int amount, String fromUid, String toUid) {
+      final ref = _firestore.collection(_transactionsCollection).doc();
+      batch.set(
+        ref,
+        TransactionModel(id: ref.id, orderId: orderId, type: type, amount: amount, fromUid: fromUid, toUid: toUid, status: 'completed', createdAt: now).toMap(),
+      );
+    }
+
+    addTransaction('sale', order.artisanEarnings, order.buyerUid, order.artisanUid);
+    addTransaction('commission', order.platformFee, order.buyerUid, 'platform');
+    if (order.shippingUid != null) {
+      addTransaction('delivery', order.shippingEarnings, order.buyerUid, order.shippingUid!);
+    }
+
+    await batch.commit();
   }
 
   /// بث حالة طلب واحد حياً — يُستخدم في order_tracking_screen.dart.
