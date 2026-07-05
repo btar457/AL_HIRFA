@@ -11,7 +11,9 @@ class CartProvider extends ChangeNotifier {
   List<CartItem> get items => List.unmodifiable(_items);
   int get itemCount => _items.length;
   int get subtotal => _items.fold(0, (sum, item) => sum + item.totalPrice);
-  int get deliveryFee => _items.isEmpty ? 0 : AppRules.fixedDeliveryFee;
+  /// كل عنصر في السلة يصبح طلباً مستقلاً (حرفي وشحنة مختلفَين محتملَين)،
+  /// لذا رسم التوصيل الثابت يُحتسب لكل عنصر وليس مرة واحدة للسلة كاملة.
+  int get deliveryFee => _items.length * AppRules.fixedDeliveryFee;
   int get total => subtotal + deliveryFee;
 
   void addItem(ProductModel product) {

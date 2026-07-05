@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../models/cart_item.dart';
-import '../../models/marketplace_product.dart';
 import '../../providers/cart_provider.dart';
 import 'checkout_screen.dart';
 import 'customer_nav.dart';
@@ -81,11 +80,7 @@ class CartScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                  onPressed: () {
-                    final product = cart.items.first.product;
-                    final marketplaceProduct = MarketplaceProduct(name: product.name, price: _formatPrice(product.price), city: product.city, cityTag: product.city.toUpperCase());
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => CheckoutScreen(product: marketplaceProduct)));
-                  },
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutScreen())),
                   child: const Text('إتمام الشراء', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
