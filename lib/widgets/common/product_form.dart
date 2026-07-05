@@ -1,9 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/categories.dart';
 import '../../core/constants/colors.dart';
+import '../../core/utils/error_handler.dart';
 import '../../models/artisan_product_listing.dart';
+import '../../models/categories.dart';
+import '../../models/product_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/product_service.dart';
 
 const int _kMaxImages = 5;
 
@@ -67,9 +73,15 @@ class _ProductFormState extends State<ProductForm> {
   final _experienceController = TextEditingController();
   final _techniqueController = TextEditingController();
 
-  late String _selectedCategory = kCategories.contains(widget.initialProduct?.category) ? widget.initialProduct!.category : kCategories.first;
+  static final List<AppCategory> _selectableCategories = kAppCategories.where((c) => c.id != 'all').toList();
+
+  late AppCategory _selectedCategory = _selectableCategories.firstWhere(
+    (c) => c.nameAr == widget.initialProduct?.category,
+    orElse: () => _selectableCategories.first,
+  );
   String _selectedCity = kCities.first;
   final List<XFile> _images = [];
+  bool _isSubmitting = false;
 
   Future<void> _pickImage() async {
     if (_images.length >= _kMaxImages) return;
@@ -102,8 +114,55 @@ class _ProductFormState extends State<ProductForm> {
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final isAdd = widget.initialProduct == null;
+    if (isAdd && _images.isEmpty) {
+      AppError.showSnackbar(context, 'أضف صورة واحدة على الأقل للمنتج');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      if (isAdd) {
+        final artisan = context.read<AuthProvider>().currentUser;
+        if (artisan == null) {
+          AppError.showSnackbar(context, 'يجب تسجيل الدخول لنشر منتج');
+          return;
+        }
+        final product = ProductModel(
+          id: '',
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          price: int.tryParse(_priceController.text.replaceAll(',', '').trim()) ?? 0,
+          category: _selectedCategory.id,
+          city: _selectedCity,
+          images: const [],
+          artisanUid: artisan.uid,
+          artisanName: artisan.name,
+          narrative: _narrativeController.text.trim(),
+          material: _materialController.text.trim(),
+          originPlace: _originController.text.trim(),
+          technique: _techniqueController.text.trim(),
+          status: 'pending',
+          createdAt: DateTime.now(),
+        );
+        await ProductService.instance.addProduct(product, _images);
+      }
+      // TODO: تحديث حقيقي عبر ProductService.updateProduct عند ربط manage_products_screen
+      // بمعرّفات Firestore الحقيقية (لا يملك ArtisanProductListing حالياً معرّف مستند فعلي).
+      if (!mounted) return;
+      _showSuccessDialog();
+    } catch (e) {
+      if (!mounted) return;
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  void _showSuccessDialog() {
     showDialog(
       context: context,
       builder: (context) => Directionality(
@@ -160,12 +219,12 @@ class _ProductFormState extends State<ProductForm> {
                 const SizedBox(height: 16),
                 _buildLabeledField(
                   label: 'الفئة',
-                  field: DropdownButtonFormField<String>(
+                  field: DropdownButtonFormField<AppCategory>(
                     initialValue: _selectedCategory,
                     dropdownColor: AppColors.card,
                     style: const TextStyle(color: AppColors.text),
                     decoration: _fieldDecoration(),
-                    items: kCategories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                    items: _selectableCategories.map((c) => DropdownMenuItem(value: c, child: Text(c.nameAr))).toList(),
                     onChanged: (value) => setState(() => _selectedCategory = value!),
                   ),
                 ),
@@ -212,9 +271,11 @@ class _ProductFormState extends State<ProductForm> {
                   height: 56,
                   width: double.infinity,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                    onPressed: _submit,
-                    child: Text(widget.submitLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, disabledBackgroundColor: AppColors.gold.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                    onPressed: _isSubmitting ? null : _submit,
+                    child: _isSubmitting
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                        : Text(widget.submitLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                 ),
                 const SizedBox(height: 16),
