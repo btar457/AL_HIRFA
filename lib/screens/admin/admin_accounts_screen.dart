@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../../models/user_model.dart';
+import '../../models/violation_model.dart';
+import '../../services/admin_service.dart';
 
-enum _AccountStatus { active, suspended, banned }
-
-class _AdminUser {
-  final String name;
-  final String subtitle;
-  final _AccountStatus status;
-  final List<String> violations;
-  const _AdminUser({required this.name, required this.subtitle, required this.status, this.violations = const []});
+String _formatDate(DateTime date) {
+  const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  return '${date.day} ${months[date.month - 1]} ${date.year}';
 }
 
 /// إدارة حسابات المستخدمين (حرفيون/مشترون/شركات شحن) — ADMIN-3.
@@ -23,41 +21,32 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
   String _statusFilter = 'الكل';
   final _searchController = TextEditingController();
 
-  static const _artisans = [
-    _AdminUser(name: 'أبو مصطفى', subtitle: 'نحاسيات — بغداد', status: _AccountStatus.active, violations: ['رفض طلب بدون سبب — ١٠ يونيو']),
-    _AdminUser(name: 'زينب كريم', subtitle: 'فخار وخزف — النجف', status: _AccountStatus.suspended, violations: ['3 رفضات متتالية — ٢٥ يونيو', 'وصف غير دقيق — ١٠ يونيو']),
-  ];
-  static const _buyers = [
-    _AdminUser(name: 'سارة العبيدي', subtitle: 'sara.alobaidi@example.com', status: _AccountStatus.active),
-    _AdminUser(name: 'محمد الكناني', subtitle: 'm.kinani@example.com', status: _AccountStatus.banned, violations: ['احتيال مالي مؤكد — ١٥ مايو']),
-  ];
-  static const _shippingCompanies = [
-    _AdminUser(name: 'شركة بغداد السريعة للشحن', subtitle: 'بغداد، النجف، كربلاء', status: _AccountStatus.active),
-  ];
+  static const _roles = ['artisan', 'customer', 'shipping'];
 
   @override
   void dispose() {
     _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
-  List<_AdminUser> _filter(List<_AdminUser> users) {
+  List<UserModel> _filter(List<UserModel> users) {
     return users.where((u) {
       if (_statusFilter != 'الكل') {
         final matches = switch (_statusFilter) {
-          'نشط' => u.status == _AccountStatus.active,
-          'معلق' => u.status == _AccountStatus.suspended,
-          'محظور' => u.status == _AccountStatus.banned,
+          'نشط' => u.isActive,
+          'معلق' => !u.isActive && !u.banned,
+          'محظور' => u.banned,
           _ => true,
         };
         if (!matches) return false;
       }
-      if (_searchController.text.isNotEmpty && !u.name.contains(_searchController.text)) return false;
+      if (_searchController.text.isNotEmpty && !u.name.contains(_searchController.text) && !u.email.contains(_searchController.text)) return false;
       return true;
     }).toList();
   }
 
-  void _showActionSheet(_AdminUser user) {
+  void _showActionSheet(UserModel user) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.card,
@@ -68,11 +57,43 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(leading: const Icon(Icons.warning_amber_outlined, color: Colors.amber), title: const Text('تحذير', style: TextStyle(color: AppColors.text)), onTap: () => Navigator.pop(sheetContext)),
-              ListTile(leading: const Icon(Icons.pause_circle_outline, color: Colors.orange), title: const Text('تعليق الحساب', style: TextStyle(color: AppColors.text)), onTap: () => Navigator.pop(sheetContext)),
-              ListTile(leading: const Icon(Icons.block, color: Colors.redAccent), title: const Text('حظر نهائي', style: TextStyle(color: AppColors.text)), onTap: () => Navigator.pop(sheetContext)),
-              if (user.status == _AccountStatus.suspended)
-                ListTile(leading: const Icon(Icons.check_circle_outline, color: Colors.green), title: const Text('رفع التعليق', style: TextStyle(color: AppColors.text)), onTap: () => Navigator.pop(sheetContext)),
+              ListTile(
+                leading: const Icon(Icons.warning_amber_outlined, color: Colors.amber),
+                title: const Text('تحذير', style: TextStyle(color: AppColors.text)),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _promptReason(user, 'إرسال تحذير', (reason) => AdminService.instance.warnUser(user.uid, reason));
+                },
+              ),
+              if (user.isActive)
+                ListTile(
+                  leading: const Icon(Icons.pause_circle_outline, color: Colors.orange),
+                  title: const Text('تعليق الحساب', style: TextStyle(color: AppColors.text)),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _promptReason(user, 'تعليق الحساب', (reason) => AdminService.instance.suspendUser(user.uid, reason));
+                  },
+                ),
+              if (!user.banned)
+                ListTile(
+                  leading: const Icon(Icons.block, color: Colors.redAccent),
+                  title: const Text('حظر نهائي', style: TextStyle(color: AppColors.text)),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _promptReason(user, 'حظر نهائي', (reason) => AdminService.instance.banUser(user.uid, reason));
+                  },
+                ),
+              if (!user.isActive && !user.banned)
+                ListTile(
+                  leading: const Icon(Icons.check_circle_outline, color: Colors.green),
+                  title: const Text('رفع التعليق', style: TextStyle(color: AppColors.text)),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    await AdminService.instance.liftSuspension(user.uid);
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم رفع التعليق عن ${user.name}')));
+                  },
+                ),
             ],
           ),
         ),
@@ -80,7 +101,46 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
     );
   }
 
-  void _showViolations(_AdminUser user) {
+  void _promptReason(UserModel user, String title, Future<void> Function(String reason) action) {
+    final reasonController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: Text(title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: TextFormField(
+            controller: reasonController,
+            maxLines: 3,
+            style: const TextStyle(color: AppColors.text),
+            decoration: InputDecoration(hintText: 'السبب', hintStyle: TextStyle(color: AppColors.subText), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
+          ),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () async {
+                final reason = reasonController.text.trim();
+                if (reason.isEmpty) return;
+                await action(reason);
+                if (!dialogContext.mounted) return;
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('تأكيد', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showViolations(UserModel user) {
     showDialog(
       context: context,
       builder: (context) => Directionality(
@@ -89,13 +149,23 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: Text('سجل مخالفات ${user.name}', style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
-          content: user.violations.isEmpty
-              ? Text('لا توجد مخالفات مسجّلة.', style: TextStyle(color: AppColors.subText))
-              : Column(
+          content: SizedBox(
+            width: double.maxFinite,
+            child: StreamBuilder<List<ViolationModel>>(
+              stream: AdminService.instance.getUserViolations(user.uid),
+              builder: (context, snapshot) {
+                final violations = snapshot.data ?? const [];
+                if (violations.isEmpty) {
+                  return Text('لا توجد مخالفات مسجّلة.', style: TextStyle(color: AppColors.subText));
+                }
+                return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: user.violations.map((v) => Padding(padding: const EdgeInsets.only(bottom: 6), child: Text('• $v', style: TextStyle(color: AppColors.subText, fontSize: 13)))).toList(),
-                ),
+                  children: violations.map((v) => Padding(padding: const EdgeInsets.only(bottom: 6), child: Text('• ${v.description} — ${_formatDate(v.createdAt)}', style: TextStyle(color: AppColors.subText, fontSize: 13)))).toList(),
+                );
+              },
+            ),
+          ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('إغلاق', style: TextStyle(color: AppColors.gold))),
           ],
@@ -128,16 +198,33 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: [
-                  _buildList(_filter(_artisans)),
-                  _buildList(_filter(_buyers)),
-                  _buildList(_filter(_shippingCompanies)),
-                ],
+                children: _roles.map(_buildRoleList).toList(),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRoleList(String role) {
+    return StreamBuilder<List<UserModel>>(
+      stream: AdminService.instance.getUsersByRole(role),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('تعذّر تحميل المستخدمين', style: TextStyle(color: AppColors.subText)));
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+        }
+        final users = _filter(snapshot.data!);
+        if (users.isEmpty) return Center(child: Text('لا يوجد مستخدمون', style: TextStyle(color: AppColors.subText)));
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          itemCount: users.length,
+          itemBuilder: (context, i) => _buildUserCard(users[i]),
+        );
+      },
     );
   }
 
@@ -176,16 +263,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
     );
   }
 
-  Widget _buildList(List<_AdminUser> users) {
-    if (users.isEmpty) return Center(child: Text('لا يوجد مستخدمون', style: TextStyle(color: AppColors.subText)));
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      itemCount: users.length,
-      itemBuilder: (context, i) => _buildUserCard(users[i]),
-    );
-  }
-
-  Widget _buildUserCard(_AdminUser user) {
+  Widget _buildUserCard(UserModel user) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
@@ -202,11 +280,12 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
                 children: [
                   Text(user.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
                   const SizedBox(height: 2),
-                  Text(user.subtitle, style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                  Text(user.email, style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                  if (user.warningCount > 0) Text('${user.warningCount} إنذار', style: TextStyle(color: Colors.amber, fontSize: 11)),
                 ],
               ),
             ),
-            _buildStatusChip(user.status),
+            _buildStatusChip(user),
             IconButton(icon: const Icon(Icons.more_vert, color: AppColors.subText), onPressed: () => _showActionSheet(user)),
           ],
         ),
@@ -214,22 +293,18 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
     );
   }
 
-  Widget _buildStatusChip(_AccountStatus status) {
-    late final Color color;
-    late final String label;
-    switch (status) {
-      case _AccountStatus.active:
-        color = Colors.green;
-        label = 'نشط';
-        break;
-      case _AccountStatus.suspended:
-        color = Colors.orange;
-        label = 'معلق';
-        break;
-      case _AccountStatus.banned:
-        color = Colors.redAccent;
-        label = 'محظور';
-        break;
+  Widget _buildStatusChip(UserModel user) {
+    final Color color;
+    final String label;
+    if (user.banned) {
+      color = Colors.redAccent;
+      label = 'محظور';
+    } else if (!user.isActive) {
+      color = Colors.orange;
+      label = 'معلق';
+    } else {
+      color = Colors.green;
+      label = 'نشط';
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
