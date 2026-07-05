@@ -149,14 +149,14 @@ class OrderService {
     );
   }
 
-  /// الطلبات المتاحة لشركات الشحن في محافظة معيّنة (بانتظار شركة تقبلها).
-  Stream<List<OrderModel>> getAvailableDeliveries(String governorate) {
-    return _firestore
-        .collection(_ordersCollection)
-        .where('status', isEqualTo: 'seller_approved')
-        .where('address.governorate', isEqualTo: governorate)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data())).toList());
+  /// الطلبات المتاحة لشركات الشحن (بانتظار شركة تقبلها)، اختيارياً مصفّاة
+  /// بمحافظة معيّنة — null يعرض كل المحافظات.
+  Stream<List<OrderModel>> getAvailableDeliveries(String? governorate) {
+    Query<Map<String, dynamic>> query = _firestore.collection(_ordersCollection).where('status', isEqualTo: 'seller_approved');
+    if (governorate != null) {
+      query = query.where('address.governorate', isEqualTo: governorate);
+    }
+    return query.snapshots().map((snapshot) => snapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data())).toList());
   }
 
   Stream<List<OrderModel>> getShippingOrders(String shippingUid) {

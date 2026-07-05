@@ -1,12 +1,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../core/constants/categories.dart';
 import '../../core/constants/colors.dart';
-import '../../models/delivery_request.dart';
+import '../../core/utils/error_handler.dart';
+import '../../models/order_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/order_service.dart';
 
-class _AvailableItem {
-  final DeliveryRequest request;
-  final DateTime expiresAt;
-  _AvailableItem({required this.request, required this.expiresAt});
+String _formatPrice(int value) {
+  final str = value.toString();
+  final buffer = StringBuffer();
+  for (int i = 0; i < str.length; i++) {
+    if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(str[i]);
+  }
+  return buffer.toString();
 }
 
 /// طلبات التوصيل المتاحة أمام شركة الشحن (SHIPPING-3).
@@ -17,25 +26,16 @@ class AvailableDeliveriesScreen extends StatefulWidget {
 }
 
 class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
-  late Timer _ticker;
-  String _cityFilter = 'الكل';
-
-  late final List<_AvailableItem> _items = [
-    _AvailableItem(
-      request: DeliveryRequest(orderNumber: '#HRF-9821', productName: 'إناء نحاسي منقوش', category: 'نحاسيات', fromProvince: 'بغداد', toProvince: 'النجف', buyerAddress: 'مخفي حتى القبول', sellerPhone: '07701234567', buyerPhone: 'مخفي', distance: '٢٥٠ كم تقريباً', fee: 4500),
-      expiresAt: DateTime.now().add(const Duration(minutes: 5)),
-    ),
-    _AvailableItem(
-      request: DeliveryRequest(orderNumber: '#HRF-9815', productName: 'طبق نحاسي مزخرف', category: 'نحاسيات', fromProvince: 'البصرة', toProvince: 'البصرة', buyerAddress: 'مخفي حتى القبول', sellerPhone: '07709876543', buyerPhone: 'مخفي', distance: '١٥ كم تقريباً', fee: 4500),
-      expiresAt: DateTime.now().add(const Duration(minutes: 3, seconds: 20)),
-    ),
-  ];
+  late final Timer _ticker;
+  String? _governorateFilter; // null = كل المحافظات
+  bool _isAccepting = false;
 
   @override
   void initState() {
     super.initState();
+    // يعيد رسم عدّاد "متبقي للانتهاء" كل ثانية (لا علاقة له ببث Firestore).
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() => _items.removeWhere((i) => DateTime.now().isAfter(i.expiresAt)));
+      if (mounted) setState(() {});
     });
   }
 
@@ -45,16 +45,33 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
     super.dispose();
   }
 
-  String _formatRemaining(DateTime expiresAt) {
-    final remaining = expiresAt.difference(DateTime.now());
+  String _formatRemaining(DateTime? deadline) {
+    if (deadline == null) return '--:--';
+    final remaining = deadline.difference(DateTime.now());
     if (remaining.isNegative) return '٠٠:٠٠';
     final minutes = remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
   }
 
-  void _accept(_AvailableItem item) {
-    setState(() => _items.remove(item));
+  Future<void> _accept(OrderModel order) async {
+    final user = context.read<AuthProvider>().currentUser;
+    if (user == null || _isAccepting) return;
+
+    setState(() => _isAccepting = true);
+    try {
+      final accepted = await OrderService.instance.shippingAcceptOrder(order.id, user.uid, user.name);
+      if (!mounted) return;
+      _showResultDialog(accepted);
+    } catch (e) {
+      if (!mounted) return;
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    } finally {
+      if (mounted) setState(() => _isAccepting = false);
+    }
+  }
+
+  void _showResultDialog(bool accepted) {
     showDialog(
       context: context,
       builder: (context) => Directionality(
@@ -62,8 +79,8 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تم! الطلب أصبح لك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
-          content: Text('يمكنك متابعته الآن من تبويب "توصيلاتي النشطة".', style: TextStyle(color: AppColors.subText)),
+          title: Text(accepted ? 'تم! الطلب أصبح لك' : 'عذراً، سبقك شخص آخر', style: TextStyle(color: accepted ? AppColors.gold : Colors.redAccent, fontWeight: FontWeight.bold)),
+          content: Text(accepted ? 'يمكنك متابعته الآن من تبويب "توصيلاتي النشطة".' : 'قبلت شركة أخرى هذا الطلب قبلك.', style: TextStyle(color: AppColors.subText)),
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -78,7 +95,6 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _cityFilter == 'الكل' ? _items : _items.where((i) => i.request.fromProvince == _cityFilter || i.request.toProvince == _cityFilter).toList();
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -90,22 +106,33 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
           actions: [
             IconButton(
               icon: const Icon(Icons.filter_alt_outlined, color: AppColors.gold),
-              onPressed: () => _showCityFilterSheet(context),
+              onPressed: () => _showGovernorateFilterSheet(context),
             ),
           ],
         ),
-        body: Column(
-          children: [
-            if (filtered.isNotEmpty) _buildAlertBanner(filtered.first),
-            Expanded(child: filtered.isEmpty ? _buildEmptyState() : _buildList(filtered)),
-          ],
+        body: StreamBuilder<List<OrderModel>>(
+          stream: OrderService.instance.getAvailableDeliveries(_governorateFilter),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
+            }
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+            }
+            final orders = snapshot.data!;
+            return Column(
+              children: [
+                if (orders.isNotEmpty) _buildAlertBanner(orders.first),
+                Expanded(child: orders.isEmpty ? _buildEmptyState() : _buildList(orders)),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  void _showCityFilterSheet(BuildContext context) {
-    final cities = {'الكل', ..._items.map((i) => i.request.fromProvince)};
+  void _showGovernorateFilterSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.card,
@@ -115,23 +142,35 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: cities.map((city) => RadioListTile<String>(
-              value: city,
-              groupValue: _cityFilter,
-              activeColor: AppColors.gold,
-              title: Text(city, style: const TextStyle(color: AppColors.text)),
-              onChanged: (val) {
-                setState(() => _cityFilter = val!);
-                Navigator.pop(sheetContext);
-              },
-            )).toList(),
+            children: [
+              RadioListTile<String?>(
+                value: null,
+                groupValue: _governorateFilter,
+                activeColor: AppColors.gold,
+                title: const Text('كل المحافظات', style: TextStyle(color: AppColors.text)),
+                onChanged: (val) {
+                  setState(() => _governorateFilter = val);
+                  Navigator.pop(sheetContext);
+                },
+              ),
+              ...kCities.map((city) => RadioListTile<String?>(
+                value: city,
+                groupValue: _governorateFilter,
+                activeColor: AppColors.gold,
+                title: Text(city, style: const TextStyle(color: AppColors.text)),
+                onChanged: (val) {
+                  setState(() => _governorateFilter = val);
+                  Navigator.pop(sheetContext);
+                },
+              )),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAlertBanner(_AvailableItem item) {
+  Widget _buildAlertBanner(OrderModel order) {
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(12),
@@ -140,7 +179,7 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
         children: [
           const Icon(Icons.notifications_active, color: AppColors.gold),
           const SizedBox(width: 10),
-          Expanded(child: Text('طلب توصيل جديد في ${item.request.fromProvince}! اقبل الآن', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13))),
+          Expanded(child: Text('طلب توصيل جديد في ${order.governorate}! اقبل الآن', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13))),
         ],
       ),
     );
@@ -161,16 +200,15 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
     );
   }
 
-  Widget _buildList(List<_AvailableItem> items) {
+  Widget _buildList(List<OrderModel> orders) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: items.length,
-      itemBuilder: (context, i) => _buildCard(items[i]),
+      itemCount: orders.length,
+      itemBuilder: (context, i) => _buildCard(orders[i]),
     );
   }
 
-  Widget _buildCard(_AvailableItem item) {
-    final request = item.request;
+  Widget _buildCard(OrderModel order) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -192,38 +230,36 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(request.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
-                    Text(request.category, style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                    Text(order.orderNumber, style: TextStyle(color: AppColors.subText, fontSize: 12)),
                   ],
                 ),
               ),
             ],
           ),
           const Divider(color: Color(0xFF2A2A2A), height: 20),
-          Row(children: [const Icon(Icons.location_on_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Text('من: ${request.fromProvince}', style: TextStyle(color: AppColors.subText, fontSize: 12))]),
+          Row(children: [const Icon(Icons.location_on_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Text('المحافظة: ${order.governorate}', style: TextStyle(color: AppColors.subText, fontSize: 12))]),
           const SizedBox(height: 4),
-          Row(children: [const Icon(Icons.flag_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Text('إلى: ${request.toProvince}', style: TextStyle(color: AppColors.subText, fontSize: 12))]),
+          Row(children: [const Icon(Icons.flag_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Expanded(child: Text('العنوان: ${order.district}', style: TextStyle(color: AppColors.subText, fontSize: 12)))]),
           const SizedBox(height: 4),
-          Row(children: [const Icon(Icons.call_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Text('رقم المشتري: ${request.buyerPhone}', style: TextStyle(color: AppColors.subText, fontSize: 12))]),
-          const SizedBox(height: 4),
-          Row(children: [const Icon(Icons.social_distance_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Text(request.distance, style: TextStyle(color: AppColors.subText, fontSize: 12))]),
+          Row(children: [const Icon(Icons.call_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Text('رقم المشتري: مخفي حتى القبول', style: TextStyle(color: AppColors.subText, fontSize: 12))]),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('أجر التوصيل: ${request.fee} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
-              Row(children: [Text('متبقي للانتهاء: ', style: TextStyle(color: AppColors.subText, fontSize: 11)), Text(_formatRemaining(item.expiresAt), style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13))]),
+              Text('أجر التوصيل: ${_formatPrice(order.shippingEarnings)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
+              Row(children: [Text('متبقي للانتهاء: ', style: TextStyle(color: AppColors.subText, fontSize: 11)), Text(_formatRemaining(order.shippingAcceptDeadline), style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13))]),
             ],
           ),
-          Text('(بعد خصم عمولة AL-HIRFA 10%)', style: TextStyle(color: AppColors.subText, fontSize: 10)),
+          Text('(بعد خصم عمولة AL-HIRFA)', style: TextStyle(color: AppColors.subText, fontSize: 10)),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              onPressed: () => _accept(item),
+              onPressed: _isAccepting ? null : () => _accept(order),
               child: const Text('قبول طلب التوصيل', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
