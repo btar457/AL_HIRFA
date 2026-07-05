@@ -39,6 +39,7 @@ class AdminService {
   Future<int> getBuyersCount() => _countUsers(role: 'customer');
   Future<int> getShippingCompaniesCount() => _countUsers(role: 'shipping', isActive: true);
   Future<int> getPendingArtisansCount() => _countUsers(role: 'artisan', approvalStatus: 'pending');
+  Future<int> getPendingShippingCompaniesCount() => _countUsers(role: 'shipping', approvalStatus: 'pending');
 
   Future<int> getTotalProductsCount() async {
     final snapshot = await _firestore.collection(_productsCollection).count().get();
@@ -69,6 +70,11 @@ class AdminService {
         .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(_todayStart))
         .get();
     return snapshot.docs.fold<int>(0, (acc, doc) => acc + (doc.data()['amount'] as int? ?? 0));
+  }
+
+  Future<int> getOpenDisputesCount() async {
+    final snapshot = await _firestore.collection('disputes').where('status', isEqualTo: 'open').count().get();
+    return snapshot.count ?? 0;
   }
 
   /// إجمالي مبيعات آخر 7 أيام (قيمة الطلبات المُنشأة كل يوم)، من الأقدم
