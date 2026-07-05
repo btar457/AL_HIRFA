@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../models/order_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/dispute_service.dart';
 import '../../services/order_service.dart';
 
 String _formatPrice(int value) {
@@ -29,6 +32,33 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
   bool _isUpdating = false;
 
   static const _problems = ['لا مشكلة', 'المشتري غير متاح', 'العنوان خاطئ', 'أخرى'];
+  bool _isSendingReport = false;
+
+  Future<void> _sendReport(OrderModel order) async {
+    if (_selectedProblem == 'لا مشكلة') {
+      Navigator.pop(context);
+      return;
+    }
+    final shippingUid = context.read<AuthProvider>().currentUser?.uid;
+    if (shippingUid == null) return;
+    setState(() => _isSendingReport = true);
+    try {
+      await DisputeService.instance.createDispute(
+        orderId: widget.orderId,
+        reporterUid: shippingUid,
+        reportedUid: order.buyerUid,
+        type: 'delivery_issue',
+        description: '$_selectedProblem: ${_problemDetailsController.text.trim()}',
+      );
+      if (!mounted) return;
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    } finally {
+      if (mounted) setState(() => _isSendingReport = false);
+    }
+  }
 
   Future<void> _confirmPickup() async {
     setState(() => _isUpdating = true);
@@ -193,9 +223,10 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                      // TODO: حفظ بلاغ المشكلة عبر dispute_service.dart عند بنائه (مرحلة Admin القادمة).
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('إرسال', style: TextStyle(fontWeight: FontWeight.bold)),
+                      onPressed: _isSendingReport ? null : () => _sendReport(order),
+                      child: _isSendingReport
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                          : const Text('إرسال', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
