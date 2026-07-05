@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../../models/user_model.dart';
+import '../../services/admin_service.dart';
 
-enum _ArtisanReviewStatus { pending, approved, rejected }
-
-class _PendingArtisan {
-  final String name;
-  final String city;
-  final String craft;
-  final int experienceYears;
-  final int sampleCount;
-  _ArtisanReviewStatus status = _ArtisanReviewStatus.pending;
-  _PendingArtisan({required this.name, required this.city, required this.craft, required this.experienceYears, required this.sampleCount});
+String _formatDate(DateTime date) {
+  const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  return '${date.day} ${months[date.month - 1]} ${date.year}';
 }
 
 /// مراجعة طلبات الحرفيين الجدد (ADMIN-4).
@@ -23,29 +18,23 @@ class ReviewArtisansScreen extends StatefulWidget {
 class _ReviewArtisansScreenState extends State<ReviewArtisansScreen> with SingleTickerProviderStateMixin {
   late final TabController _tabController = TabController(length: 3, vsync: this);
 
-  final List<_PendingArtisan> _artisans = [
-    _PendingArtisan(name: 'كريم عبد الرزاق', city: 'بغداد', craft: 'نحاسيات', experienceYears: 15, sampleCount: 10),
-    _PendingArtisan(name: 'هدى سالم', city: 'النجف', craft: 'نسيج حرير', experienceYears: 8, sampleCount: 6),
-  ];
-
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
   }
 
-  List<_PendingArtisan> _for(_ArtisanReviewStatus status) => _artisans.where((a) => a.status == status).toList();
-
-  void _approve(_PendingArtisan artisan) {
-    setState(() => artisan.status = _ArtisanReviewStatus.approved);
+  Future<void> _approve(UserModel artisan) async {
+    await AdminService.instance.approveArtisan(artisan.uid);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تمت الموافقة على ${artisan.name} وتفعيل حسابه')));
   }
 
-  void _reject(_PendingArtisan artisan) {
+  void _reject(UserModel artisan) {
     final reasonController = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) => Directionality(
+      builder: (dialogContext) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: AppColors.card,
@@ -60,14 +49,17 @@ class _ReviewArtisansScreenState extends State<ReviewArtisansScreen> with Single
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              onPressed: () {
-                setState(() => artisan.status = _ArtisanReviewStatus.rejected);
-                Navigator.pop(context);
+              onPressed: () async {
+                final reason = reasonController.text.trim();
+                if (reason.isEmpty) return;
+                await AdminService.instance.rejectArtisan(artisan.uid, reason);
+                if (!dialogContext.mounted) return;
+                Navigator.pop(dialogContext);
               },
               child: const Text('تأكيد الرفض', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
@@ -98,25 +90,37 @@ class _ReviewArtisansScreenState extends State<ReviewArtisansScreen> with Single
         body: TabBarView(
           controller: _tabController,
           children: [
-            _buildList(_for(_ArtisanReviewStatus.pending), showActions: true),
-            _buildList(_for(_ArtisanReviewStatus.approved), showActions: false),
-            _buildList(_for(_ArtisanReviewStatus.rejected), showActions: false),
+            _buildStreamList('pending', showActions: true),
+            _buildStreamList('approved', showActions: false),
+            _buildStreamList('rejected', showActions: false),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildList(List<_PendingArtisan> artisans, {required bool showActions}) {
-    if (artisans.isEmpty) return Center(child: Text('لا توجد طلبات', style: TextStyle(color: AppColors.subText)));
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: artisans.length,
-      itemBuilder: (context, i) => _buildCard(artisans[i], showActions: showActions),
+  Widget _buildStreamList(String approvalStatus, {required bool showActions}) {
+    return StreamBuilder<List<UserModel>>(
+      stream: AdminService.instance.getArtisansByApprovalStatus(approvalStatus),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+        }
+        final artisans = snapshot.data!..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        if (artisans.isEmpty) return Center(child: Text('لا توجد طلبات', style: TextStyle(color: AppColors.subText)));
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: artisans.length,
+          itemBuilder: (context, i) => _buildCard(artisans[i], showActions: showActions),
+        );
+      },
     );
   }
 
-  Widget _buildCard(_PendingArtisan artisan, {required bool showActions}) {
+  Widget _buildCard(UserModel artisan, {required bool showActions}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -133,27 +137,14 @@ class _ReviewArtisansScreenState extends State<ReviewArtisansScreen> with Single
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(artisan.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text('${artisan.city} • ${artisan.craft}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
-                    Text('${artisan.experienceYears} سنوات خبرة', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                    Text('${artisan.city} • ${artisan.phone}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                    Text('تاريخ التسجيل: ${_formatDate(artisan.createdAt)}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
                   ],
                 ),
               ),
-              if (artisan.status == _ArtisanReviewStatus.pending)
+              if (artisan.approvalStatus == 'pending')
                 Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.2), borderRadius: BorderRadius.circular(20)), child: const Text('PENDING', style: TextStyle(color: AppColors.gold, fontSize: 10, fontWeight: FontWeight.bold))),
             ],
-          ),
-          const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, crossAxisSpacing: 6, mainAxisSpacing: 6),
-            itemCount: 4,
-            itemBuilder: (context, i) => Container(
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), gradient: const LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)])),
-              child: i == 3
-                  ? Center(child: Text('+${artisan.sampleCount - 3}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)))
-                  : const Icon(Icons.auto_awesome, color: AppColors.gold, size: 18),
-            ),
           ),
           if (showActions) ...[
             const SizedBox(height: 12),
@@ -174,8 +165,6 @@ class _ReviewArtisansScreenState extends State<ReviewArtisansScreen> with Single
                 child: const Text('رفض', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
               ),
             ),
-            const SizedBox(height: 4),
-            TextButton(onPressed: () {}, child: const Text('عرض الملف الكامل', style: TextStyle(color: AppColors.gold))),
           ],
         ],
       ),
