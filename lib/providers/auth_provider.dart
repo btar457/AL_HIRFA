@@ -12,11 +12,15 @@ import '../services/auth_service.dart';
 class AuthProvider extends ChangeNotifier {
   UserModel? _currentUser;
   bool _isLoading = false;
+  bool _isInitializing = true;
   String? _errorMessage;
   StreamSubscription<User?>? _authSubscription;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
+  /// true إلى حين وصول أول حدث من authStateChanges عند بدء التطبيق — يميّز
+  /// "لا يزال يتحقق" عن "تأكّد أنه غير مسجّل دخوله" لصالح AuthGate في main.dart.
+  bool get isInitializing => _isInitializing;
   bool get isLoggedIn => _currentUser != null;
   String get role => _currentUser?.role ?? '';
   String? get errorMessage => _errorMessage;
@@ -27,6 +31,7 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider() {
     _authSubscription = AuthService.instance.authStateChanges.listen((user) {
+      _isInitializing = false;
       if (user == null) {
         _currentUser = null;
         notifyListeners();

@@ -20,32 +20,30 @@ import '../constants/colors.dart';
 /// عندما لا يُمرَّر [user] (الحالة الحالية لكل نقاط الدخول، لأن Firebase
 /// لم يُربط بعد بواجهة المستخدم)، يُتخطى الفحص مباشرة.
 void navigateByRole(BuildContext context, String role, {UserModel? user}) {
+  void push() => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => destinationForRole(role)));
+
   if (user != null && user.termsVersion != AppRules.currentTermsVersion) {
-    _showTermsUpdateSheet(context, user, () => _pushDestination(context, role));
+    _showTermsUpdateSheet(context, user, push);
     return;
   }
-  _pushDestination(context, role);
+  push();
 }
 
-void _pushDestination(BuildContext context, String role) {
-  late final Widget destination;
+/// الشاشة الرئيسية المطابقة للدور (بدون أي تنقّل) — يُستخدم من [navigateByRole]
+/// ومن AuthGate في main.dart عند تحديد الوجهة الأولية حسب حالة تسجيل الدخول.
+Widget destinationForRole(String role) {
   switch (role) {
     case 'customer':
-      destination = const CustomerNav();
-      break;
+      return const CustomerNav();
     case 'artisan':
-      destination = const ArtisanNav();
-      break;
+      return const ArtisanNav();
     case 'shipping':
-      destination = const ShippingNav();
-      break;
+      return const ShippingNav();
     case 'admin':
-      destination = const AdminNav();
-      break;
+      return const AdminNav();
     default:
-      destination = const CustomerNav();
+      return const CustomerNav();
   }
-  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => destination));
 }
 
 void _showTermsUpdateSheet(BuildContext context, UserModel user, VoidCallback onAccepted) {
