@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../../core/utils/error_handler.dart';
+import '../../services/auth_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -9,6 +11,24 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _contactController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _sendResetEmail() async {
+    final email = _contactController.text.trim();
+    if (email.isEmpty) return;
+    setState(() => _isLoading = true);
+    try {
+      await AuthService.instance.resetPassword(email);
+      if (!mounted) return;
+      AppError.showSnackbar(context, 'تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني', isError: false);
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +68,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                      onPressed: () {},
-                      child: const Text('إرسال رمز التأكيد', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      onPressed: _isLoading ? null : _sendResetEmail,
+                      child: _isLoading
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                          : const Text('إرسال رمز التأكيد', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                   ),
                   const SizedBox(height: 20),

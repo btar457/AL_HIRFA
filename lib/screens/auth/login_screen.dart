@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../core/constants/strings.dart';
 import '../../core/navigation/role_router.dart';
+import '../../core/utils/error_handler.dart';
+import '../../providers/auth_provider.dart';
 import 'forgot_password_screen.dart';
 import 'onboarding_screen.dart';
 
@@ -13,18 +16,22 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // TODO: يُستبدل باكتشاف دور المستخدم الفعلي عبر Firebase عند دمج المصادقة الحقيقية.
-  static const _founderEmail = 'founder@alhirfa.iq';
-
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
-  void _signIn() {
-    final isFounder = _emailController.text.trim().toLowerCase() == _founderEmail;
-    // TODO: استبدل هذا بقراءة الدور الفعلي عبر AuthService.getUserRole() بعد ربط مشروع Firebase حقيقي.
-    final role = isFounder ? 'admin' : 'customer';
-    navigateByRole(context, role);
+  Future<void> _signIn() async {
+    final auth = context.read<AuthProvider>();
+    try {
+      await auth.signIn(_emailController.text.trim(), _passwordController.text);
+      if (!mounted) return;
+      final user = auth.currentUser;
+      if (user == null) return;
+      navigateByRole(context, user.role, user: user);
+    } catch (e) {
+      if (!mounted) return;
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    }
   }
 
   Widget _buildField({required IconData icon, required String hint, TextEditingController? controller, bool obscure = false, Widget? suffix, TextInputType? keyboardType}) {
@@ -134,10 +141,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                            onPressed: _signIn,
-                            child: const Text('تسجيل الدخول', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          Consumer<AuthProvider>(
+                            builder: (context, auth, _) => ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                              onPressed: auth.isLoading ? null : _signIn,
+                              child: auth.isLoading
+                                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                                  : const Text('تسجيل الدخول', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            ),
                           ),
                           const SizedBox(height: 20),
                           Row(

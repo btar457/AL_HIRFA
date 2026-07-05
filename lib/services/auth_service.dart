@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/constants/app_rules.dart';
 import '../models/user_model.dart';
 
 /// طبقة المصادقة وإدارة حسابات المستخدمين عبر Firebase Auth وFirestore.
@@ -40,6 +41,11 @@ class AuthService {
       role: role,
       city: city,
       createdAt: DateTime.now(),
+      // register_screen لا يسمح بإنشاء الحساب أصلاً قبل تفعيل Checkbox
+      // الموافقة على الشروط، لذا نُثبّت القبول بالإصدار الحالي هنا مباشرة.
+      termsAccepted: true,
+      termsAcceptedAt: DateTime.now(),
+      termsVersion: AppRules.currentTermsVersion,
     );
     await _firestore.collection(_usersCollection).doc(uid).set(user.toMap());
     await saveFCMToken(uid);

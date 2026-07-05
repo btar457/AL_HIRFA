@@ -1,7 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../core/navigation/role_router.dart';
+import '../../core/utils/error_handler.dart';
+import '../../providers/auth_provider.dart';
 import '../shared/privacy_policy_screen.dart';
 import '../shared/terms_screen.dart';
 import '../shipping/shipping_register_screen.dart';
@@ -50,14 +53,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _createAccount() {
+  Future<void> _createAccount() async {
     final role = _roleKeys[_selectedRole];
-    if (role == 'shipping') {
-      // شركات الشحن تكمل التسجيل عبر نموذج إضافي (بيانات الشركة والتأمين) قبل الدخول.
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const ShippingRegisterScreen()));
-      return;
+    final auth = context.read<AuthProvider>();
+    try {
+      await auth.signUp(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        name: _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+        role: role,
+      );
+      if (!mounted) return;
+      if (role == 'shipping') {
+        // شركات الشحن تكمل التسجيل عبر نموذج إضافي (بيانات الشركة والتأمين) قبل الدخول.
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ShippingRegisterScreen()));
+        return;
+      }
+      final user = auth.currentUser;
+      if (user == null) return;
+      navigateByRole(context, user.role, user: user);
+    } catch (e) {
+      if (!mounted) return;
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
     }
-    navigateByRole(context, role);
   }
 
   @override
@@ -154,10 +173,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, disabledBackgroundColor: AppColors.gold.withOpacity(0.3), padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                  onPressed: _termsAccepted ? _createAccount : null,
-                  child: const Text('إنشاء الحساب', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Consumer<AuthProvider>(
+                  builder: (context, auth, _) => ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, disabledBackgroundColor: AppColors.gold.withOpacity(0.3), padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                    onPressed: (_termsAccepted && !auth.isLoading) ? _createAccount : null,
+                    child: auth.isLoading
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                        : const Text('إنشاء الحساب', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Row(
