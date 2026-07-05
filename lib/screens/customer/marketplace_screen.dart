@@ -2,9 +2,30 @@ import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/categories.dart';
 import '../../models/marketplace_product.dart';
+import '../../models/product_model.dart';
+import '../../services/product_service.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'product_detail_screen.dart';
 import 'search_screen.dart';
+
+String _formatPrice(int value) {
+  final str = value.toString();
+  final buffer = StringBuffer();
+  for (int i = 0; i < str.length; i++) {
+    if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(str[i]);
+  }
+  return buffer.toString();
+}
+
+MarketplaceProduct _toMarketplaceProduct(ProductModel product) {
+  return MarketplaceProduct(
+    name: product.name,
+    price: _formatPrice(product.price),
+    city: product.city,
+    cityTag: product.city.toUpperCase(),
+  );
+}
 
 class MarketplaceScreen extends StatefulWidget {
   const MarketplaceScreen({super.key});
@@ -15,26 +36,13 @@ class MarketplaceScreen extends StatefulWidget {
 class _MarketplaceScreenState extends State<MarketplaceScreen> {
   String _selectedCity = 'الكل';
   String _selectedCategory = 'all';
-  final Set<String> _favoriteNames = {};
+  final Set<String> _favoriteIds = {};
   final bool _hasNotifications = true;
 
   final _cities = const ['الكل', 'نجف', 'بصرة', 'بغداد', 'أربيل', 'موصل', 'كربلاء', 'الديوانية'];
 
-  final _products = const [
-    MarketplaceProduct(name: 'سجادة حرير نجفية مطرزة يدوياً', price: '450,000', city: 'نجف', cityTag: 'NAJAF SILK'),
-    MarketplaceProduct(name: 'إبريق نحاسي بصري منقوش', price: '210,000', city: 'بصرة', cityTag: 'BASRA COPPER'),
-    MarketplaceProduct(name: 'طقم نحاسيات بغدادية مذهبة', price: '380,000', city: 'بغداد', cityTag: 'BAGHDAD BRASS'),
-    MarketplaceProduct(name: 'نسيج صوفي أربيلي تقليدي', price: '165,000', city: 'أربيل', cityTag: 'ERBIL WEAVE'),
-    MarketplaceProduct(name: 'منحوتة حجرية موصلية', price: '295,000', city: 'موصل', cityTag: 'MOSUL STONE'),
-    MarketplaceProduct(name: 'إكسسوار ذهبي كربلائي', price: '520,000', city: 'كربلاء', cityTag: 'KARBALA GOLD'),
-    MarketplaceProduct(name: 'عباءة صوف ديوانية أصيلة', price: '140,000', city: 'الديوانية', cityTag: 'DIWANIYAH WOOL'),
-    MarketplaceProduct(name: 'مزهرية طينية بابلية تراثية', price: '175,000', city: 'بغداد', cityTag: 'BABYLON CLAY'),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final filtered = _selectedCity == 'الكل' ? _products : _products.where((p) => p.city == _selectedCity).toList();
-
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -47,23 +55,38 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               _buildCategoryCards(),
               _buildCityFilters(),
               Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.66),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, i) {
-                    final product = filtered[i];
-                    return MarketplaceProductCard(
-                      product: product,
-                      isFavorite: _favoriteNames.contains(product.name),
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product))),
-                      onFavoriteToggle: () => setState(() {
-                        if (_favoriteNames.contains(product.name)) {
-                          _favoriteNames.remove(product.name);
-                        } else {
-                          _favoriteNames.add(product.name);
-                        }
-                      }),
+                child: StreamBuilder<List<ProductModel>>(
+                  stream: ProductService.instance.getActiveProducts(city: _selectedCity == 'الكل' ? null : _selectedCity),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(child: Text('تعذّر تحميل المنتجات', style: TextStyle(color: AppColors.subText)));
+                    }
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                    }
+                    final products = snapshot.data!;
+                    if (products.isEmpty) {
+                      return Center(child: Text('لا توجد منتجات حالياً', style: TextStyle(color: AppColors.subText)));
+                    }
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.66),
+                      itemCount: products.length,
+                      itemBuilder: (context, i) {
+                        final product = products[i];
+                        return MarketplaceProductCard(
+                          product: _toMarketplaceProduct(product),
+                          isFavorite: _favoriteIds.contains(product.id),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: _toMarketplaceProduct(product)))),
+                          onFavoriteToggle: () => setState(() {
+                            if (_favoriteIds.contains(product.id)) {
+                              _favoriteIds.remove(product.id);
+                            } else {
+                              _favoriteIds.add(product.id);
+                            }
+                          }),
+                        );
+                      },
                     );
                   },
                 ),
@@ -201,5 +224,4 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
       ),
     );
   }
-
 }
