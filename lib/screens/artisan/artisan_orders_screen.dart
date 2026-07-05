@@ -5,6 +5,7 @@ import '../../core/utils/error_handler.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
+import '../../widgets/common/loading_shimmer.dart';
 import 'artisan_order_detail_screen.dart';
 
 const _inProgressStatuses = {'seller_approved', 'shipping_assigned', 'picked_up'};
@@ -146,7 +147,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                     return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
                   }
                   if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                    return const ListRowShimmer();
                   }
                   final orders = snapshot.data!;
                   final newOrders = _ordersFor(orders, {'pending'});

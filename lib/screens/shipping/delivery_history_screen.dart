@@ -4,6 +4,7 @@ import '../../core/constants/colors.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
+import '../../widgets/common/loading_shimmer.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -77,7 +78,7 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> with Sing
                     return Center(child: Text('تعذّر تحميل السجل', style: TextStyle(color: AppColors.subText)));
                   }
                   if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                    return const ListRowShimmer();
                   }
                   final delivered = snapshot.data!.where((o) => o.status == 'delivered').toList()
                     ..sort((a, b) => _completionDate(b).compareTo(_completionDate(a)));

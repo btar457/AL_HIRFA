@@ -7,6 +7,7 @@ import '../../models/settlement_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import '../../services/wallet_service.dart';
+import '../../widgets/common/loading_shimmer.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -87,7 +88,7 @@ class ShippingWalletScreen extends StatelessWidget {
                 stream: OrderService.instance.getShippingOrders(shippingUid),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                    return const ListRowShimmer();
                   }
                   final delivered = snapshot.data!.where((o) => o.status == 'delivered').toList()
                     ..sort((a, b) => _completionDate(b).compareTo(_completionDate(a)));

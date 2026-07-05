@@ -7,6 +7,7 @@ import '../../core/utils/error_handler.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
+import '../../widgets/common/loading_shimmer.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -117,7 +118,7 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
               return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
             }
             if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+              return const ListRowShimmer();
             }
             final orders = snapshot.data!;
             return Column(

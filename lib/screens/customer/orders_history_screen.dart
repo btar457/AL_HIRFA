@@ -5,6 +5,7 @@ import '../../models/marketplace_product.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
+import '../../widgets/common/loading_shimmer.dart';
 import 'order_review_screen.dart';
 import 'order_tracking_screen.dart';
 
@@ -79,7 +80,7 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
                     return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
                   }
                   if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                    return const ListRowShimmer();
                   }
                   final orders = snapshot.data!;
                   return TabBarView(

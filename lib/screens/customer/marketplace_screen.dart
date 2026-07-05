@@ -6,6 +6,7 @@ import '../../models/marketplace_product.dart';
 import '../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/product_service.dart';
+import '../../widgets/common/loading_shimmer.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'product_detail_screen.dart';
 import 'search_screen.dart';
@@ -65,7 +66,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                       return Center(child: Text('تعذّر تحميل المنتجات', style: TextStyle(color: AppColors.subText)));
                     }
                     if (!snapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                      return const ProductGridShimmer();
                     }
                     final products = snapshot.data!;
                     if (products.isEmpty) {
