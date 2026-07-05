@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/cart_provider.dart';
 import '../../services/product_service.dart';
 import 'artisan_public_profile_screen.dart';
 
@@ -58,7 +59,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 20),
                     _buildQuantitySelector(),
                     const SizedBox(height: 16),
-                    _buildAddToCartButton(),
+                    _buildAddToCartButton(product),
                     const SizedBox(height: 28),
                     _buildNarrative(product),
                     const SizedBox(height: 24),
@@ -228,12 +229,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildAddToCartButton() {
+  Widget _buildAddToCartButton(ProductModel product) {
     return SizedBox(
       height: 56,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-        onPressed: () {}, // TODO: ربط CartProvider.addItem عند تنفيذ "المرحلة 4 — الطلبات" (cart_provider + checkout معاً).
+        onPressed: () {
+          final cart = context.read<CartProvider>();
+          for (var i = 0; i < _quantity; i++) {
+            cart.addItem(product);
+          }
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('أُضيف "${product.name}" إلى السلة')));
+          setState(() => _quantity = 1);
+        },
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

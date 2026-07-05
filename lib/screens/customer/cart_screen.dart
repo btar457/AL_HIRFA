@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
+import '../../models/cart_item.dart';
 import '../../models/marketplace_product.dart';
+import '../../providers/cart_provider.dart';
 import 'checkout_screen.dart';
 import 'customer_nav.dart';
-
-const int _kDeliveryFee = 5000;
-
-int _parsePrice(String price) => int.parse(price.replaceAll(',', ''));
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -18,30 +17,13 @@ String _formatPrice(int value) {
   return buffer.toString();
 }
 
-class _CartItem {
-  final MarketplaceProduct product;
-  int quantity;
-  _CartItem({required this.product, this.quantity = 1});
-}
-
-class CartScreen extends StatefulWidget {
+class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
-  @override
-  State<CartScreen> createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
-  final List<_CartItem> _items = [
-    _CartItem(product: const MarketplaceProduct(name: 'سجادة حرير نجفية مطرزة يدوياً', price: '450,000', city: 'نجف', cityTag: 'NAJAF SILK')),
-    _CartItem(product: const MarketplaceProduct(name: 'إبريق نحاسي بصري منقوش', price: '210,000', city: 'بصرة', cityTag: 'BASRA COPPER'), quantity: 2),
-  ];
-
-  int get _subtotal => _items.fold(0, (sum, item) => sum + _parsePrice(item.product.price) * item.quantity);
-
-  void _removeItem(_CartItem item) => setState(() => _items.remove(item));
 
   @override
   Widget build(BuildContext context) {
+    final cart = context.watch<CartProvider>();
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -49,14 +31,14 @@ class _CartScreenState extends State<CartScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           iconTheme: const IconThemeData(color: AppColors.gold),
-          title: Text('سلتي (${_items.length})', style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('سلتي (${cart.itemCount})', style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
-        body: _items.isEmpty ? _buildEmptyState() : _buildCartBody(),
+        body: cart.items.isEmpty ? _buildEmptyState(context) : _buildCartBody(context, cart),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -78,29 +60,32 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartBody() {
-    final total = _subtotal + _kDeliveryFee;
+  Widget _buildCartBody(BuildContext context, CartProvider cart) {
     return Column(
       children: [
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: _items.length,
-            itemBuilder: (context, i) => _buildCartItemCard(_items[i]),
+            itemCount: cart.items.length,
+            itemBuilder: (context, i) => _buildCartItemCard(context, cart, cart.items[i]),
           ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Column(
             children: [
-              _buildSummaryCard(total),
+              _buildSummaryCard(cart),
               const SizedBox(height: 16),
               SizedBox(
                 height: 56,
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CheckoutScreen(product: _items.first.product))),
+                  onPressed: () {
+                    final product = cart.items.first.product;
+                    final marketplaceProduct = MarketplaceProduct(name: product.name, price: _formatPrice(product.price), city: product.city, cityTag: product.city.toUpperCase());
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => CheckoutScreen(product: marketplaceProduct)));
+                  },
                   child: const Text('إتمام الشراء', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
@@ -111,11 +96,11 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartItemCard(_CartItem item) {
+  Widget _buildCartItemCard(BuildContext context, CartProvider cart, CartItem item) {
     return Dismissible(
-      key: ValueKey(item.product.name),
+      key: ValueKey(item.product.id),
       direction: DismissDirection.endToStart,
-      onDismissed: (_) => _removeItem(item),
+      onDismissed: (_) => cart.removeItem(item.product.id),
       background: Container(
         margin: const EdgeInsets.only(bottom: 12),
         alignment: Alignment.centerLeft,
@@ -146,15 +131,15 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   Text(item.product.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
-                  Text('أبو مصطفى', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                  Text(item.product.artisanName, style: TextStyle(color: AppColors.subText, fontSize: 12)),
                   const SizedBox(height: 4),
-                  Text('د.ع ${item.product.price}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text('د.ع ${_formatPrice(item.product.price)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      _quantityButton(icon: Icons.remove, onTap: () => setState(() => item.quantity = item.quantity > 1 ? item.quantity - 1 : 1)),
+                      _quantityButton(icon: Icons.remove, onTap: () => cart.updateQuantity(item.product.id, item.quantity - 1)),
                       SizedBox(width: 36, child: Text('${item.quantity}', textAlign: TextAlign.center, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold))),
-                      _quantityButton(icon: Icons.add, onTap: () => setState(() => item.quantity++)),
+                      _quantityButton(icon: Icons.add, onTap: () => cart.updateQuantity(item.product.id, item.quantity + 1)),
                     ],
                   ),
                 ],
@@ -178,15 +163,15 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildSummaryCard(int total) {
+  Widget _buildSummaryCard(CartProvider cart) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.3))),
       child: Column(
         children: [
-          _summaryRow('المجموع الفرعي', _formatPrice(_subtotal)),
+          _summaryRow('المجموع الفرعي', _formatPrice(cart.subtotal)),
           const SizedBox(height: 8),
-          _summaryRow('سعر التوصيل', _formatPrice(_kDeliveryFee)),
+          _summaryRow('سعر التوصيل', _formatPrice(cart.deliveryFee)),
           const SizedBox(height: 12),
           Divider(color: AppColors.gold.withOpacity(0.4)),
           const SizedBox(height: 4),
@@ -194,7 +179,7 @@ class _CartScreenState extends State<CartScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('المجموع الكلي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
-              Text('${_formatPrice(total)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
+              Text('${_formatPrice(cart.total)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
             ],
           ),
         ],
