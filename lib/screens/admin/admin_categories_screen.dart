@@ -1,61 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/categories.dart';
+import '../../services/product_service.dart';
 
 /// إدارة التصنيفات (ADMIN-11).
-class AdminCategoriesScreen extends StatefulWidget {
+///
+/// ملاحظة: تصنيفات AL-HIRFA (فخار، نحاسيات، منسوجات...) قائمة ثابتة مرتبطة
+/// بصور مضمَّنة في التطبيق (kAppCategories) — وليست بيانات مُدارة في وقت
+/// التشغيل. هذه الشاشة تعرض عدد المنتجات الحقيقي لكل فئة، وليست أداة لإضافة/
+/// حذف فئات (ذلك يتطلب إعادة بناء التصنيف نفسه عبر Firestore + رفع صور،
+/// وهي ميزة أكبر بكثير من إصلاح شاشة — أخبرني إن أردتها).
+class AdminCategoriesScreen extends StatelessWidget {
   const AdminCategoriesScreen({super.key});
-  @override
-  State<AdminCategoriesScreen> createState() => _AdminCategoriesScreenState();
-}
-
-class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
-  void _showAddCategorySheet() {
-    final nameController = TextEditingController();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.card,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (sheetContext) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: Padding(
-          padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('إضافة فئة جديدة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: nameController,
-                style: const TextStyle(color: AppColors.text),
-                decoration: InputDecoration(hintText: 'اسم الفئة', hintStyle: TextStyle(color: AppColors.subText), filled: true, fillColor: AppColors.background, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
-              ),
-              const SizedBox(height: 14),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold.withOpacity(0.5)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), padding: const EdgeInsets.symmetric(vertical: 14)),
-                onPressed: () {},
-                icon: const Icon(Icons.upload_outlined, color: AppColors.gold),
-                label: const Text('رفع صورة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                  onPressed: () => Navigator.pop(sheetContext),
-                  child: const Text('إضافة', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
+    final categories = kAppCategories.where((c) => c.id != 'all').toList();
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -67,11 +27,10 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
         ),
         body: ListView.separated(
           padding: const EdgeInsets.all(16),
-          itemCount: kAppCategories.length,
+          itemCount: categories.length,
           separatorBuilder: (context, i) => const SizedBox(height: 10),
           itemBuilder: (context, i) {
-            final category = kAppCategories[i];
-            final productCount = (i + 1) * 12;
+            final category = categories[i];
             return Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
@@ -87,24 +46,17 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(category.nameAr, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('$productCount منتج', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                        FutureBuilder<int>(
+                          future: ProductService.instance.getActiveProductCountByCategory(category.id),
+                          builder: (context, snapshot) => Text('${snapshot.data ?? 0} منتج', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                        ),
                       ],
                     ),
-                  ),
-                  IconButton(icon: const Icon(Icons.edit_outlined, color: AppColors.gold, size: 20), onPressed: () {}),
-                  IconButton(
-                    icon: Icon(Icons.delete_outline, color: productCount == 0 ? Colors.redAccent : AppColors.subText.withOpacity(0.4), size: 20),
-                    onPressed: productCount == 0 ? () {} : null,
                   ),
                 ],
               ),
             );
           },
-        ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: AppColors.gold,
-          onPressed: _showAddCategorySheet,
-          child: const Icon(Icons.add, color: Colors.black),
         ),
       ),
     );

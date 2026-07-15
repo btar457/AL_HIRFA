@@ -117,6 +117,12 @@ class ProductService {
     return _firestore.collection(_productsCollection).doc(productId).update({'status': 'active'});
   }
 
+  /// عدد المنتجات النشطة الحقيقي ضمن فئة معيّنة — لشاشة admin_categories.
+  Future<int> getActiveProductCountByCategory(String categoryId) async {
+    final snapshot = await _firestore.collection(_productsCollection).where('category', isEqualTo: categoryId).where('status', isEqualTo: 'active').count().get();
+    return snapshot.count ?? 0;
+  }
+
   /// Admin: كل المنتجات بحالة معيّنة عبر كل الحرفيين — لشاشة admin_products.
   Stream<List<ProductModel>> getProductsByStatus(String status) {
     return _firestore.collection(_productsCollection).where('status', isEqualTo: status).snapshots().map(
