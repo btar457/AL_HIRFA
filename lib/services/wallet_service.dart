@@ -4,6 +4,7 @@ import '../models/order_model.dart';
 import '../models/settlement_model.dart';
 import '../models/transaction_model.dart';
 import '../models/wallet_model.dart';
+import '../models/withdrawal_request_model.dart';
 import 'notification_service.dart';
 
 /// طبقة المحافظ والتسويات الأسبوعية، مبنية بالكامل فوق سجل transactions
@@ -20,7 +21,8 @@ class WalletService {
   static const _ordersCollection = 'orders';
 
   /// محفظة الحرفي: يُقسَّم مجموع حركات 'sale' المكتملة إلى متاح (تجاوز
-  /// فترة الاحتجاز 72 ساعة) ومحتجز (لا يزال ضمنها).
+  /// فترة الاحتجاز 72 ساعة) ومحتجز (لا يزال ضمنها)، مطروحاً منه أي مبالغ
+  /// طلب سحبها بالفعل (قيد المعالجة أو مدفوعة) — لمنع سحب نفس الرصيد مرتين.
   Stream<WalletModel> getArtisanWallet(String artisanUid) {
     return _firestore
         .collection(_transactionsCollection)
@@ -28,7 +30,7 @@ class WalletService {
         .where('type', isEqualTo: 'sale')
         .where('status', isEqualTo: 'completed')
         .snapshots()
-        .map((snapshot) {
+        .asyncMap((snapshot) async {
       final now = DateTime.now();
       var available = 0;
       var pending = 0;
@@ -43,6 +45,11 @@ class WalletService {
           pending += tx.amount;
         }
       }
+
+      final withdrawals = await _firestore.collection(_withdrawalsCollection).where('artisanUid', isEqualTo: artisanUid).where('status', whereIn: ['pending', 'paid']).get();
+      final withdrawn = withdrawals.docs.fold<int>(0, (acc, doc) => acc + (doc.data()['amount'] as int? ?? 0));
+      available = (available - withdrawn).clamp(0, available);
+
       return WalletModel(availableBalance: available, pendingBalance: pending, totalEarnings: total);
     });
   }
@@ -70,6 +77,34 @@ class WalletService {
     });
 
     await NotificationService.instance.sendBulkNotification(targetRole: 'admin', title: 'طلب سحب جديد', body: 'حرفي طلب سحب $amount د.ع');
+  }
+
+  /// Admin: طلبات سحب الحرفيين بحسب الحالة — لشاشة admin_financials.
+  Stream<List<WithdrawalRequestModel>> getWithdrawalRequests({String status = 'pending'}) {
+    return _firestore.collection(_withdrawalsCollection).where('status', isEqualTo: status).orderBy('createdAt', descending: true).snapshots().map(
+      (snapshot) => snapshot.docs.map((doc) => WithdrawalRequestModel.fromMap(doc.id, doc.data())).toList(),
+    );
+  }
+
+  /// Admin: تأكيد صرف طلب سحب فعلياً (تحويل بنكي يدوي خارج التطبيق) وتسجيله كمدفوع.
+  Future<void> confirmWithdrawal(String withdrawalId) async {
+    final doc = await _firestore.collection(_withdrawalsCollection).doc(withdrawalId).get();
+    final artisanUid = doc.data()?['artisanUid'] as String? ?? '';
+    final amount = doc.data()?['amount'] as int? ?? 0;
+
+    await _firestore.collection(_withdrawalsCollection).doc(withdrawalId).update({'status': 'paid'});
+
+    await NotificationService.instance.sendToUser(userUid: artisanUid, title: 'تم صرف طلب السحب', body: 'تم تحويل $amount د.ع إلى حسابك البنكي', type: 'withdrawal_paid');
+  }
+
+  /// Admin: رفض طلب سحب (مثلاً بيانات IBAN غير صحيحة) — يعيد المبلغ إلى الرصيد المتاح.
+  Future<void> rejectWithdrawal(String withdrawalId, String reason) async {
+    final doc = await _firestore.collection(_withdrawalsCollection).doc(withdrawalId).get();
+    final artisanUid = doc.data()?['artisanUid'] as String? ?? '';
+
+    await _firestore.collection(_withdrawalsCollection).doc(withdrawalId).update({'status': 'rejected', 'rejectionReason': reason});
+
+    await NotificationService.instance.sendToUser(userUid: artisanUid, title: 'تم رفض طلب السحب', body: reason, type: 'withdrawal_rejected');
   }
 
   /// محفظة شركة الشحن: مجموع حركات 'delivery' المكتملة (تُدفع كاشاً فوراً، لا احتجاز).

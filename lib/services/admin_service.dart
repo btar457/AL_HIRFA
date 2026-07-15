@@ -72,6 +72,28 @@ class AdminService {
     return snapshot.docs.fold<int>(0, (acc, doc) => acc + (doc.data()['amount'] as int? ?? 0));
   }
 
+  /// إيرادات الشهر الحالي مُفصَّلة (عمولة المنتجات مقابل عمولة الشحن) من
+  /// الطلبات المُسلَّمة فعلياً — لشاشة admin_financials.
+  Future<({int total, int productCommission, int shippingCommission})> getMonthlyRevenueBreakdown() async {
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+    final snapshot = await _firestore
+        .collection(_ordersCollection)
+        .where('status', isEqualTo: 'delivered')
+        .where('deliveredAt', isGreaterThanOrEqualTo: Timestamp.fromDate(monthStart))
+        .get();
+    final orders = snapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data())).toList();
+
+    var productCommission = 0;
+    var shippingCommission = 0;
+    for (final order in orders) {
+      final shippingCut = order.deliveryFee - order.shippingEarnings;
+      shippingCommission += shippingCut;
+      productCommission += order.platformFee - shippingCut;
+    }
+    return (total: productCommission + shippingCommission, productCommission: productCommission, shippingCommission: shippingCommission);
+  }
+
   Future<int> getOpenDisputesCount() async {
     final snapshot = await _firestore.collection('disputes').where('status', isEqualTo: 'open').count().get();
     return snapshot.count ?? 0;
