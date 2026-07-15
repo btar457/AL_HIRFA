@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
+import '../../providers/notification_provider.dart';
+import '../shared/notifications_screen.dart';
 import 'artisan_orders_screen.dart';
 import 'artisan_wallet_screen.dart';
 
@@ -64,16 +67,22 @@ class ArtisanDashboardScreen extends StatelessWidget {
       children: [
         IconButton(icon: const Icon(Icons.menu, color: AppColors.gold), onPressed: () {}),
         const Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)),
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            IconButton(icon: const Icon(Icons.notifications_outlined, color: AppColors.gold), onPressed: () {}),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(width: 9, height: 9, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
-            ),
-          ],
+        Consumer<NotificationProvider>(
+          builder: (context, notifications, _) => Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined, color: AppColors.gold),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
+              ),
+              if (notifications.unreadCount > 0)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(width: 9, height: 9, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+                ),
+            ],
+          ),
         ),
       ],
     );

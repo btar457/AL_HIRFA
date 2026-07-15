@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/notification_provider.dart';
+import '../../services/notification_service.dart';
 import 'active_deliveries_screen.dart';
 import 'available_deliveries_screen.dart';
 import 'delivery_history_screen.dart';
@@ -22,6 +26,16 @@ class _ShippingNavState extends State<ShippingNav> {
     DeliveryHistoryScreen(),
     ShippingProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    final uid = context.read<AuthProvider>().currentUser?.uid;
+    if (uid != null) {
+      NotificationService.instance.initialize(uid);
+      context.read<NotificationProvider>().loadNotifications(uid);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

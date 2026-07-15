@@ -7,9 +7,11 @@ import '../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/product_service.dart';
 import '../../widgets/common/loading_shimmer.dart';
+import '../../providers/notification_provider.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'product_detail_screen.dart';
 import 'search_screen.dart';
+import '../shared/notifications_screen.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -39,7 +41,6 @@ class MarketplaceScreen extends StatefulWidget {
 class _MarketplaceScreenState extends State<MarketplaceScreen> {
   String _selectedCity = 'الكل';
   String _selectedCategory = 'all';
-  final bool _hasNotifications = true;
 
   final _cities = const ['الكل', 'نجف', 'بصرة', 'بغداد', 'أربيل', 'موصل', 'كربلاء', 'الديوانية'];
 
@@ -110,17 +111,22 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
         children: [
           IconButton(icon: const Icon(Icons.menu, color: AppColors.gold), onPressed: () {}),
           const Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              IconButton(icon: const Icon(Icons.notifications_outlined, color: AppColors.gold), onPressed: () {}),
-              if (_hasNotifications)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(width: 9, height: 9, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+          Consumer<NotificationProvider>(
+            builder: (context, notifications, _) => Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined, color: AppColors.gold),
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
                 ),
-            ],
+                if (notifications.unreadCount > 0)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(width: 9, height: 9, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+                  ),
+              ],
+            ),
           ),
         ],
       ),

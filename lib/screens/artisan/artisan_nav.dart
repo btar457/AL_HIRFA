@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/notification_provider.dart';
+import '../../services/notification_service.dart';
 import 'artisan_dashboard_screen.dart';
 import 'artisan_orders_screen.dart';
 import 'artisan_profile_screen.dart';
@@ -22,6 +26,16 @@ class _ArtisanNavState extends State<ArtisanNav> {
     ArtisanOrdersScreen(),
     ArtisanProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    final uid = context.read<AuthProvider>().currentUser?.uid;
+    if (uid != null) {
+      NotificationService.instance.initialize(uid);
+      context.read<NotificationProvider>().loadNotifications(uid);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

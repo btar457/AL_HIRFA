@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
+import '../../providers/notification_provider.dart';
 import '../../services/admin_service.dart';
+import '../shared/notifications_screen.dart';
 import 'admin_shipping_screen.dart';
 import 'review_artisans_screen.dart';
 
@@ -142,7 +145,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             Text(_formatDate(DateTime.now()), style: TextStyle(color: AppColors.subText, fontSize: 12)),
           ],
         ),
-        IconButton(icon: const Icon(Icons.notifications_outlined, color: AppColors.gold), onPressed: () {}),
+        Consumer<NotificationProvider>(
+          builder: (context, notifications, _) => Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined, color: AppColors.gold),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
+              ),
+              if (notifications.unreadCount > 0)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(width: 9, height: 9, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
+                ),
+            ],
+          ),
+        ),
       ],
     );
   }
