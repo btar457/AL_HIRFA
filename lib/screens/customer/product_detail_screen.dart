@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../core/constants/colors.dart';
 import '../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
@@ -115,7 +116,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             right: 16,
             child: Row(
               children: [
-                _circleIconButton(icon: Icons.share_outlined, onTap: () {}),
+                _circleIconButton(icon: Icons.share_outlined, onTap: () => Share.share('${product.name} — د.ع ${_formatPrice(product.price)}\nمن صنع ${product.artisanName} على AL-HIRFA')),
                 const SizedBox(width: 8),
                 _circleIconButton(
                   icon: isFavorite ? Icons.favorite : Icons.favorite_border,

@@ -76,7 +76,7 @@ class ArtisanDashboardScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        IconButton(icon: const Icon(Icons.menu, color: AppColors.gold), onPressed: () {}),
+        const SizedBox(width: 48),
         const Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)),
         Consumer<NotificationProvider>(
           builder: (context, notifications, _) => Stack(
