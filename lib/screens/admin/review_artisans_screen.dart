@@ -104,7 +104,12 @@ class _ReviewArtisansScreenState extends State<ReviewArtisansScreen> with Single
       stream: AdminService.instance.getArtisansByApprovalStatus(approvalStatus),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text('تعذّر تحميل الطلبات:\n${snapshot.error}', textAlign: TextAlign.center, style: TextStyle(color: AppColors.subText, fontSize: 12)),
+            ),
+          );
         }
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator(color: AppColors.gold));

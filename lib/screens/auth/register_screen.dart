@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/categories.dart';
 import '../../core/constants/colors.dart';
 import '../../core/navigation/role_router.dart';
 import '../../core/utils/error_handler.dart';
@@ -27,6 +28,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscureConfirmPassword = true;
   bool _termsAccepted = false;
   int _selectedRole = 0;
+  String _selectedCity = kCities.first;
 
   final _roles = const ['مشتري', 'حرفي', 'شركة شحن'];
   static const _roleKeys = ['customer', 'artisan', 'shipping'];
@@ -63,6 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
         role: role,
+        city: _selectedCity,
       );
       if (!mounted) return;
       if (role == 'shipping') {
@@ -128,6 +131,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 _buildField(hint: 'البريد الإلكتروني', controller: _emailController, keyboardType: TextInputType.emailAddress),
                 const SizedBox(height: 14),
                 _buildField(hint: 'رقم الهاتف', controller: _phoneController, keyboardType: TextInputType.phone),
+                const SizedBox(height: 14),
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedCity,
+                  dropdownColor: AppColors.card,
+                  style: const TextStyle(color: AppColors.text),
+                  decoration: InputDecoration(
+                    hintText: 'المدينة',
+                    hintStyle: TextStyle(color: AppColors.subText, fontSize: 13),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
+                    focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+                  ),
+                  items: kCities.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                  onChanged: (value) => setState(() => _selectedCity = value!),
+                ),
                 const SizedBox(height: 14),
                 _buildField(
                   hint: 'كلمة المرور',

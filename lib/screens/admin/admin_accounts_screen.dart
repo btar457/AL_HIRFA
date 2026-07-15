@@ -34,8 +34,9 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
     return users.where((u) {
       if (_statusFilter != 'الكل') {
         final matches = switch (_statusFilter) {
-          'نشط' => u.isActive,
-          'معلق' => !u.isActive && !u.banned,
+          'قيد المراجعة' => u.approvalStatus == 'pending',
+          'نشط' => u.approvalStatus != 'pending' && u.approvalStatus != 'rejected' && u.isActive,
+          'معلق' => u.approvalStatus != 'pending' && !u.isActive && !u.banned,
           'محظور' => u.banned,
           _ => true,
         };
@@ -57,6 +58,26 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (user.approvalStatus == 'pending') ...[
+                ListTile(
+                  leading: const Icon(Icons.check_circle_outline, color: Colors.green),
+                  title: const Text('موافقة على الحساب', style: TextStyle(color: AppColors.text)),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    await AdminService.instance.approveArtisan(user.uid);
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تمت الموافقة على ${user.name}')));
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.cancel_outlined, color: Colors.redAccent),
+                  title: const Text('رفض الحساب', style: TextStyle(color: AppColors.text)),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _promptReason(user, 'رفض الحساب', (reason) => AdminService.instance.rejectArtisan(user.uid, reason));
+                  },
+                ),
+              ],
               ListTile(
                 leading: const Icon(Icons.warning_amber_outlined, color: Colors.amber),
                 title: const Text('تحذير', style: TextStyle(color: AppColors.text)),
@@ -255,7 +276,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
             dropdownColor: AppColors.card,
             style: const TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold),
             underline: const SizedBox.shrink(),
-            items: ['الكل', 'نشط', 'معلق', 'محظور'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+            items: ['الكل', 'قيد المراجعة', 'نشط', 'معلق', 'محظور'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
             onChanged: (value) => setState(() => _statusFilter = value!),
           ),
         ],
@@ -296,7 +317,13 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
   Widget _buildStatusChip(UserModel user) {
     final Color color;
     final String label;
-    if (user.banned) {
+    if (user.approvalStatus == 'pending') {
+      color = AppColors.gold;
+      label = 'قيد المراجعة';
+    } else if (user.approvalStatus == 'rejected') {
+      color = Colors.redAccent;
+      label = 'مرفوض';
+    } else if (user.banned) {
       color = Colors.redAccent;
       label = 'محظور';
     } else if (!user.isActive) {
