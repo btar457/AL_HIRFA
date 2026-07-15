@@ -127,6 +127,11 @@ class AdminService {
   // إدارة حسابات المستخدمين (ADMIN-3)
   // ---------------------------------------------------------------------
 
+  Future<UserModel?> getUserById(String uid) async {
+    final doc = await _firestore.collection(_usersCollection).doc(uid).get();
+    return doc.exists ? UserModel.fromMap(doc.id, doc.data()!) : null;
+  }
+
   Stream<List<UserModel>> getUsersByRole(String role) {
     return _firestore.collection(_usersCollection).where('role', isEqualTo: role).snapshots().map(
       (snapshot) => snapshot.docs.map((doc) => UserModel.fromMap(doc.id, doc.data())).toList(),

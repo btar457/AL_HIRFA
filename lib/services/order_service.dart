@@ -191,4 +191,22 @@ class OrderService {
       (snapshot) => snapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data())).toList(),
     );
   }
+
+  /// Admin: كل طلبات المنصة عبر كل المستخدمين — لشاشة admin_orders.
+  Stream<List<OrderModel>> getAllOrders() {
+    return _firestore.collection(_ordersCollection).orderBy('createdAt', descending: true).snapshots().map(
+      (snapshot) => snapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data())).toList(),
+    );
+  }
+
+  /// Admin: إلغاء قسري لطلب (عادة أثناء حل نزاع).
+  Future<void> adminCancelOrder(String orderId, String reason) async {
+    final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
+    final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+
+    await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'cancelled', 'rejectionReason': reason});
+
+    await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'تم إلغاء طلبك', body: reason, type: 'order_cancelled', data: {'orderId': orderId});
+    await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'تم إلغاء الطلب', body: reason, type: 'order_cancelled', data: {'orderId': orderId});
+  }
 }

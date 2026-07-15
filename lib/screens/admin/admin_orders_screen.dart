@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../../models/dispute_model.dart';
+import '../../models/order_model.dart';
+import '../../services/admin_service.dart';
+import '../../services/dispute_service.dart';
+import '../../services/order_service.dart';
 
-enum _AdminOrderStatus { inProgress, completed, cancelled, issue }
-
-class _AdminOrder {
-  final String orderNumber;
-  final String date;
-  final String productName;
-  final String price;
-  final String buyerName;
-  final String artisanName;
-  final String shippingCompany;
-  final _AdminOrderStatus status;
-  final String? issueDescription;
-  const _AdminOrder({required this.orderNumber, required this.date, required this.productName, required this.price, required this.buyerName, required this.artisanName, required this.shippingCompany, required this.status, this.issueDescription});
+String _formatPrice(int value) {
+  final str = value.toString();
+  final buffer = StringBuffer();
+  for (int i = 0; i < str.length; i++) {
+    if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(str[i]);
+  }
+  return buffer.toString();
 }
+
+String _formatDate(DateTime date) {
+  const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  return '${date.day} ${months[date.month - 1]} ${date.year}';
+}
+
+const _inProgressStatuses = {'pending', 'seller_approved', 'shipping_assigned', 'picked_up'};
 
 /// إدارة الطلبات على مستوى المنصة (ADMIN-6).
 class AdminOrdersScreen extends StatefulWidget {
@@ -26,23 +33,79 @@ class AdminOrdersScreen extends StatefulWidget {
 class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   String _filter = 'الكل';
 
-  static const _orders = [
-    _AdminOrder(orderNumber: '#HRF-9821', date: '٣ يوليو ٢٠٢٦', productName: 'إناء نحاسي منقوش', price: '125,000', buyerName: 'سارة العبيدي', artisanName: 'أبو مصطفى', shippingCompany: 'بغداد السريعة', status: _AdminOrderStatus.inProgress),
-    _AdminOrder(orderNumber: '#HRF-9756', date: '٢٤ يونيو ٢٠٢٦', productName: 'إبريق نحاسي بصري', price: '210,000', buyerName: 'نور الزهراوي', artisanName: 'أبو مصطفى', shippingCompany: 'الفرات للتوصيل', status: _AdminOrderStatus.completed),
-    _AdminOrder(orderNumber: '#HRF-9700', date: '٢٠ يونيو ٢٠٢٦', productName: 'صينية نحاسية كبيرة', price: '180,000', buyerName: 'حسن عبود', artisanName: 'زينب كريم', shippingCompany: 'بغداد السريعة', status: _AdminOrderStatus.issue, issueDescription: 'المشتري يدّعي استلام منتج تالف'),
-    _AdminOrder(orderNumber: '#HRF-9611', date: '٢ يونيو ٢٠٢٦', productName: 'مرآة نحاسية منقوشة', price: '150,000', buyerName: 'زينب كريم', artisanName: 'أبو مصطفى', shippingCompany: '—', status: _AdminOrderStatus.cancelled),
-  ];
-
-  List<_AdminOrder> get _filtered {
-    if (_filter == 'الكل') return _orders;
-    final status = switch (_filter) {
-      'قيد التنفيذ' => _AdminOrderStatus.inProgress,
-      'مكتملة' => _AdminOrderStatus.completed,
-      'ملغاة' => _AdminOrderStatus.cancelled,
-      'مشكلات' => _AdminOrderStatus.issue,
-      _ => null,
+  List<OrderModel> _filtered(List<OrderModel> orders) {
+    return switch (_filter) {
+      'قيد التنفيذ' => orders.where((o) => _inProgressStatuses.contains(o.status)).toList(),
+      'مكتملة' => orders.where((o) => o.status == 'delivered').toList(),
+      'ملغاة' => orders.where((o) => o.status == 'cancelled').toList(),
+      'مشكلات' => orders.where((o) => o.status == 'disputed').toList(),
+      _ => orders,
     };
-    return _orders.where((o) => o.status == status).toList();
+  }
+
+  void _showContactDialog(String title, String name, String? phone) {
+    showDialog(
+      context: context,
+      builder: (context) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: Text(title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              Text(phone?.isNotEmpty == true ? phone! : 'لا يوجد رقم هاتف مسجّل', style: TextStyle(color: AppColors.subText)),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('إغلاق', style: TextStyle(color: AppColors.gold))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmCancel(OrderModel order) {
+    final reasonController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: const Text('إلغاء الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: TextFormField(
+            controller: reasonController,
+            maxLines: 3,
+            style: const TextStyle(color: AppColors.text),
+            decoration: InputDecoration(hintText: 'سبب الإلغاء', hintStyle: TextStyle(color: AppColors.subText), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
+          ),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () async {
+                final reason = reasonController.text.trim();
+                if (reason.isEmpty) return;
+                await OrderService.instance.adminCancelOrder(order.id, reason);
+                if (!dialogContext.mounted) return;
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('تأكيد الإلغاء', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -81,10 +144,23 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _filtered.length,
-                itemBuilder: (context, i) => _buildOrderCard(_filtered[i]),
+              child: StreamBuilder<List<OrderModel>>(
+                stream: OrderService.instance.getAllOrders(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
+                  }
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                  }
+                  final orders = _filtered(snapshot.data!);
+                  if (orders.isEmpty) return Center(child: Text('لا توجد طلبات', style: TextStyle(color: AppColors.subText)));
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: orders.length,
+                    itemBuilder: (context, i) => _buildOrderCard(orders[i]),
+                  );
+                },
               ),
             ),
           ],
@@ -93,7 +169,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     );
   }
 
-  Widget _buildOrderCard(_AdminOrder order) {
+  Widget _buildOrderCard(OrderModel order) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -108,15 +184,15 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               _buildStatusChip(order.status),
             ],
           ),
-          Text(order.date, style: TextStyle(color: AppColors.subText, fontSize: 11)),
+          Text(_formatDate(order.createdAt), style: TextStyle(color: AppColors.subText, fontSize: 11)),
           const Divider(color: Color(0xFF2A2A2A)),
           Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
-          Text('د.ع ${order.price}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12)),
+          Text('د.ع ${_formatPrice(order.totalAmount)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12)),
           const SizedBox(height: 6),
           Text('المشتري: ${order.buyerName}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
           Text('البائع: ${order.artisanName}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
-          Text('شركة الشحن: ${order.shippingCompany}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
-          if (order.status == _AdminOrderStatus.issue) ...[
+          Text('شركة الشحن: ${order.shippingCompanyName ?? '—'}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+          if (order.status == 'disputed') ...[
             const SizedBox(height: 10),
             Container(
               width: double.infinity,
@@ -125,15 +201,39 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(order.issueDescription ?? '', style: TextStyle(color: AppColors.text, fontSize: 12)),
+                  if (order.disputeId != null)
+                    StreamBuilder<DisputeModel?>(
+                      stream: DisputeService.instance.watchDispute(order.disputeId!),
+                      builder: (context, disputeSnapshot) {
+                        final dispute = disputeSnapshot.data;
+                        return Text(dispute?.description ?? 'جاري تحميل تفاصيل البلاغ...', style: TextStyle(color: AppColors.text, fontSize: 12));
+                      },
+                    ),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      OutlinedButton(style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), onPressed: () {}, child: const Text('تواصل مع المشتري', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold))),
-                      OutlinedButton(style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), onPressed: () {}, child: const Text('تواصل مع الشركة', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold))),
-                      OutlinedButton(style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), onPressed: () {}, child: const Text('إلغاء الطلب', style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold))),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        onPressed: () => _showContactDialog('بيانات المشتري', order.buyerName, order.buyerPhone),
+                        child: const Text('تواصل مع المشتري', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                      if (order.shippingUid != null)
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                          onPressed: () async {
+                            final shippingUser = await AdminService.instance.getUserById(order.shippingUid!);
+                            if (!mounted) return;
+                            _showContactDialog('بيانات شركة الشحن', shippingUser?.name ?? order.shippingCompanyName ?? '', shippingUser?.phone);
+                          },
+                          child: const Text('تواصل مع الشركة', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        onPressed: () => _confirmCancel(order),
+                        child: const Text('إلغاء الطلب', style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
                     ],
                   ),
                 ],
@@ -145,26 +245,24 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     );
   }
 
-  Widget _buildStatusChip(_AdminOrderStatus status) {
+  Widget _buildStatusChip(String status) {
     late final Color color;
     late final String label;
-    switch (status) {
-      case _AdminOrderStatus.inProgress:
-        color = AppColors.gold;
-        label = 'قيد التنفيذ';
-        break;
-      case _AdminOrderStatus.completed:
-        color = Colors.green;
-        label = 'مكتملة';
-        break;
-      case _AdminOrderStatus.cancelled:
-        color = Colors.grey;
-        label = 'ملغاة';
-        break;
-      case _AdminOrderStatus.issue:
-        color = Colors.redAccent;
-        label = 'مشكلة';
-        break;
+    if (_inProgressStatuses.contains(status)) {
+      color = AppColors.gold;
+      label = 'قيد التنفيذ';
+    } else if (status == 'delivered') {
+      color = Colors.green;
+      label = 'مكتملة';
+    } else if (status == 'cancelled') {
+      color = Colors.grey;
+      label = 'ملغاة';
+    } else if (status == 'disputed') {
+      color = Colors.redAccent;
+      label = 'مشكلة';
+    } else {
+      color = AppColors.subText;
+      label = status;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
