@@ -15,10 +15,12 @@ class UserModel {
   final String approvalStatus; // pending/approved/rejected — بوابة مراجعة الحرفيين وشركات الشحن الجدد
   final int warningCount;
 
-  // حقول خاصة بشركات الشحن فقط (SHIPPING-2)
+  // حقول خاصة بشركات الشحن (SHIPPING-2)
   final String companyName;
   final String registrationNumber;
   final List<String> provinces;
+
+  // IBAN لاستلام المستحقات — يُستخدم من الحرفيين وشركات الشحن كليهما
   final String iban;
 
   // حقول الموافقة القانونية (PART 11.6 من AL-HIRFA-Legal-Rules.md)

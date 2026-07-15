@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
+import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 import 'admin_categories_screen.dart';
 import 'admin_commissions_screen.dart';
@@ -29,7 +31,11 @@ class AdminSettingsScreen extends StatelessWidget {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false),
+              onPressed: () async {
+                await context.read<AuthProvider>().signOut();
+                if (!context.mounted) return;
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
+              },
               child: const Text('تسجيل الخروج', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],

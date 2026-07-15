@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
+import '../../core/utils/error_handler.dart';
+import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../shared/about_screen.dart';
 import '../shared/change_password_screen.dart';
@@ -16,7 +19,7 @@ class CustomerProfileScreen extends StatelessWidget {
   void _confirmLogout(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => Directionality(
+      builder: (dialogContext) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: AppColors.card,
@@ -26,15 +29,75 @@ class CustomerProfileScreen extends StatelessWidget {
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false),
+              onPressed: () async {
+                await context.read<AuthProvider>().signOut();
+                if (!context.mounted) return;
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
+              },
               child: const Text('تسجيل الخروج', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _editPersonalInfo(BuildContext context) {
+    final auth = context.read<AuthProvider>();
+    final user = auth.currentUser;
+    if (user == null) return;
+    final nameController = TextEditingController(text: user.name);
+    final phoneController = TextEditingController(text: user.phone);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.card,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (sheetContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: Padding(
+          padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('تعديل البيانات الشخصية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: nameController,
+                style: const TextStyle(color: AppColors.text),
+                decoration: InputDecoration(hintText: 'الاسم الكامل', hintStyle: TextStyle(color: AppColors.subText), filled: true, fillColor: AppColors.background, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: phoneController,
+                keyboardType: TextInputType.phone,
+                style: const TextStyle(color: AppColors.text),
+                decoration: InputDecoration(hintText: 'رقم الهاتف', hintStyle: TextStyle(color: AppColors.subText), filled: true, fillColor: AppColors.background, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                  onPressed: () async {
+                    if (nameController.text.trim().isEmpty) return;
+                    await auth.updateProfile({'name': nameController.text.trim(), 'phone': phoneController.text.trim()});
+                    if (!sheetContext.mounted) return;
+                    Navigator.pop(sheetContext);
+                    AppError.showSnackbar(context, 'تم حفظ التعديلات', isError: false);
+                  },
+                  child: const Text('حفظ', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -51,6 +114,7 @@ class CustomerProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().currentUser;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -58,9 +122,9 @@ class CustomerProfileScreen extends StatelessWidget {
         body: ListView(
           padding: EdgeInsets.zero,
           children: [
-            _buildHeader(),
+            _buildHeader(user?.name ?? '', user?.email ?? ''),
             const SizedBox(height: 12),
-            _buildSettingsTile(context, icon: Icons.person_outline, title: 'تعديل البيانات الشخصية'),
+            _buildSettingsTile(context, icon: Icons.person_outline, title: 'تعديل البيانات الشخصية', onTap: () => _editPersonalInfo(context)),
             _buildSettingsTile(context, icon: Icons.inventory_2_outlined, title: 'سجل طلباتي', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()))),
             _buildSettingsTile(context, icon: Icons.favorite_border, title: 'المفضلة', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen()))),
             _buildSettingsTile(context, icon: Icons.payment_outlined, title: 'طرق الدفع', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentMethodsScreen()))),
@@ -78,7 +142,7 @@ class CustomerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(String name, String email) {
     return SizedBox(
       height: 260,
       child: Stack(
@@ -119,9 +183,9 @@ class CustomerProfileScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text('سارة العبيدي', style: TextStyle(color: AppColors.text, fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(name, style: const TextStyle(color: AppColors.text, fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text('sara.alobaidi@example.com', style: TextStyle(color: AppColors.subText, fontSize: 14)),
+                Text(email, style: TextStyle(color: AppColors.subText, fontSize: 14)),
               ],
             ),
           ),
