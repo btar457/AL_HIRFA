@@ -5,6 +5,7 @@ import '../../core/constants/strings.dart';
 import '../../core/navigation/role_router.dart';
 import '../../core/utils/error_handler.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/common/founder_access_gate.dart';
 import 'forgot_password_screen.dart';
 import 'onboarding_screen.dart';
 
@@ -166,6 +167,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 20),
                     Text('صنع بكل فخر في العراق', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+                    const SizedBox(height: 8),
+                    const FounderAccessCredit(),
                     const SizedBox(height: 12),
                   ],
                 ),
