@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../models/artisan_product_listing.dart';
+import '../../models/product_model.dart';
 import '../../widgets/common/product_form.dart';
 
 class EditProductScreen extends StatelessWidget {
-  final ArtisanProductListing product;
+  final ProductModel product;
   const EditProductScreen({super.key, required this.product});
   @override
   Widget build(BuildContext context) {

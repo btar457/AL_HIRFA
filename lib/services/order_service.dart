@@ -128,6 +128,7 @@ class OrderService {
     });
 
     await _createDeliveryTransactions(orderId, order);
+    await _firestore.collection('products').doc(order.productId).update({'salesCount': FieldValue.increment(1)});
 
     await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'تم التسليم', body: 'قيّم تجربتك مع ${order.productName}', type: 'order_delivered', data: {'orderId': orderId});
     await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'تم التسليم', body: 'أرباحك ستُحوَّل خلال ${AppRules.holdPeriodHours} ساعة', type: 'wallet_credited', data: {'orderId': orderId});

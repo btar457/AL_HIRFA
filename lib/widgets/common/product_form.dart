@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../core/constants/categories.dart';
 import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
-import '../../models/artisan_product_listing.dart';
 import '../../models/categories.dart';
 import '../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
@@ -43,7 +42,7 @@ class _DashedBorderPainter extends CustomPainter {
 
 /// نموذج مشترك لإضافة/تعديل منتج الحرفي (يُستخدم من AddProductScreen وEditProductScreen).
 class ProductForm extends StatefulWidget {
-  final ArtisanProductListing? initialProduct;
+  final ProductModel? initialProduct;
   final String title;
   final String submitLabel;
   final String successTitle;
@@ -65,21 +64,21 @@ class ProductForm extends StatefulWidget {
 class _ProductFormState extends State<ProductForm> {
   final _formKey = GlobalKey<FormState>();
   late final _nameController = TextEditingController(text: widget.initialProduct?.name ?? '');
-  late final _priceController = TextEditingController(text: widget.initialProduct?.price ?? '');
-  final _descriptionController = TextEditingController();
-  final _narrativeController = TextEditingController();
-  final _materialController = TextEditingController();
-  final _originController = TextEditingController();
+  late final _priceController = TextEditingController(text: widget.initialProduct != null ? widget.initialProduct!.price.toString() : '');
+  late final _descriptionController = TextEditingController(text: widget.initialProduct?.description ?? '');
+  late final _narrativeController = TextEditingController(text: widget.initialProduct?.narrative ?? '');
+  late final _materialController = TextEditingController(text: widget.initialProduct?.material ?? '');
+  late final _originController = TextEditingController(text: widget.initialProduct?.originPlace ?? '');
   final _experienceController = TextEditingController();
-  final _techniqueController = TextEditingController();
+  late final _techniqueController = TextEditingController(text: widget.initialProduct?.technique ?? '');
 
   static final List<AppCategory> _selectableCategories = kAppCategories.where((c) => c.id != 'all').toList();
 
   late AppCategory _selectedCategory = _selectableCategories.firstWhere(
-    (c) => c.nameAr == widget.initialProduct?.category,
+    (c) => c.id == widget.initialProduct?.category,
     orElse: () => _selectableCategories.first,
   );
-  String _selectedCity = kCities.first;
+  late String _selectedCity = widget.initialProduct?.city ?? kCities.first;
   final List<XFile> _images = [];
   bool _isSubmitting = false;
 
@@ -149,9 +148,19 @@ class _ProductFormState extends State<ProductForm> {
           createdAt: DateTime.now(),
         );
         await ProductService.instance.addProduct(product, _images);
+      } else {
+        await ProductService.instance.updateProduct(widget.initialProduct!.id, {
+          'name': _nameController.text.trim(),
+          'description': _descriptionController.text.trim(),
+          'price': int.tryParse(_priceController.text.replaceAll(',', '').trim()) ?? 0,
+          'category': _selectedCategory.id,
+          'city': _selectedCity,
+          'narrative': _narrativeController.text.trim(),
+          'material': _materialController.text.trim(),
+          'originPlace': _originController.text.trim(),
+          'technique': _techniqueController.text.trim(),
+        });
       }
-      // TODO: تحديث حقيقي عبر ProductService.updateProduct عند ربط manage_products_screen
-      // بمعرّفات Firestore الحقيقية (لا يملك ArtisanProductListing حالياً معرّف مستند فعلي).
       if (!mounted) return;
       _showSuccessDialog();
     } catch (e) {

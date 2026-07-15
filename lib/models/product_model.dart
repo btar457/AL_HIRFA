@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'marketplace_product.dart';
 
-/// منتج موحّد للاستخدام عبر الأدوار (لوحات الإدارة والبحث)، إلى جانب
-/// MarketplaceProduct وArtisanProductListing المستخدمين في شاشات محدّدة.
+/// منتج موحّد للاستخدام عبر كل الأدوار والشاشات (المتجر، لوحة الحرفي،
+/// لوحة الإدارة)، إلى جانب MarketplaceProduct المستخدم في شاشات محدّدة.
 class ProductModel {
   final String id;
   final String name;
