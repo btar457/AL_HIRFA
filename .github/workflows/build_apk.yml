@@ -2,62 +2,54 @@ name: Build Flutter APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["claude/development-start-4zc9r8", "main"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Setup Java JDK
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
-    - name: Setup Flutter Environment
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.19.x'
-        channel: 'stable'
+      - name: Setup Flutter Environment
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+          channel: 'stable'
 
-    # 1. إعادة توليد منصة أندرويد نظيفة ومستقرة للمشروع
-    - name: Recreate Android Project Platform
-      run: |
-        mv lib _lib_backup
-        mv pubspec.yaml _pubspec_backup
-        flutter create . --project-name=al_hirfa --platforms=android
-        rm -rf lib pubspec.yaml
-        mv _lib_backup lib
-        mv _pubspec_backup pubspec.yaml
+      - name: Install Dependencies
+        run: flutter pub get
 
-    # 2. 🔥 الحل الهندسي: حقن كود جبري لتجاوز توافقية الـ SDK ومنع تعارض الحزم
-    - name: Force Android SDK Configurations
-      run: |
-        cat << EOF >> android/app/build.gradle
+      - name: Analyze
+        run: flutter analyze
 
-        // إجبار نظام أندرويد على تخطي القيم الافتراضية واعتماد القيم المتوافقة مع الحزم
-        android {
-            compileSdkVersion 34
-            defaultConfig {
-                minSdkVersion 21
-                targetSdkVersion 34
-            }
-        }
-        EOF
+      - name: Build Android APK
+        run: flutter build apk --release
 
-    - name: Install Dependencies
-      run: flutter pub get
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: al-hirfa-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
 
-    - name: Build Android APK
-      run: |
-        flutter build apk --release --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Al-Hirfa-App
-        path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Publish APK to a downloadable Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-build
+          name: "AL-HIRFA — آخر بناء تلقائي"
+          body: "بناء تلقائي من فرع ${{ github.ref_name }} — commit ${{ github.sha }}"
+          files: build/app/outputs/flutter-apk/app-release.apk
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
