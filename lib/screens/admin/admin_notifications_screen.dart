@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/notification_model.dart';
+import '../../services/notification_service.dart';
 
 /// إرسال إشعارات جماعية وسجلها (ADMIN-9).
 class AdminNotificationsScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
   String _targetAudience = 'all';
   final _titleController = TextEditingController();
   final _bodyController = TextEditingController();
+  bool _isSending = false;
 
   static const _audiences = {
     'all': 'الكل',
@@ -21,15 +23,11 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
     'shipping': 'شركات الشحن',
   };
 
-  final List<NotificationModel> _sentLog = [
-    NotificationModel(id: '1', title: 'تحديث الشروط والأحكام', body: 'يرجى مراجعة الشروط المحدّثة', targetAudience: 'all', recipientCount: 2467, createdAt: DateTime.now().subtract(const Duration(days: 2))),
-  ];
-
-  void _send() {
+  Future<void> _send() async {
     if (_titleController.text.trim().isEmpty || _bodyController.text.trim().isEmpty) return;
     showDialog(
       context: context,
-      builder: (context) => Directionality(
+      builder: (dialogContext) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: AppColors.card,
@@ -39,20 +37,20 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              onPressed: () {
-                setState(() {
-                  _sentLog.insert(0, NotificationModel(id: DateTime.now().toIso8601String(), title: _titleController.text, body: _bodyController.text, targetAudience: _targetAudience, recipientCount: 0, createdAt: DateTime.now()));
-                  _titleController.clear();
-                  _bodyController.clear();
-                });
-                Navigator.pop(context);
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                setState(() => _isSending = true);
+                await NotificationService.instance.sendBulkNotification(targetRole: _targetAudience, title: _titleController.text.trim(), body: _bodyController.text.trim());
+                _titleController.clear();
+                _bodyController.clear();
+                if (mounted) setState(() => _isSending = false);
               },
-              child: const Text('إرسال للجميع', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('إرسال', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -105,27 +103,40 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                onPressed: _send,
-                child: const Text('إرسال للجميع', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, disabledBackgroundColor: AppColors.gold.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                onPressed: _isSending ? null : _send,
+                child: _isSending
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                    : const Text('إرسال', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
             const SizedBox(height: 28),
             const Text('سجل الإشعارات المرسلة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 10),
-            ..._sentLog.map((n) => Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(n.title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
-                  const SizedBox(height: 4),
-                  Text('${_audiences[n.targetAudience]} • ${n.recipientCount} مستلم', style: TextStyle(color: AppColors.subText, fontSize: 11)),
-                ],
-              ),
-            )),
+            StreamBuilder<List<NotificationModel>>(
+              stream: NotificationService.instance.getBroadcastLog(),
+              builder: (context, snapshot) {
+                final log = snapshot.data ?? const [];
+                if (log.isEmpty) {
+                  return Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text('لا يوجد إشعارات مرسلة بعد', style: TextStyle(color: AppColors.subText)));
+                }
+                return Column(
+                  children: log.map((n) => Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(n.title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+                        const SizedBox(height: 4),
+                        Text('${_audiences[n.targetAudience] ?? n.targetAudience} • ${n.recipientCount} مستلم', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+                      ],
+                    ),
+                  )).toList(),
+                );
+              },
+            ),
           ],
         ),
       ),

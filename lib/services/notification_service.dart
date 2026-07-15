@@ -68,7 +68,9 @@ class NotificationService {
     }
   }
 
-  /// إرسال جماعي (Admin) لكل مستخدمي دور معيّن، أو للجميع. يُعيد عدد المستلمين الفعلي.
+  /// إرسال جماعي (Admin) لكل مستخدمي دور معيّن، أو للجميع. يُعيد عدد المستلمين
+  /// الفعلي، ويسجّل مستند ملخّص واحد (userId فارغ، لا يظهر في صندوق أي
+  /// مستخدم) لعرضه في سجل admin_notifications_screen.
   Future<int> sendBulkNotification({
     required String targetRole, // all/customer/artisan/shipping
     required String title,
@@ -82,7 +84,19 @@ class NotificationService {
     for (final doc in users.docs) {
       await sendToUser(userUid: doc.id, title: title, body: body, type: 'system');
     }
+
+    await _firestore.collection(_notificationsCollection).add(
+      NotificationModel(id: '', title: title, body: body, type: 'system', targetAudience: targetRole, recipientCount: users.docs.length, createdAt: DateTime.now()).toMap(),
+    );
+
     return users.docs.length;
+  }
+
+  /// سجل الإرسال الجماعي (مستندات userId فارغ) — لشاشة admin_notifications.
+  Stream<List<NotificationModel>> getBroadcastLog() {
+    return _firestore.collection(_notificationsCollection).where('userId', isEqualTo: '').orderBy('createdAt', descending: true).snapshots().map(
+      (snapshot) => snapshot.docs.map((doc) => NotificationModel.fromMap(doc.id, doc.data())).toList(),
+    );
   }
 
   Stream<List<NotificationModel>> getUserNotifications(String userId) {
