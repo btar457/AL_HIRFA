@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/categories.dart';
 import '../../core/constants/colors.dart';
+import '../../core/utils/error_handler.dart';
+import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 
 /// تسجيل شركة شحن جديدة (SHIPPING-2).
@@ -19,6 +22,7 @@ class _ShippingRegisterScreenState extends State<ShippingRegisterScreen> {
   final _managerPhoneController = TextEditingController();
   final _ibanController = TextEditingController();
   final Set<String> _selectedProvinces = {};
+  bool _isSubmitting = false;
 
   InputDecoration _fieldDecoration({String? hint}) {
     return InputDecoration(
@@ -44,16 +48,43 @@ class _ShippingRegisterScreenState extends State<ShippingRegisterScreen> {
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
+    if (_companyNameController.text.trim().isEmpty || _registrationController.text.trim().isEmpty || _selectedProvinces.isEmpty || _ibanController.text.trim().isEmpty) {
+      AppError.showSnackbar(context, 'أكمل اسم الشركة ورقم السجل التجاري والمحافظات وIBAN على الأقل');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    final auth = context.read<AuthProvider>();
+    try {
+      await auth.updateProfile({
+        'companyName': _companyNameController.text.trim(),
+        'registrationNumber': _registrationController.text.trim(),
+        'provinces': _selectedProvinces.toList(),
+        'iban': _ibanController.text.trim(),
+      });
+      await auth.signOut();
+      if (!mounted) return;
+      _showPendingReviewDialog();
+    } catch (e) {
+      if (!mounted) return;
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  void _showPendingReviewDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: const Text('تم استلام طلبك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
-          content: Text('سيراجع فريق AL-HIRFA طلبك خلال 24 ساعة وسنُعلمك بالنتيجة.', style: TextStyle(color: AppColors.subText)),
+          content: Text('سيراجع فريق AL-HIRFA طلبك وسنُعلمك بالنتيجة.', style: TextStyle(color: AppColors.subText)),
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -135,9 +166,11 @@ class _ShippingRegisterScreenState extends State<ShippingRegisterScreen> {
                 SizedBox(
                   height: 56,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                    onPressed: _submit,
-                    child: const Text('تقديم طلب التسجيل', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, disabledBackgroundColor: AppColors.gold.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                    onPressed: _isSubmitting ? null : _submit,
+                    child: _isSubmitting
+                        ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                        : const Text('تقديم طلب التسجيل', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                 ),
               ],

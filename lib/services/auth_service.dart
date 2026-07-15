@@ -46,8 +46,8 @@ class AuthService {
       termsAccepted: true,
       termsAcceptedAt: DateTime.now(),
       termsVersion: AppRules.currentTermsVersion,
-      // الحرفيون فقط يمرّون ببوابة مراجعة الإدارة (ADMIN-4) قبل تفعيل حسابهم.
-      approvalStatus: role == 'artisan' ? 'pending' : 'approved',
+      // الحرفيون وشركات الشحن يمرّون ببوابة مراجعة الإدارة (ADMIN-4/ADMIN-5) قبل تفعيل حسابهم.
+      approvalStatus: (role == 'artisan' || role == 'shipping') ? 'pending' : 'approved',
     );
     await _firestore.collection(_usersCollection).doc(uid).set(user.toMap());
     await saveFCMToken(uid);

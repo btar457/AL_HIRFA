@@ -12,8 +12,14 @@ class UserModel {
   final String? fcmToken;
   final bool isActive; // false = محسوب أو معلّق مؤقتاً (راجع banned للتمييز بينهما)
   final bool banned; // true = حظر نهائي (isActive تكون false أيضاً)
-  final String approvalStatus; // pending/approved/rejected — بوابة مراجعة الحرفيين الجدد فقط
+  final String approvalStatus; // pending/approved/rejected — بوابة مراجعة الحرفيين وشركات الشحن الجدد
   final int warningCount;
+
+  // حقول خاصة بشركات الشحن فقط (SHIPPING-2)
+  final String companyName;
+  final String registrationNumber;
+  final List<String> provinces;
+  final String iban;
 
   // حقول الموافقة القانونية (PART 11.6 من AL-HIRFA-Legal-Rules.md)
   final bool termsAccepted;
@@ -38,6 +44,10 @@ class UserModel {
     this.banned = false,
     this.approvalStatus = 'approved',
     this.warningCount = 0,
+    this.companyName = '',
+    this.registrationNumber = '',
+    this.provinces = const [],
+    this.iban = '',
     this.termsAccepted = false,
     this.termsAcceptedAt,
     this.termsVersion = '',
@@ -60,6 +70,10 @@ class UserModel {
       banned: map['banned'] as bool? ?? false,
       approvalStatus: map['approvalStatus'] as String? ?? 'approved',
       warningCount: map['warningCount'] as int? ?? 0,
+      companyName: map['companyName'] as String? ?? '',
+      registrationNumber: map['registrationNumber'] as String? ?? '',
+      provinces: (map['provinces'] as List?)?.map((e) => e as String).toList() ?? const [],
+      iban: map['iban'] as String? ?? '',
       termsAccepted: map['termsAccepted'] as bool? ?? false,
       termsAcceptedAt: (map['termsAcceptedAt'] as Timestamp?)?.toDate(),
       termsVersion: map['termsVersion'] as String? ?? '',
@@ -82,6 +96,10 @@ class UserModel {
       'banned': banned,
       'approvalStatus': approvalStatus,
       'warningCount': warningCount,
+      'companyName': companyName,
+      'registrationNumber': registrationNumber,
+      'provinces': provinces,
+      'iban': iban,
       'termsAccepted': termsAccepted,
       'termsAcceptedAt': termsAcceptedAt != null ? Timestamp.fromDate(termsAcceptedAt!) : null,
       'termsVersion': termsVersion,

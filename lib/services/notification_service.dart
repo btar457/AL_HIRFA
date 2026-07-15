@@ -60,6 +60,7 @@ class NotificationService {
         .where('role', isEqualTo: 'shipping')
         .where('city', isEqualTo: city)
         .where('isActive', isEqualTo: true)
+        .where('approvalStatus', isEqualTo: 'approved')
         .get();
 
     for (final doc in companies.docs) {

@@ -94,32 +94,42 @@ class AdminService {
   // مراجعة طلبات الحرفيين الجدد (ADMIN-4)
   // ---------------------------------------------------------------------
 
-  Stream<List<UserModel>> getArtisansByApprovalStatus(String approvalStatus) {
+  Stream<List<UserModel>> getArtisansByApprovalStatus(String approvalStatus) => getUsersByRoleAndApprovalStatus('artisan', approvalStatus);
+
+  Future<void> approveArtisan(String uid) => approveAccount(uid, roleLabel: 'حرفي', message: 'تهانينا! تمت الموافقة على حسابك كحرفي، يمكنك الآن تسجيل الدخول وإضافة منتجاتك');
+
+  Future<void> rejectArtisan(String uid, String reason) => rejectAccount(uid, reason);
+
+  /// حسابات دور معيّن (حرفي/شركة شحن) بحالة مراجعة معيّنة — لشاشتي
+  /// review_artisans وadmin_shipping.
+  Stream<List<UserModel>> getUsersByRoleAndApprovalStatus(String role, String approvalStatus) {
     return _firestore
         .collection(_usersCollection)
-        .where('role', isEqualTo: 'artisan')
+        .where('role', isEqualTo: role)
         .where('approvalStatus', isEqualTo: approvalStatus)
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) => UserModel.fromMap(doc.id, doc.data())).toList());
   }
 
-  Future<void> approveArtisan(String uid) async {
+  /// موافقة عامة على أي حساب بانتظار المراجعة (حرفي أو شركة شحن).
+  Future<void> approveAccount(String uid, {String roleLabel = 'الحساب', String? message}) async {
     await _firestore.collection(_usersCollection).doc(uid).update({'approvalStatus': 'approved'});
     await NotificationService.instance.sendToUser(
       userUid: uid,
       title: 'تم قبول طلبك',
-      body: 'تهانينا! تمت الموافقة على حسابك كحرفي، يمكنك الآن تسجيل الدخول وإضافة منتجاتك',
-      type: 'artisan_approved',
+      body: message ?? 'تهانينا! تمت الموافقة على $roleLabel، يمكنك الآن تسجيل الدخول',
+      type: 'account_approved',
     );
   }
 
-  Future<void> rejectArtisan(String uid, String reason) async {
+  /// رفض عام لأي حساب بانتظار المراجعة (حرفي أو شركة شحن).
+  Future<void> rejectAccount(String uid, String reason) async {
     await _firestore.collection(_usersCollection).doc(uid).update({'approvalStatus': 'rejected'});
     await NotificationService.instance.sendToUser(
       userUid: uid,
       title: 'تم رفض طلبك',
       body: reason,
-      type: 'artisan_rejected',
+      type: 'account_rejected',
     );
   }
 
