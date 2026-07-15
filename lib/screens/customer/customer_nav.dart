@@ -4,6 +4,7 @@ import '../../core/constants/colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../services/notification_service.dart';
+import 'customer_home_screen.dart';
 import 'customer_profile_screen.dart';
 import 'marketplace_screen.dart';
 import 'orders_history_screen.dart';
@@ -11,7 +12,7 @@ import 'orders_history_screen.dart';
 /// الحاوية الرئيسية لتجربة المشتري عبر شريط تنقل سفلي بأربع تبويبات.
 class CustomerNav extends StatefulWidget {
   final int initialIndex;
-  const CustomerNav({super.key, this.initialIndex = 1});
+  const CustomerNav({super.key, this.initialIndex = 0});
   @override
   State<CustomerNav> createState() => _CustomerNavState();
 }
@@ -20,7 +21,7 @@ class _CustomerNavState extends State<CustomerNav> {
   late int _index = widget.initialIndex;
 
   final _screens = const [
-    MarketplaceScreen(),
+    CustomerHomeScreen(),
     MarketplaceScreen(),
     OrdersHistoryScreen(),
     CustomerProfileScreen(),

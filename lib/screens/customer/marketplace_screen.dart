@@ -33,14 +33,15 @@ MarketplaceProduct _toMarketplaceProduct(ProductModel product) {
 }
 
 class MarketplaceScreen extends StatefulWidget {
-  const MarketplaceScreen({super.key});
+  final String? initialCategory;
+  const MarketplaceScreen({super.key, this.initialCategory});
   @override
   State<MarketplaceScreen> createState() => _MarketplaceScreenState();
 }
 
 class _MarketplaceScreenState extends State<MarketplaceScreen> {
   String _selectedCity = 'الكل';
-  String _selectedCategory = 'all';
+  late String _selectedCategory = widget.initialCategory ?? 'all';
 
   final _cities = const ['الكل', 'نجف', 'بصرة', 'بغداد', 'أربيل', 'موصل', 'كربلاء', 'الديوانية'];
 
