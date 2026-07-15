@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../providers/notification_provider.dart';
 import '../shared/notifications_screen.dart';
+import 'artisan_chat_screen.dart';
 import 'artisan_orders_screen.dart';
 import 'artisan_wallet_screen.dart';
 
@@ -49,6 +50,8 @@ class ArtisanDashboardScreen extends StatelessWidget {
               _buildGreeting(),
               const SizedBox(height: 24),
               _buildStatsGrid(context),
+              const SizedBox(height: 20),
+              _buildQualityAdvisorCard(context),
               const SizedBox(height: 28),
               _buildNewOrdersSection(context),
               const SizedBox(height: 28),
@@ -129,6 +132,37 @@ class ArtisanDashboardScreen extends StatelessWidget {
         ),
         _buildStatCard(icon: Icons.account_balance_wallet_outlined, label: 'رصيد المحفظة', value: '٨٥٠,٠٠٠ د.ع', valueColor: Colors.green, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanWalletScreen()))),
       ],
+    );
+  }
+
+  Widget _buildQualityAdvisorCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanChatScreen())),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.3))),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), shape: BoxShape.circle),
+              child: const Icon(Icons.auto_awesome, color: AppColors.gold, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('مستشار الجودة والأصالة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+                  const SizedBox(height: 2),
+                  Text('استشر الذكاء الاصطناعي لتدقيق أصالة منتجك قبل النشر', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_back_ios, color: AppColors.subText, size: 14),
+          ],
+        ),
+      ),
     );
   }
 
