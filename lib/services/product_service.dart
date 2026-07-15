@@ -107,6 +107,23 @@ class ProductService {
     // TODO: إشعار الحرفي بسبب الرفض (بعد بناء notification_service.dart).
   }
 
+  /// Admin: إيقاف منتج منشور (مخالفة، شكوى...) دون حذفه.
+  Future<void> suspendProduct(String productId) {
+    return _firestore.collection(_productsCollection).doc(productId).update({'status': 'suspended'});
+  }
+
+  /// Admin: إعادة تفعيل منتج موقوف.
+  Future<void> reactivateProduct(String productId) {
+    return _firestore.collection(_productsCollection).doc(productId).update({'status': 'active'});
+  }
+
+  /// Admin: كل المنتجات بحالة معيّنة عبر كل الحرفيين — لشاشة admin_products.
+  Stream<List<ProductModel>> getProductsByStatus(String status) {
+    return _firestore.collection(_productsCollection).where('status', isEqualTo: status).snapshots().map(
+      (snapshot) => snapshot.docs.map((doc) => ProductModel.fromMap(doc.id, doc.data())).toList(),
+    );
+  }
+
   /// إضافة/إزالة منتج من مفضلة المستخدم (users/{uid}/favorites/{productId}).
   Future<void> toggleFavorite(String productId, String userId) async {
     final favRef = _firestore.collection(_usersCollection).doc(userId).collection('favorites').doc(productId);
