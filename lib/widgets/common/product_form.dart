@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -80,15 +81,20 @@ class _ProductFormState extends State<ProductForm> {
   );
   late String _selectedCity = widget.initialProduct?.city ?? kCities.first;
   final List<XFile> _images = [];
+  late final List<String> _existingImageUrls = List.of(widget.initialProduct?.images ?? const []);
   bool _isSubmitting = false;
 
+  int get _totalImageCount => _images.length + _existingImageUrls.length;
+
   Future<void> _pickImage() async {
-    if (_images.length >= _kMaxImages) return;
+    if (_totalImageCount >= _kMaxImages) return;
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) setState(() => _images.add(picked));
   }
 
   void _removeImage(int index) => setState(() => _images.removeAt(index));
+
+  void _removeExistingImage(int index) => setState(() => _existingImageUrls.removeAt(index));
 
   InputDecoration _fieldDecoration({String? hint}) {
     return InputDecoration(
@@ -117,7 +123,7 @@ class _ProductFormState extends State<ProductForm> {
     if (!_formKey.currentState!.validate()) return;
 
     final isAdd = widget.initialProduct == null;
-    if (isAdd && _images.isEmpty) {
+    if (_totalImageCount == 0) {
       AppError.showSnackbar(context, 'أضف صورة واحدة على الأقل للمنتج');
       return;
     }
@@ -149,7 +155,9 @@ class _ProductFormState extends State<ProductForm> {
         );
         await ProductService.instance.addProduct(product, _images);
       } else {
-        await ProductService.instance.updateProduct(widget.initialProduct!.id, {
+        final product = widget.initialProduct!;
+        final newImageUrls = _images.isEmpty ? const <String>[] : await ProductService.instance.uploadImages(product.artisanUid, product.id, _images);
+        await ProductService.instance.updateProduct(product.id, {
           'name': _nameController.text.trim(),
           'description': _descriptionController.text.trim(),
           'price': int.tryParse(_priceController.text.replaceAll(',', '').trim()) ?? 0,
@@ -159,6 +167,7 @@ class _ProductFormState extends State<ProductForm> {
           'material': _materialController.text.trim(),
           'originPlace': _originController.text.trim(),
           'technique': _techniqueController.text.trim(),
+          'images': [..._existingImageUrls, ...newImageUrls],
         });
       }
       if (!mounted) return;
@@ -319,34 +328,39 @@ class _ProductFormState extends State<ProductForm> {
             ),
           ),
         ),
-        if (_images.isNotEmpty) ...[
+        if (_totalImageCount > 0) ...[
           const SizedBox(height: 12),
           SizedBox(
             height: 80,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: _images.length,
+              itemCount: _totalImageCount,
               separatorBuilder: (context, i) => const SizedBox(width: 8),
-              itemBuilder: (context, i) => Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.file(File(_images[i].path), width: 80, height: 80, fit: BoxFit.cover),
-                  ),
-                  Positioned(
-                    top: 2,
-                    left: 2,
-                    child: GestureDetector(
-                      onTap: () => _removeImage(i),
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(color: Colors.black87, shape: BoxShape.circle),
-                        child: const Icon(Icons.close, color: Colors.white, size: 14),
+              itemBuilder: (context, i) {
+                final isExisting = i < _existingImageUrls.length;
+                return Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: isExisting
+                          ? CachedNetworkImage(imageUrl: _existingImageUrls[i], width: 80, height: 80, fit: BoxFit.cover)
+                          : Image.file(File(_images[i - _existingImageUrls.length].path), width: 80, height: 80, fit: BoxFit.cover),
+                    ),
+                    Positioned(
+                      top: 2,
+                      left: 2,
+                      child: GestureDetector(
+                        onTap: () => isExisting ? _removeExistingImage(i) : _removeImage(i - _existingImageUrls.length),
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(color: Colors.black87, shape: BoxShape.circle),
+                          child: const Icon(Icons.close, color: Colors.white, size: 14),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                );
+              },
             ),
           ),
         ],

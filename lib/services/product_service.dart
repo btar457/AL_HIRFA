@@ -21,12 +21,7 @@ class ProductService {
     final docRef = _firestore.collection(_productsCollection).doc();
     final productId = docRef.id;
 
-    final imageUrls = <String>[];
-    for (var i = 0; i < images.length; i++) {
-      final ref = _storage.ref('products/${product.artisanUid}/$productId/$i.jpg');
-      await ref.putFile(File(images[i].path));
-      imageUrls.add(await ref.getDownloadURL());
-    }
+    final imageUrls = await uploadImages(product.artisanUid, productId, images);
 
     final newProduct = ProductModel(
       id: productId,
@@ -49,6 +44,17 @@ class ProductService {
     await docRef.set(newProduct.toMap());
     // TODO: إشعار Admin بمنتج جديد ينتظر المراجعة (بعد بناء notification_service.dart).
     return productId;
+  }
+
+  /// يرفع صور جديدة (إضافة أو تعديل) على Storage ويُعيد روابطها.
+  Future<List<String>> uploadImages(String artisanUid, String productId, List<XFile> images) async {
+    final imageUrls = <String>[];
+    for (var i = 0; i < images.length; i++) {
+      final ref = _storage.ref('products/$artisanUid/$productId/${DateTime.now().millisecondsSinceEpoch}_$i.jpg');
+      await ref.putFile(File(images[i].path));
+      imageUrls.add(await ref.getDownloadURL());
+    }
+    return imageUrls;
   }
 
   /// منتجات المتجر النشطة، مع فلاتر اختيارية. فلترة السعر والبحث النصي
