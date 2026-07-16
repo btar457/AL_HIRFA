@@ -101,6 +101,18 @@ class AuthService {
     return _auth.sendPasswordResetEmail(email: email.trim());
   }
 
+  /// تغيير كلمة مرور المستخدم الحالي — يتطلب إعادة مصادقة بكلمة المرور
+  /// الحالية أولاً (متطلب Firebase Auth الأمني قبل السماح بتحديثها).
+  Future<void> changePassword({required String currentPassword, required String newPassword}) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw FirebaseAuthException(code: 'user-not-found', message: 'تعذّر العثور على المستخدم الحالي');
+    }
+    final credential = EmailAuthProvider.credential(email: user.email!, password: currentPassword);
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
+  }
+
   /// جلب بيانات المستخدم الحالي الكاملة (UserModel) من Firestore.
   Future<UserModel?> getCurrentUser() async {
     final uid = _auth.currentUser?.uid;

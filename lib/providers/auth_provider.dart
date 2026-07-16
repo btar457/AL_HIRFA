@@ -112,6 +112,10 @@ class AuthProvider extends ChangeNotifier {
     await loadCurrentUser();
   }
 
+  Future<void> changePassword({required String currentPassword, required String newPassword}) {
+    return AuthService.instance.changePassword(currentPassword: currentPassword, newPassword: newPassword);
+  }
+
   @override
   void dispose() {
     _authSubscription?.cancel();

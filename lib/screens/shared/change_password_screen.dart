@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
+import '../../core/utils/error_handler.dart';
+import '../../providers/auth_provider.dart';
 
 /// شاشة تغيير كلمة المرور (SHARED-7).
 class ChangePasswordScreen extends StatefulWidget {
@@ -15,12 +18,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
+  bool _isSaving = false;
   String _newPassword = '';
 
   bool get _hasMinLength => _newPassword.length >= 8;
   bool get _hasUppercase => _newPassword.contains(RegExp(r'[A-Z]'));
   bool get _hasDigit => _newPassword.contains(RegExp(r'[0-9]'));
-  bool get _isValid => _hasMinLength && _hasUppercase && _hasDigit && _newPassword == _confirmController.text && _confirmController.text.isNotEmpty;
+  bool get _isValid =>
+      _currentController.text.isNotEmpty && _hasMinLength && _hasUppercase && _hasDigit && _newPassword == _confirmController.text && _confirmController.text.isNotEmpty;
 
   InputDecoration _fieldDecoration({Widget? suffix}) {
     return InputDecoration(
@@ -46,7 +51,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
-  void _save() {
+  Future<void> _save() async {
+    setState(() => _isSaving = true);
+    try {
+      await context.read<AuthProvider>().changePassword(
+        currentPassword: _currentController.text,
+        newPassword: _newController.text,
+      );
+      if (!mounted) return;
+      _showSuccessDialog();
+    } catch (e) {
+      if (!mounted) return;
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  void _showSuccessDialog() {
     showDialog(
       context: context,
       builder: (context) => Directionality(
@@ -89,6 +111,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               TextFormField(
                 controller: _currentController,
                 obscureText: _obscureCurrent,
+                onChanged: (_) => setState(() {}),
                 style: const TextStyle(color: AppColors.text),
                 decoration: _fieldDecoration(
                   suffix: IconButton(
@@ -132,8 +155,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, disabledBackgroundColor: AppColors.gold.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                  onPressed: _isValid ? _save : null,
-                  child: const Text('حفظ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  onPressed: (_isValid && !_isSaving) ? _save : null,
+                  child: _isSaving
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                      : const Text('حفظ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],
