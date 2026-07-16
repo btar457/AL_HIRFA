@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/constants/categories.dart';
 import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../models/order_model.dart';
@@ -112,7 +111,10 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
           ],
         ),
         body: StreamBuilder<List<OrderModel>>(
-          stream: OrderService.instance.getAvailableDeliveries(_governorateFilter),
+          stream: OrderService.instance.getAvailableDeliveries(
+            context.watch<AuthProvider>().currentUser?.provinces ?? const [],
+            governorateFilter: _governorateFilter,
+          ),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
@@ -134,6 +136,7 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
   }
 
   void _showGovernorateFilterSheet(BuildContext context) {
+    final coverageProvinces = context.read<AuthProvider>().currentUser?.provinces ?? const <String>[];
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.card,
@@ -148,13 +151,13 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
                 value: null,
                 groupValue: _governorateFilter,
                 activeColor: AppColors.gold,
-                title: const Text('كل المحافظات', style: TextStyle(color: AppColors.text)),
+                title: const Text('كل نطاق تغطيتي', style: TextStyle(color: AppColors.text)),
                 onChanged: (val) {
                   setState(() => _governorateFilter = val);
                   Navigator.pop(sheetContext);
                 },
               ),
-              ...kCities.map((city) => RadioListTile<String?>(
+              ...coverageProvinces.map((city) => RadioListTile<String?>(
                 value: city,
                 groupValue: _governorateFilter,
                 activeColor: AppColors.gold,

@@ -81,12 +81,19 @@ class OrderService {
 
   /// شركة الشحن تقبل الطلب — Firestore Transaction تمنع قبول أكثر من شركة لنفس الطلب.
   Future<bool> shippingAcceptOrder(String orderId, String shippingUid, String shippingCompanyName) async {
+    final companyDoc = await _firestore.collection('users').doc(shippingUid).get();
+    final coverageProvinces = (companyDoc.data()?['provinces'] as List?)?.map((e) => e as String).toList() ?? const <String>[];
+
     final accepted = await _firestore.runTransaction<bool>((tx) async {
       final orderRef = _firestore.collection(_ordersCollection).doc(orderId);
       final orderSnap = await tx.get(orderRef);
 
       if (orderSnap.data()?['status'] != 'seller_approved') {
         return false; // سبقك شخص آخر أو الطلب لم يعد متاحاً
+      }
+      final orderGovernorate = (orderSnap.data()?['address'] as Map?)?['governorate'];
+      if (!coverageProvinces.contains(orderGovernorate)) {
+        throw Exception('هذا الطلب خارج نطاق تغطيتك المسجَّل');
       }
 
       tx.update(orderRef, {
@@ -179,10 +186,18 @@ class OrderService {
 
   /// الطلبات المتاحة لشركات الشحن (بانتظار شركة تقبلها)، اختيارياً مصفّاة
   /// بمحافظة معيّنة — null يعرض كل المحافظات.
-  Stream<List<OrderModel>> getAvailableDeliveries(String? governorate) {
+  /// [coverageProvinces] هو نطاق تغطية شركة الشحن المسجَّل فعلياً — الطلبات
+  /// المعروضة تقتصر عليه دائماً، حتى لو لم يُحدَّد [governorateFilter].
+  Stream<List<OrderModel>> getAvailableDeliveries(List<String> coverageProvinces, {String? governorateFilter}) {
+    if (coverageProvinces.isEmpty) return Stream.value(const []);
+
+    final allowed = governorateFilter != null && coverageProvinces.contains(governorateFilter)
+        ? [governorateFilter]
+        : coverageProvinces;
+
     Query<Map<String, dynamic>> query = _firestore.collection(_ordersCollection).where('status', isEqualTo: 'seller_approved');
-    if (governorate != null) {
-      query = query.where('address.governorate', isEqualTo: governorate);
+    if (allowed.length <= 30) {
+      query = query.where('address.governorate', whereIn: allowed);
     }
     return query.snapshots().map((snapshot) => snapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data())).toList());
   }
