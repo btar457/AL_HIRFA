@@ -1,4 +1,7 @@
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
@@ -45,6 +48,22 @@ class CustomerProfileScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _changePhoto(BuildContext context) async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (picked == null || !context.mounted) return;
+
+    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator(color: AppColors.gold)));
+    try {
+      await context.read<AuthProvider>().uploadProfilePhoto(File(picked.path));
+      if (!context.mounted) return;
+      Navigator.pop(context);
+    } catch (e) {
+      if (!context.mounted) return;
+      Navigator.pop(context);
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    }
   }
 
   void _editPersonalInfo(BuildContext context) {
@@ -122,7 +141,7 @@ class CustomerProfileScreen extends StatelessWidget {
         body: ListView(
           padding: EdgeInsets.zero,
           children: [
-            _buildHeader(user?.name ?? '', user?.email ?? ''),
+            _buildHeader(context, user?.name ?? '', user?.email ?? '', user?.photoUrl ?? ''),
             const SizedBox(height: 12),
             _buildSettingsTile(context, icon: Icons.person_outline, title: 'تعديل البيانات الشخصية', onTap: () => _editPersonalInfo(context)),
             _buildSettingsTile(context, icon: Icons.inventory_2_outlined, title: 'سجل طلباتي', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()))),
@@ -142,7 +161,7 @@ class CustomerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(String name, String email) {
+  Widget _buildHeader(BuildContext context, String name, String email, String photoUrl) {
     return SizedBox(
       height: 260,
       child: Stack(
@@ -163,24 +182,30 @@ class CustomerProfileScreen extends StatelessWidget {
             top: 105,
             child: Column(
               children: [
-                Stack(
-                  children: [
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.card, border: Border.all(color: AppColors.background, width: 3)),
-                      child: const Icon(Icons.person, color: AppColors.gold, size: 44),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(color: AppColors.gold, shape: BoxShape.circle, border: Border.all(color: AppColors.background, width: 2)),
-                        child: const Icon(Icons.camera_alt, color: Colors.black, size: 14),
+                GestureDetector(
+                  onTap: () => _changePhoto(context),
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 90,
+                        height: 90,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.card, border: Border.all(color: AppColors.background, width: 3)),
+                        child: photoUrl.isEmpty
+                            ? const Icon(Icons.person, color: AppColors.gold, size: 44)
+                            : CachedNetworkImage(imageUrl: photoUrl, fit: BoxFit.cover, errorWidget: (_, __, ___) => const Icon(Icons.person, color: AppColors.gold, size: 44)),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(color: AppColors.gold, shape: BoxShape.circle, border: Border.all(color: AppColors.background, width: 2)),
+                          child: const Icon(Icons.camera_alt, color: Colors.black, size: 14),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(name, style: const TextStyle(color: AppColors.text, fontSize: 20, fontWeight: FontWeight.bold)),

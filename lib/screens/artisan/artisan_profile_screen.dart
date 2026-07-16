@@ -1,4 +1,7 @@
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/categories.dart';
 import '../../core/constants/colors.dart';
@@ -39,6 +42,22 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
         field,
       ],
     );
+  }
+
+  Future<void> _changePhoto() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (picked == null || !mounted) return;
+
+    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator(color: AppColors.gold)));
+    try {
+      await context.read<AuthProvider>().uploadProfilePhoto(File(picked.path));
+      if (!mounted) return;
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    }
   }
 
   Future<void> _save() async {
@@ -182,24 +201,30 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
             left: 0,
             right: 0,
             child: Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: 90,
-                    height: 90,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.card, border: Border.all(color: AppColors.background, width: 3)),
-                    child: const Icon(Icons.person, color: AppColors.gold, size: 44),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(color: AppColors.gold, shape: BoxShape.circle, border: Border.all(color: AppColors.background, width: 2)),
-                      child: const Icon(Icons.camera_alt, color: Colors.black, size: 14),
+              child: GestureDetector(
+                onTap: _changePhoto,
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 90,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.card, border: Border.all(color: AppColors.background, width: 3)),
+                      child: (user?.photoUrl.isEmpty ?? true)
+                          ? const Icon(Icons.person, color: AppColors.gold, size: 44)
+                          : CachedNetworkImage(imageUrl: user!.photoUrl, fit: BoxFit.cover, errorWidget: (_, __, ___) => const Icon(Icons.person, color: AppColors.gold, size: 44)),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(color: AppColors.gold, shape: BoxShape.circle, border: Border.all(color: AppColors.background, width: 2)),
+                        child: const Icon(Icons.camera_alt, color: Colors.black, size: 14),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

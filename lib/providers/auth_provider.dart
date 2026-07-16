@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../core/constants/app_rules.dart';
@@ -145,6 +146,13 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
     await AuthService.instance.updateProfile(data);
+    await loadCurrentUser();
+  }
+
+  Future<void> uploadProfilePhoto(File imageFile) async {
+    final uid = _currentUser?.uid;
+    if (uid == null) return;
+    await AuthService.instance.uploadProfilePhoto(uid, imageFile);
     await loadCurrentUser();
   }
 

@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../core/constants/app_rules.dart';
 import '../models/user_model.dart';
 
@@ -11,6 +13,7 @@ class AuthService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   static const _usersCollection = 'users';
 
@@ -137,6 +140,18 @@ class AuthService {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
     await _firestore.collection(_usersCollection).doc(uid).update(data);
+  }
+
+  /// يرفع صورة شخصية جديدة إلى Storage ويحدّث photoUrl في مستند المستخدم.
+  /// اسم الملف فريد بالطابع الزمني لكل رفعة كي لا يبقى الرابط ثابتاً (Firebase
+  /// Storage تُبقي نفس رابط التنزيل عند الكتابة فوق نفس المسار، ما يجعل
+  /// الصورة المخزَّنة مؤقتاً في التطبيق قديمة رغم تحديثها فعلياً).
+  Future<String> uploadProfilePhoto(String uid, File imageFile) async {
+    final ref = _storage.ref('profile_photos/$uid/${DateTime.now().millisecondsSinceEpoch}.jpg');
+    await ref.putFile(imageFile);
+    final url = await ref.getDownloadURL();
+    await _firestore.collection(_usersCollection).doc(uid).update({'photoUrl': url});
+    return url;
   }
 
   /// جلب FCM token الخاص بالجهاز الحالي وحفظه في مستند المستخدم.
