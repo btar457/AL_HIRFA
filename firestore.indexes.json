@@ -41,6 +41,15 @@
       ]
     },
     {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "artisanUid", "order": "ASCENDING" },
+        { "fieldPath": "rejectedBy", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "disputes",
       "queryScope": "COLLECTION",
       "fields": [

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/app_rules.dart';
 import '../models/order_model.dart';
 import '../models/transaction_model.dart';
+import 'admin_service.dart';
 import 'notification_service.dart';
 
 /// طبقة إدارة الطلبات ودورة حياتها الكاملة عبر Firestore.
@@ -68,7 +69,7 @@ class OrderService {
     final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
     final order = OrderModel.fromMap(orderId, orderDoc.data()!);
 
-    await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'cancelled', 'rejectionReason': reason});
+    await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'cancelled', 'rejectionReason': reason, 'rejectedBy': 'seller'});
 
     await NotificationService.instance.sendToUser(
       userUid: order.buyerUid,
@@ -77,7 +78,39 @@ class OrderService {
       type: 'order_rejected',
       data: {'orderId': orderId},
     );
-    // TODO: تحديث warningCount للحرفي وتطبيق عقوبات تراكمية (admin_service.dart لاحقاً).
+
+    await _enforceRejectionPenalties(order.artisanUid);
+  }
+
+  /// يطبّق تحذيراً/تعليقاً تراكمياً على الحرفي حسب حدود AppRules عند تكرار
+  /// رفضه للطلبات (consecutiveRejectsWarning شهرياً/تراكمياً).
+  Future<void> _enforceRejectionPenalties(String artisanUid) async {
+    final monthStart = DateTime(DateTime.now().year, DateTime.now().month, 1);
+    final monthlyRejects = await _firestore
+        .collection(_ordersCollection)
+        .where('artisanUid', isEqualTo: artisanUid)
+        .where('rejectedBy', isEqualTo: 'seller')
+        .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(monthStart))
+        .count()
+        .get();
+    final monthlyCount = monthlyRejects.count ?? 0;
+
+    if (monthlyCount >= AppRules.monthlyRejectsSuspension) {
+      await AdminService.instance.suspendUser(artisanUid, 'تجاوز الحد الأقصى لرفض الطلبات خلال الشهر ($monthlyCount مرات)');
+      return;
+    }
+
+    final recentOrders = await _firestore
+        .collection(_ordersCollection)
+        .where('artisanUid', isEqualTo: artisanUid)
+        .orderBy('createdAt', descending: true)
+        .limit(AppRules.consecutiveRejectsWarning)
+        .get();
+    final allRecentRejected = recentOrders.docs.length == AppRules.consecutiveRejectsWarning &&
+        recentOrders.docs.every((doc) => doc.data()['rejectedBy'] == 'seller');
+    if (allRecentRejected) {
+      await AdminService.instance.warnUser(artisanUid, 'رفض ${AppRules.consecutiveRejectsWarning} طلبات متتالية');
+    }
   }
 
   /// شركة الشحن تقبل الطلب — Firestore Transaction تمنع قبول أكثر من شركة لنفس الطلب.
