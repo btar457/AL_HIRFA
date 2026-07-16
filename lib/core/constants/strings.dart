@@ -10,7 +10,6 @@ class AppStrings {
 
   static const navMarket = 'السوق';
   static const navOrders = 'طلباتي';
-  static const navStudio = 'الاستوديو';
   static const navArtisan = 'الحرفي';
   static const navAdmin = 'الإدارة';
 }
