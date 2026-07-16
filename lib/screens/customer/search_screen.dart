@@ -1,11 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../core/constants/categories.dart';
 import '../../models/categories.dart';
 import '../../models/marketplace_product.dart';
 import '../../models/product_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/product_service.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'product_detail_screen.dart';
+
+String _formatPrice(int value) {
+  final str = value.toString();
+  final buffer = StringBuffer();
+  for (int i = 0; i < str.length; i++) {
+    if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(str[i]);
+  }
+  return buffer.toString();
+}
+
+MarketplaceProduct _toMarketplaceProduct(ProductModel product) {
+  return MarketplaceProduct(name: product.name, price: _formatPrice(product.price), city: product.city, cityTag: product.city.toUpperCase());
+}
 
 /// شاشة البحث والفلاتر (CUSTOMER-12).
 class SearchScreen extends StatefulWidget {
@@ -17,22 +34,12 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
-  final Set<String> _favoriteNames = {};
 
   String? _selectedCategoryId;
   RangeValues _priceRange = const RangeValues(0, 10000000);
   String? _selectedCity;
   double? _minRating;
   String _query = '';
-
-  static const _products = [
-    MarketplaceProduct(name: 'سجادة حرير نجفية مطرزة يدوياً', price: '450,000', city: 'النجف', cityTag: 'NAJAF SILK'),
-    MarketplaceProduct(name: 'إبريق نحاسي بصري منقوش', price: '210,000', city: 'البصرة', cityTag: 'BASRA COPPER'),
-    MarketplaceProduct(name: 'طقم نحاسيات بغدادية مذهبة', price: '380,000', city: 'بغداد', cityTag: 'BAGHDAD BRASS'),
-    MarketplaceProduct(name: 'نسيج صوفي أربيلي تقليدي', price: '165,000', city: 'أربيل', cityTag: 'ERBIL WEAVE'),
-    MarketplaceProduct(name: 'منحوتة حجرية موصلية', price: '295,000', city: 'الموصل', cityTag: 'MOSUL STONE'),
-    MarketplaceProduct(name: 'إكسسوار ذهبي كربلائي', price: '520,000', city: 'كربلاء', cityTag: 'KARBALA GOLD'),
-  ];
 
   @override
   void initState() {
@@ -45,16 +52,6 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
-  }
-
-  List<MarketplaceProduct> get _filtered {
-    return _products.where((p) {
-      if (_query.isNotEmpty && !p.name.contains(_query)) return false;
-      if (_selectedCity != null && p.city != _selectedCity) return false;
-      final price = int.parse(p.price.replaceAll(',', ''));
-      if (price < _priceRange.start || price > _priceRange.end) return false;
-      return true;
-    }).toList();
   }
 
   void _showCategorySheet() {
@@ -225,7 +222,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final results = _filtered;
+    final userId = context.watch<AuthProvider>().currentUser?.uid;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -282,15 +279,45 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text('${results.length} نتيجة', style: TextStyle(color: AppColors.subText, fontSize: 12)),
-                ),
-              ),
               Expanded(
-                child: results.isEmpty ? _buildEmptyState() : _buildResultsGrid(results),
+                child: StreamBuilder<List<ProductModel>>(
+                  stream: ProductService.instance.getActiveProducts(
+                    categoryId: _selectedCategoryId,
+                    city: _selectedCity,
+                    searchQuery: _query.isEmpty ? null : _query,
+                    minPrice: _priceRange.start > 0 ? _priceRange.start : null,
+                    maxPrice: _priceRange.end < 10000000 ? _priceRange.end : null,
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(child: Text('تعذّر تحميل النتائج', style: TextStyle(color: AppColors.subText)));
+                    }
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                    }
+                    final results = _minRating == null ? snapshot.data! : snapshot.data!.where((p) => p.rating >= _minRating!).toList();
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text('${results.length} نتيجة', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Expanded(
+                          child: results.isEmpty
+                              ? _buildEmptyState()
+                              : StreamBuilder<Set<String>>(
+                                  stream: userId == null ? Stream.value(const <String>{}) : ProductService.instance.getFavoriteIds(userId),
+                                  builder: (context, favSnapshot) => _buildResultsGrid(results, favSnapshot.data ?? const <String>{}, userId),
+                                ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -306,15 +333,15 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           Icon(Icons.search_off, color: AppColors.subText.withOpacity(0.5), size: 64),
           const SizedBox(height: 16),
-          Text("لا توجد نتائج لـ '$_query'", style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          Text(_query.isEmpty ? 'لا توجد نتائج' : "لا توجد نتائج لـ '$_query'", style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           const SizedBox(height: 6),
-          Text('جرّب كلمات مختلفة', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+          Text('جرّب كلمات أو فلاتر مختلفة', style: TextStyle(color: AppColors.subText, fontSize: 12)),
         ],
       ),
     );
   }
 
-  Widget _buildResultsGrid(List<MarketplaceProduct> results) {
+  Widget _buildResultsGrid(List<ProductModel> results, Set<String> favoriteIds, String? userId) {
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.66),
@@ -322,16 +349,10 @@ class _SearchScreenState extends State<SearchScreen> {
       itemBuilder: (context, i) {
         final product = results[i];
         return MarketplaceProductCard(
-          product: product,
-          isFavorite: _favoriteNames.contains(product.name),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: ProductModel.fromMarketplaceProduct(product)))),
-          onFavoriteToggle: () => setState(() {
-            if (_favoriteNames.contains(product.name)) {
-              _favoriteNames.remove(product.name);
-            } else {
-              _favoriteNames.add(product.name);
-            }
-          }),
+          product: _toMarketplaceProduct(product),
+          isFavorite: favoriteIds.contains(product.id),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product))),
+          onFavoriteToggle: userId == null ? null : () => ProductService.instance.toggleFavorite(product.id, userId),
         );
       },
     );
