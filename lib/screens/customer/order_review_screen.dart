@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
-import '../../models/marketplace_product.dart';
+import '../../core/utils/error_handler.dart';
+import '../../models/order_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/review_service.dart';
 import 'orders_history_screen.dart';
 
 /// شاشة تقييم المشتري لطلب مكتمل (CUSTOMER-11).
 class OrderReviewScreen extends StatefulWidget {
-  final MarketplaceProduct product;
-  final String artisanName;
-  const OrderReviewScreen({super.key, required this.product, this.artisanName = 'أبو مصطفى'});
+  final OrderModel order;
+  const OrderReviewScreen({super.key, required this.order});
 
   @override
   State<OrderReviewScreen> createState() => _OrderReviewScreenState();
@@ -16,6 +19,7 @@ class OrderReviewScreen extends StatefulWidget {
 class _OrderReviewScreenState extends State<OrderReviewScreen> {
   final _commentController = TextEditingController();
   int _rating = 0;
+  bool _isSubmitting = false;
 
   static const _ratingLabels = {
     1: 'سيء جداً',
@@ -25,7 +29,31 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
     5: 'ممتاز!',
   };
 
-  void _submit() {
+  Future<void> _submit() async {
+    final buyer = context.read<AuthProvider>().currentUser;
+    if (buyer == null || _isSubmitting) return;
+
+    setState(() => _isSubmitting = true);
+    try {
+      await ReviewService.instance.submitReview(
+        orderId: widget.order.id,
+        productId: widget.order.productId,
+        buyerUid: buyer.uid,
+        buyerName: buyer.name,
+        rating: _rating,
+        comment: _commentController.text.trim(),
+      );
+      if (!mounted) return;
+      _showThankYouDialog();
+    } catch (e) {
+      if (!mounted) return;
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  void _showThankYouDialog() {
     showDialog(
       context: context,
       builder: (context) => Directionality(
@@ -96,8 +124,10 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
                 height: 56,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                  onPressed: _rating > 0 ? _submit : null,
-                  icon: const Icon(Icons.send_outlined),
+                  onPressed: (_rating > 0 && !_isSubmitting) ? _submit : null,
+                  icon: _isSubmitting
+                      ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                      : const Icon(Icons.send_outlined),
                   label: const Text('إرسال التقييم', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
@@ -125,9 +155,9 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
             child: const Icon(Icons.auto_awesome, color: AppColors.gold, size: 32),
           ),
           const SizedBox(height: 12),
-          Text(widget.product.name, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+          Text(widget.order.productName, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
           const SizedBox(height: 4),
-          Text(widget.artisanName, style: TextStyle(color: AppColors.subText, fontSize: 12)),
+          Text(widget.order.artisanName, style: TextStyle(color: AppColors.subText, fontSize: 12)),
         ],
       ),
     );

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
-import '../../models/marketplace_product.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
@@ -20,10 +19,6 @@ String _formatPrice(int value) {
     buffer.write(str[i]);
   }
   return buffer.toString();
-}
-
-MarketplaceProduct _toMarketplaceProduct(OrderModel order) {
-  return MarketplaceProduct(name: order.productName, price: _formatPrice(order.price), city: order.governorate, cityTag: order.governorate.toUpperCase());
 }
 
 class OrdersHistoryScreen extends StatefulWidget {
@@ -168,7 +163,7 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
                         style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                         onPressed: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => OrderReviewScreen(product: _toMarketplaceProduct(order), artisanName: order.artisanName)),
+                          MaterialPageRoute(builder: (_) => OrderReviewScreen(order: order)),
                         ),
                         child: const Text('تقييم', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
