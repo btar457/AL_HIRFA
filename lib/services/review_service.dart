@@ -56,4 +56,18 @@ class ReviewService {
       (snapshot) => snapshot.docs.map((doc) => ReviewModel.fromMap(doc.id, doc.data())).toList(),
     );
   }
+
+  /// كل تقييمات منتجات حرفي معيّن (للملف العام) — يُفرَز محلياً بدل orderBy
+  /// كي لا يحتاج فهرساً مركّباً إضافياً فوق whereIn.
+  Future<List<ReviewModel>> getArtisanReviews(List<String> productIds) async {
+    if (productIds.isEmpty) return const [];
+    final reviews = <ReviewModel>[];
+    for (var i = 0; i < productIds.length; i += 30) {
+      final batch = productIds.sublist(i, i + 30 > productIds.length ? productIds.length : i + 30);
+      final snapshot = await _firestore.collection(_reviewsCollection).where('productId', whereIn: batch).get();
+      reviews.addAll(snapshot.docs.map((doc) => ReviewModel.fromMap(doc.id, doc.data())));
+    }
+    reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return reviews;
+  }
 }

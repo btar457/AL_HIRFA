@@ -201,7 +201,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
           OutlinedButton(
             style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanPublicProfileScreen())),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ArtisanPublicProfileScreen(artisanUid: product.artisanUid))),
             child: const Text('زيارة الملف', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
           ),
         ],
