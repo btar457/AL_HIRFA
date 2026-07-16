@@ -10,8 +10,10 @@ class DisputeService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   static const _disputesCollection = 'disputes';
+  static const _ordersCollection = 'orders';
 
-  /// يسجّل بلاغاً جديداً بحالة 'open' ويُخطر الإدارة.
+  /// يسجّل بلاغاً جديداً بحالة 'open'، يضع الطلب في حالة 'disputed' (مع حفظ
+  /// حالته السابقة لاستعادتها عند الحل)، ويُخطر الإدارة.
   Future<String> createDispute({
     required String orderId,
     required String reporterUid,
@@ -32,7 +34,15 @@ class DisputeService {
       status: 'open',
       createdAt: DateTime.now(),
     );
-    await docRef.set(dispute.toMap());
+
+    final orderRef = _firestore.collection(_ordersCollection).doc(orderId);
+    await _firestore.runTransaction((tx) async {
+      final orderSnap = await tx.get(orderRef);
+      final currentStatus = orderSnap.data()?['status'];
+      tx.set(docRef, dispute.toMap());
+      tx.update(orderRef, {'status': 'disputed', 'disputeId': docRef.id, 'preDisputeStatus': currentStatus});
+    });
+
     await NotificationService.instance.sendBulkNotification(targetRole: 'admin', title: 'بلاغ جديد', body: description);
     return docRef.id;
   }
@@ -54,7 +64,8 @@ class DisputeService {
     return _firestore.collection(_disputesCollection).doc(disputeId).update({'status': 'reviewing'});
   }
 
-  /// Admin: يغلق النزاع بقرار نهائي ويُخطر الطرفين.
+  /// Admin: يغلق النزاع بقرار نهائي، يعيد الطلب لحالته السابقة قبل البلاغ
+  /// (إن لم يُلغَ الطلب أصلاً عبر [OrderService.adminCancelOrder])، ويُخطر الطرفين.
   Future<void> resolveDispute(String disputeId, String resolution) async {
     final doc = await _firestore.collection(_disputesCollection).doc(disputeId).get();
     final dispute = DisputeModel.fromMap(disputeId, doc.data()!);
@@ -64,6 +75,13 @@ class DisputeService {
       'resolution': resolution,
       'resolvedAt': Timestamp.now(),
     });
+
+    final orderRef = _firestore.collection(_ordersCollection).doc(dispute.orderId);
+    final orderSnap = await orderRef.get();
+    if (orderSnap.exists && orderSnap.data()?['status'] == 'disputed') {
+      final restoredStatus = orderSnap.data()?['preDisputeStatus'] as String? ?? 'delivered';
+      await orderRef.update({'status': restoredStatus, 'disputeId': FieldValue.delete(), 'preDisputeStatus': FieldValue.delete()});
+    }
 
     await NotificationService.instance.sendToUser(userUid: dispute.reporterUid, title: 'تم حل البلاغ', body: resolution, type: 'dispute_resolved', data: {'disputeId': disputeId});
     await NotificationService.instance.sendToUser(userUid: dispute.reportedUid, title: 'تم حل البلاغ المقدَّم ضدك', body: resolution, type: 'dispute_resolved', data: {'disputeId': disputeId});

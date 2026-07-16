@@ -108,6 +108,45 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     );
   }
 
+  void _confirmResolve(OrderModel order) {
+    final resolutionController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: const Text('إنهاء البلاغ', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: TextFormField(
+            controller: resolutionController,
+            maxLines: 3,
+            style: const TextStyle(color: AppColors.text),
+            decoration: InputDecoration(hintText: 'وصف الحل النهائي', hintStyle: TextStyle(color: AppColors.subText), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
+          ),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () async {
+                final resolution = resolutionController.text.trim();
+                if (resolution.isEmpty) return;
+                await DisputeService.instance.resolveDispute(order.disputeId!, resolution);
+                if (!dialogContext.mounted) return;
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('تأكيد الحل', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -234,6 +273,12 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                         onPressed: () => _confirmCancel(order),
                         child: const Text('إلغاء الطلب', style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
                       ),
+                      if (order.disputeId != null)
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.green), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                          onPressed: () => _confirmResolve(order),
+                          child: const Text('إنهاء البلاغ دون إلغاء', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
                     ],
                   ),
                 ],

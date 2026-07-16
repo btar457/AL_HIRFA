@@ -215,12 +215,17 @@ class OrderService {
     );
   }
 
-  /// Admin: إلغاء قسري لطلب (عادة أثناء حل نزاع).
+  /// Admin: إلغاء قسري لطلب (عادة أثناء حل نزاع). إن كان الطلب مرتبطاً ببلاغ
+  /// مفتوح، يُغلق البلاغ أيضاً بنفس السبب بدل تركه مفتوحاً للأبد.
   Future<void> adminCancelOrder(String orderId, String reason) async {
     final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
     final order = OrderModel.fromMap(orderId, orderDoc.data()!);
 
     await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'cancelled', 'rejectionReason': reason});
+
+    if (order.disputeId != null) {
+      await _firestore.collection('disputes').doc(order.disputeId).update({'status': 'resolved', 'resolution': reason, 'resolvedAt': Timestamp.now()});
+    }
 
     await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'تم إلغاء طلبك', body: reason, type: 'order_cancelled', data: {'orderId': orderId});
     await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'تم إلغاء الطلب', body: reason, type: 'order_cancelled', data: {'orderId': orderId});
