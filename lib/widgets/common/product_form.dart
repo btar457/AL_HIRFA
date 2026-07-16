@@ -254,7 +254,13 @@ class _ProductFormState extends State<ProductForm> {
                     keyboardType: TextInputType.number,
                     style: const TextStyle(color: AppColors.text),
                     decoration: _fieldDecoration(),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'السعر مطلوب' : null,
+                    validator: (v) {
+                      final trimmed = v?.trim() ?? '';
+                      if (trimmed.isEmpty) return 'السعر مطلوب';
+                      final parsed = int.tryParse(trimmed.replaceAll(',', ''));
+                      if (parsed == null || parsed <= 0) return 'أدخل سعراً صحيحاً أكبر من صفر';
+                      return null;
+                    },
                   ),
                 ),
                 const SizedBox(height: 16),
