@@ -238,10 +238,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
         onPressed: () {
-          final cart = context.read<CartProvider>();
-          for (var i = 0; i < _quantity; i++) {
-            cart.addItem(product);
-          }
+          context.read<CartProvider>().addItem(product, quantity: _quantity);
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('أُضيف "${product.name}" إلى السلة')));
           setState(() => _quantity = 1);
         },

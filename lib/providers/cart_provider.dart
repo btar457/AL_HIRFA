@@ -16,12 +16,12 @@ class CartProvider extends ChangeNotifier {
   int get deliveryFee => _items.length * AppRules.fixedDeliveryFee;
   int get total => subtotal + deliveryFee;
 
-  void addItem(ProductModel product) {
+  void addItem(ProductModel product, {int quantity = 1}) {
     final index = _items.indexWhere((item) => item.product.id == product.id);
     if (index >= 0) {
-      _items[index].quantity++;
+      _items[index].quantity += quantity;
     } else {
-      _items.add(CartItem(product: product));
+      _items.add(CartItem(product: product, quantity: quantity));
     }
     notifyListeners();
   }
