@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/product_model.dart';
+import 'notification_service.dart';
 
 /// طبقة إدارة المنتجات عبر Firestore وFirebase Storage.
 class ProductService {
@@ -42,7 +43,7 @@ class ProductService {
     );
 
     await docRef.set(newProduct.toMap());
-    // TODO: إشعار Admin بمنتج جديد ينتظر المراجعة (بعد بناء notification_service.dart).
+    await NotificationService.instance.sendBulkNotification(targetRole: 'admin', title: 'منتج جديد بانتظار المراجعة', body: newProduct.name);
     return productId;
   }
 
@@ -123,14 +124,22 @@ class ProductService {
 
   /// Admin: موافقة على منتج معلّق.
   Future<void> approveProduct(String productId) async {
+    final doc = await _firestore.collection(_productsCollection).doc(productId).get();
     await _firestore.collection(_productsCollection).doc(productId).update({'status': 'active'});
-    // TODO: إشعار الحرفي "تم قبول منتجك" (بعد بناء notification_service.dart).
+    final artisanUid = doc.data()?['artisanUid'] as String?;
+    if (artisanUid != null) {
+      await NotificationService.instance.sendToUser(userUid: artisanUid, title: 'تم قبول منتجك', body: doc.data()?['name'] as String? ?? '', type: 'product_approved', data: {'productId': productId});
+    }
   }
 
   /// Admin: رفض منتج معلّق مع ذكر السبب.
   Future<void> rejectProduct(String productId, String reason) async {
+    final doc = await _firestore.collection(_productsCollection).doc(productId).get();
     await _firestore.collection(_productsCollection).doc(productId).update({'status': 'rejected', 'rejectionReason': reason});
-    // TODO: إشعار الحرفي بسبب الرفض (بعد بناء notification_service.dart).
+    final artisanUid = doc.data()?['artisanUid'] as String?;
+    if (artisanUid != null) {
+      await NotificationService.instance.sendToUser(userUid: artisanUid, title: 'تم رفض منتجك', body: reason, type: 'product_rejected', data: {'productId': productId});
+    }
   }
 
   /// Admin: إيقاف منتج منشور (مخالفة، شكوى...) دون حذفه.
