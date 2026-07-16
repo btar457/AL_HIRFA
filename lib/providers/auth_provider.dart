@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../core/constants/app_rules.dart';
+import '../core/navigation/app_navigator.dart';
 import '../models/user_model.dart';
+import '../screens/auth/login_screen.dart';
 import '../services/auth_service.dart';
 
 /// حالة المصادقة العامة للتطبيق (AL-HIRFA-Firebase-Setup.md — PART 4.1).
@@ -15,6 +17,7 @@ class AuthProvider extends ChangeNotifier {
   bool _isInitializing = true;
   String? _errorMessage;
   StreamSubscription<User?>? _authSubscription;
+  StreamSubscription<UserModel?>? _userDocSubscription;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
@@ -79,6 +82,8 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    await _userDocSubscription?.cancel();
+    _userDocSubscription = null;
     await AuthService.instance.signOut();
     _currentUser = null;
     _errorMessage = null;
@@ -87,7 +92,9 @@ class AuthProvider extends ChangeNotifier {
 
   /// يحمّل UserModel الكامل للمستخدم الحالي من Firestore. يُخرج تلقائياً أي
   /// حساب أصبح معلّقاً/محظوراً/مرفوضاً بعد أن سُجّل دخوله فعلياً (جلسة
-  /// Firebase Auth قد تبقى سارية رغم تغيّر حالة الحساب لاحقاً من الإدارة).
+  /// Firebase Auth قد تبقى سارية رغم تغيّر حالة الحساب لاحقاً من الإدارة)،
+  /// ثم يبدأ مراقبة حيّة لنفس المستند (راجع _watchForLiveBlock) كي لا يبقى
+  /// الحساب مسجَّلاً دخوله فعلياً بعد حظره لاحقاً دون إعادة تشغيل التطبيق.
   Future<void> loadCurrentUser() async {
     _isLoading = true;
     notifyListeners();
@@ -98,6 +105,7 @@ class AuthProvider extends ChangeNotifier {
         _currentUser = null;
       } else {
         _currentUser = user;
+        if (user != null) _watchForLiveBlock(user.uid);
       }
     } catch (e) {
       _errorMessage = e.toString();
@@ -105,6 +113,34 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// يراقب مستند المستخدم الحالي حيّاً؛ إن أصبح محظوراً/معلّقاً/مرفوضاً
+  /// بينما هو ما يزال مسجَّلاً دخوله على هذا الجهاز، يُسجَّل خروجه فوراً
+  /// ويُعاد توجيهه لشاشة الدخول مباشرةً بدل انتظار إعادة تشغيل التطبيق.
+  void _watchForLiveBlock(String uid) {
+    _userDocSubscription?.cancel();
+    _userDocSubscription = AuthService.instance.watchUser(uid).listen((updatedUser) async {
+      if (updatedUser == null) return;
+      final blockCode = AuthService.accessBlockCode(updatedUser);
+      if (blockCode == null) return;
+
+      await _userDocSubscription?.cancel();
+      _userDocSubscription = null;
+      await AuthService.instance.signOut();
+      _currentUser = null;
+      notifyListeners();
+
+      final navState = navigatorKey.currentState;
+      if (navState == null) return;
+      navState.pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
+      final messengerContext = navState.overlay?.context;
+      if (messengerContext != null) {
+        ScaffoldMessenger.of(messengerContext).showSnackBar(
+          SnackBar(content: Text(blockCode == 'account-banned' ? 'تم حظر حسابك من قبل الإدارة' : 'تم تعليق حسابك من قبل الإدارة')),
+        );
+      }
+    });
   }
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
@@ -119,6 +155,7 @@ class AuthProvider extends ChangeNotifier {
   @override
   void dispose() {
     _authSubscription?.cancel();
+    _userDocSubscription?.cancel();
     super.dispose();
   }
 }

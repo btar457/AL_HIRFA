@@ -113,6 +113,15 @@ class AuthService {
     await user.updatePassword(newPassword);
   }
 
+  /// بث حيّ لمستند مستخدم معيّن — يُستخدم لإبطال الجلسة فوراً عند حظره/
+  /// تعليقه بينما هو مسجّل دخوله فعلياً على هذا الجهاز، دون انتظار إعادة
+  /// تشغيل التطبيق أو تسجيل دخول جديد.
+  Stream<UserModel?> watchUser(String uid) {
+    return _firestore.collection(_usersCollection).doc(uid).snapshots().map(
+      (doc) => doc.exists ? UserModel.fromMap(doc.id, doc.data()!) : null,
+    );
+  }
+
   /// جلب بيانات المستخدم الحالي الكاملة (UserModel) من Firestore.
   Future<UserModel?> getCurrentUser() async {
     final uid = _auth.currentUser?.uid;

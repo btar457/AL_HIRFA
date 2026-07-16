@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
 import 'core/constants/strings.dart';
+import 'core/navigation/app_navigator.dart';
 import 'core/navigation/role_router.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
@@ -42,6 +43,7 @@ class AlHirfaApp extends StatelessWidget {
       title: AppStrings.appTitle,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
+      navigatorKey: navigatorKey,
       home: const AuthGate(),
       builder: (context, child) => ConnectivityBanner(child: child!),
     );
