@@ -36,7 +36,7 @@ class ShippingWalletScreen extends StatelessWidget {
       builder: (dialogContext) => const Center(child: CircularProgressIndicator(color: AppColors.gold)),
     );
     try {
-      final settlement = await WalletService.instance.calculateSettlement(shippingUid);
+      final settlement = await WalletService.instance.previewCurrentWeekSettlement(shippingUid);
       if (!context.mounted) return;
       Navigator.pop(context);
       showDialog(
