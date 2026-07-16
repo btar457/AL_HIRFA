@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_rules.dart';
 import '../../core/constants/colors.dart';
+import '../../models/app_settings_model.dart';
+import '../../services/app_settings_service.dart';
 
 /// إدارة العمولات وسعر التوصيل الثابت (ADMIN-8).
 class AdminCommissionsScreen extends StatefulWidget {
@@ -10,10 +11,6 @@ class AdminCommissionsScreen extends StatefulWidget {
 }
 
 class _AdminCommissionsScreenState extends State<AdminCommissionsScreen> {
-  double _productCommission = AppRules.productCommission * 100;
-  double _shippingCommission = AppRules.shippingCommission * 100;
-  int _deliveryFee = AppRules.fixedDeliveryFee;
-
   Future<void> _editValue({required String title, required String initialValue, required ValueChanged<String> onSave}) async {
     final controller = TextEditingController(text: initialValue);
     await showDialog(
@@ -47,6 +44,14 @@ class _AdminCommissionsScreenState extends State<AdminCommissionsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _saveSettings(AppSettingsModel current, {double? productCommission, double? shippingCommission, int? fixedDeliveryFee}) {
+    return AppSettingsService.instance.updateSettings(
+      productCommission: productCommission ?? current.productCommission,
+      shippingCommission: shippingCommission ?? current.shippingCommission,
+      fixedDeliveryFee: fixedDeliveryFee ?? current.fixedDeliveryFee,
     );
   }
 
@@ -84,38 +89,70 @@ class _AdminCommissionsScreenState extends State<AdminCommissionsScreen> {
           title: const Text('إدارة العمولات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           iconTheme: const IconThemeData(color: AppColors.gold),
         ),
-        body: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _buildCommissionCard(
-              label: 'عمولة المنتجات',
-              value: '${_productCommission.toStringAsFixed(0)}%',
-              onEdit: () => _editValue(title: 'عمولة المنتجات (%)', initialValue: _productCommission.toStringAsFixed(0), onSave: (v) => setState(() => _productCommission = double.tryParse(v) ?? _productCommission)),
-            ),
-            _buildCommissionCard(
-              label: 'عمولة الشحن',
-              value: '${_shippingCommission.toStringAsFixed(0)}%',
-              onEdit: () => _editValue(title: 'عمولة الشحن (%)', initialValue: _shippingCommission.toStringAsFixed(0), onSave: (v) => setState(() => _shippingCommission = double.tryParse(v) ?? _shippingCommission)),
-            ),
-            _buildCommissionCard(
-              label: 'سعر التوصيل الثابت',
-              value: '$_deliveryFee د.ع',
-              onEdit: () => _editValue(title: 'سعر التوصيل الثابت (د.ع)', initialValue: '$_deliveryFee', onSave: (v) => setState(() => _deliveryFee = int.tryParse(v) ?? _deliveryFee)),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.amber.withOpacity(0.3))),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.warning_amber_outlined, color: Colors.amber, size: 18),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text('تغيير العمولات يؤثر على جميع الطلبات الجديدة فقط.', style: TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 13))),
-                ],
-              ),
-            ),
-          ],
+        body: StreamBuilder<AppSettingsModel>(
+          stream: AppSettingsService.instance.watchSettings(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+            }
+            final settings = snapshot.data!;
+            final productCommissionPct = settings.productCommission * 100;
+            final shippingCommissionPct = settings.shippingCommission * 100;
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _buildCommissionCard(
+                  label: 'عمولة المنتجات',
+                  value: '${productCommissionPct.toStringAsFixed(0)}%',
+                  onEdit: () => _editValue(
+                    title: 'عمولة المنتجات (%)',
+                    initialValue: productCommissionPct.toStringAsFixed(0),
+                    onSave: (v) {
+                      final parsed = double.tryParse(v);
+                      if (parsed != null) _saveSettings(settings, productCommission: parsed / 100);
+                    },
+                  ),
+                ),
+                _buildCommissionCard(
+                  label: 'عمولة الشحن',
+                  value: '${shippingCommissionPct.toStringAsFixed(0)}%',
+                  onEdit: () => _editValue(
+                    title: 'عمولة الشحن (%)',
+                    initialValue: shippingCommissionPct.toStringAsFixed(0),
+                    onSave: (v) {
+                      final parsed = double.tryParse(v);
+                      if (parsed != null) _saveSettings(settings, shippingCommission: parsed / 100);
+                    },
+                  ),
+                ),
+                _buildCommissionCard(
+                  label: 'سعر التوصيل الثابت',
+                  value: '${settings.fixedDeliveryFee} د.ع',
+                  onEdit: () => _editValue(
+                    title: 'سعر التوصيل الثابت (د.ع)',
+                    initialValue: '${settings.fixedDeliveryFee}',
+                    onSave: (v) {
+                      final parsed = int.tryParse(v);
+                      if (parsed != null) _saveSettings(settings, fixedDeliveryFee: parsed);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.amber.withOpacity(0.3))),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.warning_amber_outlined, color: Colors.amber, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text('تغيير العمولات يؤثر على جميع الطلبات الجديدة فقط.', style: TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 13))),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

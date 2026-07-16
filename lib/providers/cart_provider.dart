@@ -7,14 +7,23 @@ import '../models/product_model.dart';
 /// بالكامل، لا تعتمد على Firebase.
 class CartProvider extends ChangeNotifier {
   final List<CartItem> _items = [];
+  int _deliveryFeePerItem = AppRules.fixedDeliveryFee;
 
   List<CartItem> get items => List.unmodifiable(_items);
   int get itemCount => _items.length;
   int get subtotal => _items.fold(0, (sum, item) => sum + item.totalPrice);
   /// كل عنصر في السلة يصبح طلباً مستقلاً (حرفي وشحنة مختلفَين محتملَين)،
   /// لذا رسم التوصيل الثابت يُحتسب لكل عنصر وليس مرة واحدة للسلة كاملة.
-  int get deliveryFee => _items.length * AppRules.fixedDeliveryFee;
+  int get deliveryFee => _items.length * _deliveryFeePerItem;
   int get total => subtotal + deliveryFee;
+
+  /// يُحدَّث من الشاشات التي تجلب إعدادات AppSettingsService الفعلية، كي لا
+  /// يبقى سعر التوصيل المعروض ثابتاً حتى لو غيّرته الإدارة.
+  void setDeliveryFeePerItem(int fee) {
+    if (fee == _deliveryFeePerItem) return;
+    _deliveryFeePerItem = fee;
+    notifyListeners();
+  }
 
   void addItem(ProductModel product, {int quantity = 1}) {
     final index = _items.indexWhere((item) => item.product.id == product.id);

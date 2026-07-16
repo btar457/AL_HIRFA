@@ -1,12 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/constants/app_rules.dart';
 import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
+import '../../models/app_settings_model.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
+import '../../services/app_settings_service.dart';
 import '../../services/order_service.dart';
 import '../shared/terms_screen.dart';
 import 'orders_history_screen.dart';
@@ -44,6 +45,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _cashAccepted = false;
   bool _policyAccepted = false;
   bool _isSubmitting = false;
+  AppSettingsModel? _settings;
+
+  @override
+  void initState() {
+    super.initState();
+    AppSettingsService.instance.getSettings().then((settings) {
+      if (!mounted) return;
+      setState(() => _settings = settings);
+      context.read<CartProvider>().setDeliveryFeePerItem(settings.fixedDeliveryFee);
+    });
+  }
 
   Widget _buildLabeledField({required String label, required Widget field}) {
     return Column(
@@ -109,10 +121,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     setState(() => _isSubmitting = true);
     try {
+      final settings = _settings ?? await AppSettingsService.instance.getSettings();
       for (final item in cart.items) {
         final product = item.product;
         final linePrice = product.price * item.quantity;
-        final commission = (linePrice * AppRules.productCommission).round();
+        final commission = (linePrice * settings.productCommission).round();
         final order = OrderModel(
           id: '',
           orderNumber: '',
@@ -120,11 +133,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           productName: product.name,
           productImage: product.images.isNotEmpty ? product.images.first : '',
           price: linePrice,
-          deliveryFee: AppRules.fixedDeliveryFee,
-          totalAmount: linePrice + AppRules.fixedDeliveryFee,
-          platformFee: commission + AppRules.platformDeliveryFee,
+          deliveryFee: settings.fixedDeliveryFee,
+          totalAmount: linePrice + settings.fixedDeliveryFee,
+          platformFee: commission + settings.platformDeliveryFee,
           artisanEarnings: linePrice - commission,
-          shippingEarnings: AppRules.companyNetDelivery,
+          shippingEarnings: settings.companyNetDelivery,
           buyerUid: buyer.uid,
           buyerName: _nameController.text.trim(),
           buyerPhone: _phoneController.text.trim(),
@@ -291,7 +304,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           _invoiceRow('سعر المنتجات', _formatPrice(cart.subtotal)),
           const SizedBox(height: 8),
-          _invoiceRow('سعر التوصيل (${cart.items.length} × ${AppRules.fixedDeliveryFee})', _formatPrice(cart.deliveryFee)),
+          _invoiceRow('سعر التوصيل (${cart.items.length} × ${_settings?.fixedDeliveryFee ?? cart.deliveryFee})', _formatPrice(cart.deliveryFee)),
           const SizedBox(height: 12),
           Divider(color: AppColors.gold.withOpacity(0.4)),
           const SizedBox(height: 4),
