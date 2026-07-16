@@ -193,6 +193,7 @@ class AdminService {
     await _firestore.collection(_usersCollection).doc(uid).update({'isActive': false, 'banned': false});
     await _recordViolation(uid, type: 'suspension', description: reason, severity: 'suspension');
     await NotificationService.instance.sendToUser(userUid: uid, title: 'تم تعليق حسابك', body: reason, type: 'account_suspended');
+    await _reassignStuckShippingOrders(uid);
   }
 
   /// حظر نهائي.
@@ -200,6 +201,35 @@ class AdminService {
     await _firestore.collection(_usersCollection).doc(uid).update({'isActive': false, 'banned': true});
     await _recordViolation(uid, type: 'ban', description: reason, severity: 'ban');
     await NotificationService.instance.sendToUser(userUid: uid, title: 'تم حظر حسابك نهائياً', body: reason, type: 'account_banned');
+    await _reassignStuckShippingOrders(uid);
+  }
+
+  /// إن كان [uid] شركة شحن أوقِفت/حُظرت أثناء وجود طلبات بعهدتها، تُعاد هذه
+  /// الطلبات إلى حالة 'seller_approved' لتظهر من جديد أمام شركات أخرى بدل أن
+  /// تبقى عالقة نهائياً.
+  Future<void> _reassignStuckShippingOrders(String uid) async {
+    final snapshot = await _firestore
+        .collection(_ordersCollection)
+        .where('shippingUid', isEqualTo: uid)
+        .where('status', whereIn: ['shipping_assigned', 'picked_up'])
+        .get();
+
+    for (final doc in snapshot.docs) {
+      final order = OrderModel.fromMap(doc.id, doc.data());
+      await doc.reference.update({
+        'status': 'seller_approved',
+        'shippingUid': FieldValue.delete(),
+        'shippingCompanyName': FieldValue.delete(),
+        'shippingAssignedAt': FieldValue.delete(),
+      });
+      await NotificationService.instance.sendToUser(
+        userUid: order.buyerUid,
+        title: 'تغيير شركة الشحن',
+        body: 'يجري الآن تعيين شركة شحن أخرى لطلبك',
+        type: 'shipping_reassigned',
+        data: {'orderId': order.id},
+      );
+    }
   }
 
   /// رفع التعليق عن حساب معلَّق (لا يعمل على حساب محظور نهائياً).
