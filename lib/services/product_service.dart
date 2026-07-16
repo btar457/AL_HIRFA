@@ -69,8 +69,11 @@ class ProductService {
       query = query.where('city', isEqualTo: city);
     }
 
-    return query.snapshots().map((snapshot) {
+    return query.snapshots().asyncMap((snapshot) async {
       var products = snapshot.docs.map((doc) => ProductModel.fromMap(doc.id, doc.data())).toList();
+      if (products.isNotEmpty) {
+        products = await _filterOutBannedArtisans(products);
+      }
       if (minPrice != null) products = products.where((p) => p.price >= minPrice).toList();
       if (maxPrice != null) products = products.where((p) => p.price <= maxPrice).toList();
       if (searchQuery != null && searchQuery.isNotEmpty) {
@@ -78,6 +81,23 @@ class ProductService {
       }
       return products;
     });
+  }
+
+  /// يستثني منتجات الحرفيين المحظورين/الموقوفين من نتائج الواجهة العامة —
+  /// حظر حرفي لا يجب أن يترك منتجاته السابقة معروضة للشراء.
+  Future<List<ProductModel>> _filterOutBannedArtisans(List<ProductModel> products) async {
+    final artisanUids = products.map((p) => p.artisanUid).toSet().toList();
+    final activeArtisans = <String>{};
+    for (var i = 0; i < artisanUids.length; i += 30) {
+      final batch = artisanUids.sublist(i, i + 30 > artisanUids.length ? artisanUids.length : i + 30);
+      final snap = await _firestore.collection(_usersCollection).where(FieldPath.documentId, whereIn: batch).get();
+      for (final doc in snap.docs) {
+        final isActive = doc.data()['isActive'] as bool? ?? true;
+        final banned = doc.data()['banned'] as bool? ?? false;
+        if (isActive && !banned) activeArtisans.add(doc.id);
+      }
+    }
+    return products.where((p) => activeArtisans.contains(p.artisanUid)).toList();
   }
 
   /// منتجات حرفي معيّن (كل الحالات، لشاشة "منتجاتي").
