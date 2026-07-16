@@ -14,15 +14,25 @@ class FounderAccessService {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  static const _usersCollection = 'users';
   static const _logCollection = 'founder_access_log';
+  static const _founderLockPath = 'system_config/founder_lock';
 
-  /// هل يوجد حساب أدمن واحد على الأقل بالفعل؟ يحدّد ما إذا كانت المحاولة
-  /// الحالية "تأسيس أول حساب" أم "دخول عادي" لحساب موجود.
-  Future<bool> founderExists() async {
-    final snapshot = await _firestore.collection(_usersCollection).where('role', isEqualTo: 'admin').count().get();
-    return (snapshot.count ?? 0) > 0;
+  /// يحجز "مقعد التأسيس" بشكل ذرّي عبر Firestore transaction بدل فحص العدد
+  /// ثم الإنشاء بخطوتين منفصلتين (ما كان يسمح لمحاولتين متزامنتين بإنشاء
+  /// أكثر من حساب مؤسس واحد). يُعيد true لمحاولة التأسيس الفائزة فقط.
+  Future<bool> claimFounderSlot() async {
+    final lockRef = _firestore.doc(_founderLockPath);
+    return _firestore.runTransaction<bool>((tx) async {
+      final snap = await tx.get(lockRef);
+      if (snap.exists) return false;
+      tx.set(lockRef, {'claimedAt': Timestamp.now()});
+      return true;
+    });
   }
+
+  /// يُفرِج عن مقعد التأسيس إن فشل إنشاء الحساب فعلياً بعد حجزه، حتى لا
+  /// يُقفَل التأسيس للأبد بسبب محاولة فاشلة (كلمة مرور ضعيفة، انقطاع شبكة...).
+  Future<void> releaseFounderSlot() => _firestore.doc(_founderLockPath).delete();
 
   /// يسجّل كل محاولة وصول ناجحة لحساب المؤسس (تأسيس أو دخول)، ويُرسل
   /// إشعاراً داخلياً حقيقياً لنفس الحساب كتنبيه أمني.
