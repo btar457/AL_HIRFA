@@ -5,10 +5,12 @@ import '../../models/categories.dart';
 import '../../models/marketplace_product.dart';
 import '../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/cart_provider.dart';
 import '../../services/product_service.dart';
 import '../../widgets/common/loading_shimmer.dart';
 import '../../providers/notification_provider.dart';
 import '../../widgets/common/marketplace_product_card.dart';
+import 'cart_screen.dart';
 import 'product_detail_screen.dart';
 import 'search_screen.dart';
 import '../shared/notifications_screen.dart';
@@ -110,7 +112,28 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const SizedBox(width: 48),
+          Consumer<CartProvider>(
+            builder: (context, cart, _) => Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.gold),
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
+                ),
+                if (cart.itemCount > 0)
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                      child: Text('${cart.itemCount}', textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+              ],
+            ),
+          ),
           const Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)),
           Consumer<NotificationProvider>(
             builder: (context, notifications, _) => Stack(
