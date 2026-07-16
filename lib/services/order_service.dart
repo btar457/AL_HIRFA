@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/app_rules.dart';
 import '../models/order_model.dart';
@@ -15,14 +14,16 @@ class OrderService {
   static const _ordersCollection = 'orders';
   static const _transactionsCollection = 'transactions';
 
-  String _generateOrderNumber() => 'HRF-${1000 + Random().nextInt(9000)}';
+  /// يُشتَق من معرّف الطلب الفريد في Firestore (بدل رقم عشوائي قابل للتكرار)
+  /// لضمان عدم تصادم رقمين مختلفين إطلاقاً.
+  String _generateOrderNumber(String orderId) => 'HRF-${orderId.substring(0, 8).toUpperCase()}';
 
   /// ينشئ طلباً جديداً بحالة 'pending' ومهلة موافقة 48 ساعة للحرفي.
   Future<String> createOrder(OrderModel order) async {
     final docRef = _firestore.collection(_ordersCollection).doc();
     final newOrder = order.copyWith(
       id: docRef.id,
-      orderNumber: _generateOrderNumber(),
+      orderNumber: _generateOrderNumber(docRef.id),
       status: 'pending',
       sellerApprovalDeadline: DateTime.now().add(Duration(hours: AppRules.sellerApprovalHours)),
     );
