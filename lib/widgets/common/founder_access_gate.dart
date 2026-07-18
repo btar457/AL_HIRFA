@@ -7,11 +7,11 @@ import '../../core/utils/error_handler.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/founder_access_service.dart';
 
-/// نص اعتماد صغير في واجهة تسجيل الدخول — الضغط المطوَّل عليه لمدة دقيقة
-/// كاملة (وليس ضغطاً عادياً) يفتح نموذج "دخول المؤسس" المخفي، وهو المسار
-/// الوحيد داخل التطبيق للوصول لحساب الأدمن دون التعديل اليدوي في Firebase
-/// Console. يعمل النموذج نفسه لتأسيس أول حساب مؤسس إن لم يوجد أي حساب
-/// أدمن بعد، ولتسجيل الدخول لاحقاً لنفس الحساب.
+/// نص اعتماد صغير في واجهة تسجيل الدخول — الضغط المطوَّل عليه (وليس ضغطاً
+/// عادياً) يفتح نموذج "دخول المؤسس" المخفي، وهو المسار الوحيد داخل
+/// التطبيق للوصول لحساب الأدمن دون التعديل اليدوي في Firebase Console.
+/// يعمل النموذج نفسه لتأسيس أول حساب مؤسس إن لم يوجد أي حساب أدمن بعد،
+/// ولتسجيل الدخول لاحقاً لنفس الحساب.
 class FounderAccessCredit extends StatefulWidget {
   const FounderAccessCredit({super.key});
   @override
@@ -19,26 +19,42 @@ class FounderAccessCredit extends StatefulWidget {
 }
 
 class _FounderAccessCreditState extends State<FounderAccessCredit> {
+  static const _holdDuration = Duration(seconds: 5);
   Timer? _holdTimer;
+  Timer? _tickTimer;
+  double _progress = 0;
 
   void _startHold() {
-    _holdTimer = Timer(const Duration(seconds: 60), () {
+    _holdTimer = Timer(_holdDuration, () {
       if (mounted) _showFounderDialog();
+    });
+    // يحدّث مؤشراً بصرياً كل 50ms كي يشعر المستخدم أن الضغط مسجَّل فعلياً
+    // بدل الانتظار بلا أي استجابة (كان السبب الرئيسي لظهور الميزة كأنها معطوبة).
+    final start = DateTime.now();
+    _tickTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
+      if (!mounted) return;
+      final elapsed = DateTime.now().difference(start).inMilliseconds;
+      setState(() => _progress = (elapsed / _holdDuration.inMilliseconds).clamp(0, 1));
     });
   }
 
   void _cancelHold() {
     _holdTimer?.cancel();
     _holdTimer = null;
+    _tickTimer?.cancel();
+    _tickTimer = null;
+    if (mounted) setState(() => _progress = 0);
   }
 
   void _showFounderDialog() {
+    _cancelHold();
     showDialog(context: context, barrierDismissible: false, builder: (_) => const _FounderAccessDialog());
   }
 
   @override
   void dispose() {
     _holdTimer?.cancel();
+    _tickTimer?.cancel();
     super.dispose();
   }
 
@@ -48,7 +64,23 @@ class _FounderAccessCreditState extends State<FounderAccessCredit> {
       onLongPressStart: (_) => _startHold(),
       onLongPressEnd: (_) => _cancelHold(),
       onLongPressCancel: _cancelHold,
-      child: Text('المؤسس Mustafa Alshlany', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('المؤسس Mustafa Alshlany', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+          if (_progress > 0) ...[
+            const SizedBox(height: 6),
+            SizedBox(
+              width: 60,
+              height: 3,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: LinearProgressIndicator(value: _progress, backgroundColor: AppColors.subText.withOpacity(0.2), color: AppColors.gold),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
