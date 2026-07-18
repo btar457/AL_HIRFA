@@ -41,6 +41,16 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      - name: Set up release signing
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/al-hirfa-release.jks
+          cat > android/key.properties <<EOF
+          storeFile=al-hirfa-release.jks
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          EOF
+
       - name: Build Android APK
         run: flutter build apk --release
 
