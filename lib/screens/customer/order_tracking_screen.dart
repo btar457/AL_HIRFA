@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../models/order_model.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import '../../widgets/common/product_thumbnail.dart';
+import '../../widgets/common/report_problem_dialog.dart';
 
 enum _StageStatus { completed, current, pending }
 
@@ -106,6 +109,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
                       if (order.shippingUid != null) ...[
                         const SizedBox(height: 28),
                         _buildShippingCompanyCard(order),
+                      ],
+                      if (!['cancelled', 'disputed'].contains(order.status)) ...[
+                        const SizedBox(height: 20),
+                        _buildReportProblemButton(order),
                       ],
                     ]),
                   ),
@@ -236,6 +243,22 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
           decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: const Color(0xFF3A3A3A), width: 2)),
         );
     }
+  }
+
+  Widget _buildReportProblemButton(OrderModel order) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.subText.withOpacity(0.4)), padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+        onPressed: () {
+          final buyerUid = context.read<AuthProvider>().currentUser?.uid;
+          if (buyerUid == null) return;
+          showReportProblemDialog(context, orderId: order.id, reporterUid: buyerUid, reportedUid: order.artisanUid, disputeType: 'buyer_report');
+        },
+        icon: const Icon(Icons.report_problem_outlined, color: AppColors.subText, size: 18),
+        label: Text('الإبلاغ عن مشكلة', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+      ),
+    );
   }
 
   Widget _buildShippingCompanyCard(OrderModel order) {

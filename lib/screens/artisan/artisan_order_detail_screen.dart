@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/colors.dart';
 import '../../models/order_model.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/common/product_thumbnail.dart';
+import '../../widgets/common/report_problem_dialog.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -44,6 +47,10 @@ class ArtisanOrderDetailScreen extends StatelessWidget {
             _buildShippingCard(),
             const SizedBox(height: 16),
             _buildInvoiceCard(),
+            if (!['cancelled', 'disputed'].contains(order.status)) ...[
+              const SizedBox(height: 16),
+              _buildReportProblemButton(context),
+            ],
           ],
         ),
       ),
@@ -161,6 +168,22 @@ class ArtisanOrderDetailScreen extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildReportProblemButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.subText.withOpacity(0.4)), padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+        onPressed: () {
+          final artisanUid = context.read<AuthProvider>().currentUser?.uid;
+          if (artisanUid == null) return;
+          showReportProblemDialog(context, orderId: order.id, reporterUid: artisanUid, reportedUid: order.buyerUid, disputeType: 'artisan_report');
+        },
+        icon: const Icon(Icons.report_problem_outlined, color: AppColors.subText, size: 18),
+        label: Text('الإبلاغ عن مشكلة', style: TextStyle(color: AppColors.subText, fontSize: 13)),
       ),
     );
   }
