@@ -1,3 +1,4 @@
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -11,8 +12,24 @@ import 'providers/auth_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/notification_provider.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/auth/reset_password_screen.dart';
 import 'screens/auth/splash_screen.dart';
 import 'widgets/common/connectivity_banner.dart';
+
+/// يستمع لروابط App Links الواردة (فتح التطبيق من رابط إعادة تعيين كلمة
+/// المرور) طوال عمر التطبيق، ويفتح ResetPasswordScreen عند استقبال
+/// oobCode صالح — راجع auth_service.dart: resetPassword.
+void _listenForPasswordResetLinks() {
+  final appLinks = AppLinks();
+  appLinks.uriLinkStream.listen((uri) {
+    if (uri.queryParameters['mode'] != 'resetPassword') return;
+    final oobCode = uri.queryParameters['oobCode'];
+    if (oobCode == null || oobCode.isEmpty) return;
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(builder: (_) => ResetPasswordScreen(oobCode: oobCode)),
+    );
+  });
+}
 
 /// معالج إشعارات FCM أثناء تشغيل التطبيق في الخلفية أو إغلاقه.
 @pragma('vm:entry-point')
@@ -31,6 +48,7 @@ Future<void> main() async {
     appleProvider: AppleProvider.appAttest,
   );
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  _listenForPasswordResetLinks();
   runApp(
     MultiProvider(
       providers: [

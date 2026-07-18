@@ -119,9 +119,25 @@ class AuthService {
   /// تسجيل الخروج من Firebase Auth.
   Future<void> signOut() => _auth.signOut();
 
-  /// إرسال بريد إعادة تعيين كلمة المرور.
+  /// إرسال بريد إعادة تعيين كلمة المرور — الرابط يفتح داخل التطبيق مباشرة
+  /// (App Links عبر al-hirfa.web.app) بدل صفحة Firebase الافتراضية، راجع
+  /// AndroidManifest.xml وhosting/.well-known/assetlinks.json.
   Future<void> resetPassword(String email) {
-    return _auth.sendPasswordResetEmail(email: email.trim());
+    return _auth.sendPasswordResetEmail(
+      email: email.trim(),
+      actionCodeSettings: ActionCodeSettings(
+        url: 'https://al-hirfa.web.app/reset-password',
+        handleCodeInApp: true,
+        androidPackageName: 'com.alhirfa.app',
+        androidInstallApp: false,
+      ),
+    );
+  }
+
+  /// يكمل إعادة تعيين كلمة المرور بعد استقبال oobCode من رابط البريد
+  /// (راجع ResetPasswordScreen وapp_links في main.dart).
+  Future<void> confirmPasswordReset({required String oobCode, required String newPassword}) {
+    return _auth.confirmPasswordReset(code: oobCode, newPassword: newPassword);
   }
 
   /// تغيير كلمة مرور المستخدم الحالي — يتطلب إعادة مصادقة بكلمة المرور

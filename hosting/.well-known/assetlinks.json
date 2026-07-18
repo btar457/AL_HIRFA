@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.alhirfa.app",
+      "sha256_cert_fingerprints": [
+        "71:3F:67:2C:77:57:72:8D:99:E4:24:2F:D6:82:FA:51:39:8A:A7:55:D7:CA:C4:00:10:5A:78:F2:79:C4:30:1A"
+      ]
+    }
+  }
+]
