@@ -73,7 +73,7 @@ service cloud.firestore {
       // الإلزامي الرابع). الإدارة وحدها تُعدّل أي حقل (admin_service.dart).
       allow update: if isSignedIn() && (
         (userId == request.auth.uid && onlyFieldsChanged([
-          'name', 'phone', 'city', 'iban', 'companyName', 'registrationNumber',
+          'name', 'city', 'companyName', 'registrationNumber',
           'provinces', 'photoUrl', 'fcmToken',
           'termsAccepted', 'termsAcceptedAt', 'termsVersion'
         ]))
@@ -85,6 +85,14 @@ service cloud.firestore {
       // product_service.dart: toggleFavorite/getFavorites/getFavoriteIds
       match /favorites/{productId} {
         allow read, write: if isSignedIn() && userId == request.auth.uid;
+      }
+
+      // auth_service.dart: phone/iban — منفصلان عن المستند العام أعلاه
+      // (المقروء من أي مستخدم مسجَّل دخوله) كي لا يطّلع عليهما أحد غير
+      // صاحب الحساب أو الإدارة. نفس صلاحية الكتابة كانت متاحة للذات سابقاً
+      // ضمن المستند العام — النقل هنا يقيّد القراءة فقط.
+      match /private/{docId} {
+        allow read, write: if isSignedIn() && (userId == request.auth.uid || isAdmin());
       }
     }
 

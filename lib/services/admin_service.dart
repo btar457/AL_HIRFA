@@ -18,6 +18,22 @@ class AdminService {
   static const _transactionsCollection = 'transactions';
   static const _violationsCollection = 'violations';
 
+  /// phone/iban منقولان إلى users/{uid}/private/contact (راجع
+  /// auth_service.dart) — الإدارة وحدها (إلى جانب صاحب الحساب) تملك صلاحية
+  /// قراءتهما حسب firestore.rules، لذا تُدمَج هنا صراحة عند الحاجة الفعلية
+  /// لعرضهما (مراجعة الحرفيين، التواصل مع طرف في نزاع). getUserById يُستدعى
+  /// أيضاً من سياقات غير إدارية (الملف العام للحرفي لأي عميل) حيث تُرفض
+  /// قراءة المستند الخاص هذا برمجياً — نتجاهل ذلك بصمت ونُعيد المستخدم بلا
+  /// phone/iban بدل تعطيل الشاشة بالكامل.
+  Future<UserModel> _hydrateWithPrivateContact(UserModel user) async {
+    try {
+      final doc = await _firestore.collection(_usersCollection).doc(user.uid).collection('private').doc('contact').get();
+      return user.withPrivateContact(phone: doc.data()?['phone'] as String?, iban: doc.data()?['iban'] as String?);
+    } catch (_) {
+      return user;
+    }
+  }
+
   DateTime get _todayStart {
     final now = DateTime.now();
     return DateTime(now.year, now.month, now.day);
@@ -130,7 +146,9 @@ class AdminService {
         .where('role', isEqualTo: role)
         .where('approvalStatus', isEqualTo: approvalStatus)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => UserModel.fromMap(doc.id, doc.data())).toList());
+        .asyncMap((snapshot) => Future.wait(
+              snapshot.docs.map((doc) => _hydrateWithPrivateContact(UserModel.fromMap(doc.id, doc.data()))),
+            ));
   }
 
   /// موافقة عامة على أي حساب بانتظار المراجعة (حرفي أو شركة شحن).
@@ -161,7 +179,8 @@ class AdminService {
 
   Future<UserModel?> getUserById(String uid) async {
     final doc = await _firestore.collection(_usersCollection).doc(uid).get();
-    return doc.exists ? UserModel.fromMap(doc.id, doc.data()!) : null;
+    if (!doc.exists) return null;
+    return _hydrateWithPrivateContact(UserModel.fromMap(doc.id, doc.data()!));
   }
 
   Stream<List<UserModel>> getUsersByRole(String role) {

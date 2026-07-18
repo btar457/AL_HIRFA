@@ -69,6 +69,7 @@ class FounderAccessService {
         approvalStatus: 'approved',
       );
       await _firestore.collection(_usersCollection).doc(uid).set(user.toMap());
+      await _firestore.collection(_usersCollection).doc(uid).collection('private').doc('contact').set({'phone': phone});
       await AuthService.instance.saveFCMToken(uid);
       return user;
     } catch (e) {

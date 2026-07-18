@@ -17,6 +17,26 @@ class AuthService {
 
   static const _usersCollection = 'users';
 
+  /// phone وiban حسّاسان — يُخزَّنان في users/{uid}/private/contact بدل
+  /// المستند العام users/{uid} المقروء من أي مستخدم مسجَّل دخوله، حتى لا
+  /// يطّلع عليهما أي طرف آخر غير صاحب الحساب أو الإدارة (راجع firestore.rules).
+  DocumentReference<Map<String, dynamic>> _privateContactRef(String uid) {
+    return _firestore.collection(_usersCollection).doc(uid).collection('private').doc('contact');
+  }
+
+  Future<void> _writePrivateContact(String uid, {String? phone, String? iban}) async {
+    final data = <String, dynamic>{};
+    if (phone != null) data['phone'] = phone;
+    if (iban != null) data['iban'] = iban;
+    if (data.isEmpty) return;
+    await _privateContactRef(uid).set(data, SetOptions(merge: true));
+  }
+
+  Future<UserModel> _hydrateWithPrivateContact(UserModel user) async {
+    final doc = await _privateContactRef(user.uid).get();
+    return user.withPrivateContact(phone: doc.data()?['phone'] as String?, iban: doc.data()?['iban'] as String?);
+  }
+
   /// مستخدم Firebase Auth الحالي (null إن لم يسجّل الدخول).
   User? get firebaseUser => _auth.currentUser;
 
@@ -53,6 +73,7 @@ class AuthService {
       approvalStatus: (role == 'artisan' || role == 'shipping') ? 'pending' : 'approved',
     );
     await _firestore.collection(_usersCollection).doc(uid).set(user.toMap());
+    await _writePrivateContact(uid, phone: phone);
     await saveFCMToken(uid);
 
     return user;
@@ -93,7 +114,7 @@ class AuthService {
     }
 
     await saveFCMToken(uid);
-    return user;
+    return _hydrateWithPrivateContact(user);
   }
 
   /// تسجيل الخروج من Firebase Auth.
@@ -132,14 +153,21 @@ class AuthService {
 
     final doc = await _firestore.collection(_usersCollection).doc(uid).get();
     if (!doc.exists) return null;
-    return UserModel.fromMap(uid, doc.data()!);
+    return _hydrateWithPrivateContact(UserModel.fromMap(uid, doc.data()!));
   }
 
-  /// تحديث بيانات المستخدم الحالي في Firestore.
+  /// تحديث بيانات المستخدم الحالي في Firestore. phone/iban (إن وُجدا ضمن
+  /// data) يُوجَّهان تلقائياً إلى users/{uid}/private/contact بدل المستند
+  /// العام؛ باقي الحقول تُكتب في users/{uid} كالمعتاد.
   Future<void> updateProfile(Map<String, dynamic> data) async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
-    await _firestore.collection(_usersCollection).doc(uid).update(data);
+
+    final publicData = Map<String, dynamic>.from(data)..remove('phone')..remove('iban');
+    if (publicData.isNotEmpty) {
+      await _firestore.collection(_usersCollection).doc(uid).update(publicData);
+    }
+    await _writePrivateContact(uid, phone: data['phone'] as String?, iban: data['iban'] as String?);
   }
 
   /// يرفع صورة شخصية جديدة إلى Storage ويحدّث photoUrl في مستند المستخدم.

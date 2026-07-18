@@ -84,11 +84,14 @@ class UserModel {
     );
   }
 
+  /// ملاحظة: phone وiban مقصودان من toMap() عمداً — يُخزَّنان في
+  /// users/{uid}/private/contact (subcollection بقواعد أشد) لا في هذا
+  /// المستند العام المقروء من أي مستخدم مسجَّل دخوله. راجع
+  /// AuthService._writePrivateContact/_hydrateWithPrivateContact.
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'email': email,
-      'phone': phone,
       'role': role,
       'city': city,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -101,12 +104,40 @@ class UserModel {
       'companyName': companyName,
       'registrationNumber': registrationNumber,
       'provinces': provinces,
-      'iban': iban,
       'termsAccepted': termsAccepted,
       'termsAcceptedAt': termsAcceptedAt != null ? Timestamp.fromDate(termsAcceptedAt!) : null,
       'termsVersion': termsVersion,
       'artisanTermsAccepted': artisanTermsAccepted,
       'shippingTermsAccepted': shippingTermsAccepted,
     };
+  }
+
+  /// يدمج phone/iban المقروءين من users/{uid}/private/contact في نسخة
+  /// جديدة من هذا المستخدم (باقي الحقول كما هي).
+  UserModel withPrivateContact({String? phone, String? iban}) {
+    return UserModel(
+      uid: uid,
+      name: name,
+      email: email,
+      phone: phone ?? this.phone,
+      role: role,
+      city: city,
+      createdAt: createdAt,
+      photoUrl: photoUrl,
+      fcmToken: fcmToken,
+      isActive: isActive,
+      banned: banned,
+      approvalStatus: approvalStatus,
+      warningCount: warningCount,
+      companyName: companyName,
+      registrationNumber: registrationNumber,
+      provinces: provinces,
+      iban: iban ?? this.iban,
+      termsAccepted: termsAccepted,
+      termsAcceptedAt: termsAcceptedAt,
+      termsVersion: termsVersion,
+      artisanTermsAccepted: artisanTermsAccepted,
+      shippingTermsAccepted: shippingTermsAccepted,
+    );
   }
 }
