@@ -237,56 +237,82 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.red.withOpacity(0.3))),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (order.disputeId != null)
-                    StreamBuilder<DisputeModel?>(
+              child: order.disputeId == null
+                  ? _buildDisputeActions(order, null)
+                  : StreamBuilder<DisputeModel?>(
                       stream: DisputeService.instance.watchDispute(order.disputeId!),
                       builder: (context, disputeSnapshot) {
                         final dispute = disputeSnapshot.data;
-                        return Text(dispute?.description ?? 'جاري تحميل تفاصيل البلاغ...', style: TextStyle(color: AppColors.text, fontSize: 12));
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(child: Text(dispute?.description ?? 'جاري تحميل تفاصيل البلاغ...', style: TextStyle(color: AppColors.text, fontSize: 12))),
+                                if (dispute != null) _buildDisputeStatusChip(dispute.status),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            _buildDisputeActions(order, dispute),
+                          ],
+                        );
                       },
                     ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                        onPressed: () => _showContactDialog('بيانات المشتري', order.buyerName, order.buyerPhone),
-                        child: const Text('تواصل مع المشتري', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
-                      ),
-                      if (order.shippingUid != null)
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                          onPressed: () async {
-                            final shippingUser = await AdminService.instance.getUserById(order.shippingUid!);
-                            if (!mounted) return;
-                            _showContactDialog('بيانات شركة الشحن', shippingUser?.name ?? order.shippingCompanyName ?? '', shippingUser?.phone);
-                          },
-                          child: const Text('تواصل مع الشركة', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
-                        ),
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                        onPressed: () => _confirmCancel(order),
-                        child: const Text('إلغاء الطلب', style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
-                      ),
-                      if (order.disputeId != null)
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.green), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                          onPressed: () => _confirmResolve(order),
-                          child: const Text('إنهاء البلاغ دون إلغاء', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
             ),
           ],
         ],
       ),
+    );
+  }
+
+  Widget _buildDisputeActions(OrderModel order, DisputeModel? dispute) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        OutlinedButton(
+          style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+          onPressed: () => _showContactDialog('بيانات المشتري', order.buyerName, order.buyerPhone),
+          child: const Text('تواصل مع المشتري', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
+        ),
+        if (order.shippingUid != null)
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            onPressed: () async {
+              final shippingUser = await AdminService.instance.getUserById(order.shippingUid!);
+              if (!mounted) return;
+              _showContactDialog('بيانات شركة الشحن', shippingUser?.name ?? order.shippingCompanyName ?? '', shippingUser?.phone);
+            },
+            child: const Text('تواصل مع الشركة', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
+        OutlinedButton(
+          style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+          onPressed: () => _confirmCancel(order),
+          child: const Text('إلغاء الطلب', style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
+        ),
+        if (dispute != null && dispute.status == 'open')
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            onPressed: () => DisputeService.instance.markReviewing(dispute.id),
+            child: const Text('بدء المراجعة', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
+        if (order.disputeId != null)
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.green), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            onPressed: () => _confirmResolve(order),
+            child: const Text('إنهاء البلاغ دون إلغاء', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDisputeStatusChip(String status) {
+    final isReviewing = status == 'reviewing';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      margin: const EdgeInsets.only(right: 8),
+      decoration: BoxDecoration(color: (isReviewing ? AppColors.gold : Colors.redAccent).withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+      child: Text(isReviewing ? 'قيد المراجعة' : 'جديد', style: TextStyle(color: isReviewing ? AppColors.gold : Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold)),
     );
   }
 
