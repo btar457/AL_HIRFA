@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
@@ -6,6 +8,7 @@ import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/dispute_service.dart';
 import '../../services/order_service.dart';
+import '../../services/storage_service.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -32,7 +35,17 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
   bool _isUpdating = false;
 
   static const _problems = ['لا مشكلة', 'المشتري غير متاح', 'العنوان خاطئ', 'أخرى'];
+  static const _kMaxEvidenceImages = 3;
   bool _isSendingReport = false;
+  final List<XFile> _evidenceImages = [];
+
+  Future<void> _pickEvidence() async {
+    if (_evidenceImages.length >= _kMaxEvidenceImages) return;
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (picked != null) setState(() => _evidenceImages.add(picked));
+  }
+
+  void _removeEvidence(int index) => setState(() => _evidenceImages.removeAt(index));
 
   Future<void> _sendReport(OrderModel order) async {
     if (_selectedProblem == 'لا مشكلة') {
@@ -43,12 +56,18 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
     if (shippingUid == null) return;
     setState(() => _isSendingReport = true);
     try {
+      final evidenceUrls = <String>[];
+      for (var i = 0; i < _evidenceImages.length; i++) {
+        final key = 'disputes/${widget.orderId}/${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+        evidenceUrls.add(await StorageService.instance.uploadFile(File(_evidenceImages[i].path), key));
+      }
       await DisputeService.instance.createDispute(
         orderId: widget.orderId,
         reporterUid: shippingUid,
         reportedUid: order.buyerUid,
         type: 'delivery_issue',
         description: '$_selectedProblem: ${_problemDetailsController.text.trim()}',
+        evidenceUrls: evidenceUrls,
       );
       if (!mounted) return;
       Navigator.pop(context);
@@ -109,6 +128,61 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildEvidenceSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('صور كدليل (اختياري، حتى $_kMaxEvidenceImages)', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 72,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              ..._evidenceImages.asMap().entries.map((entry) => Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(File(entry.value.path), width: 64, height: 64, fit: BoxFit.cover),
+                        ),
+                        Positioned(
+                          top: 2,
+                          left: 2,
+                          child: GestureDetector(
+                            onTap: () => _removeEvidence(entry.key),
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(color: Colors.black87, shape: BoxShape.circle),
+                              child: const Icon(Icons.close, color: Colors.white, size: 12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+              if (_evidenceImages.length < _kMaxEvidenceImages)
+                GestureDetector(
+                  onTap: _pickEvidence,
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: AppColors.card,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.gold.withOpacity(0.4)),
+                    ),
+                    child: const Icon(Icons.add_a_photo_outlined, color: AppColors.gold, size: 22),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -216,6 +290,8 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
                         focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
                       ),
                     ),
+                    const SizedBox(height: 14),
+                    _buildEvidenceSection(),
                   ],
                   const SizedBox(height: 20),
                   SizedBox(

@@ -1,17 +1,16 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/product_model.dart';
 import 'notification_service.dart';
+import 'storage_service.dart';
 
-/// طبقة إدارة المنتجات عبر Firestore وFirebase Storage.
+/// طبقة إدارة المنتجات عبر Firestore وCloudflare R2.
 class ProductService {
   ProductService._();
   static final ProductService instance = ProductService._();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   static const _productsCollection = 'products';
   static const _usersCollection = 'users';
@@ -47,13 +46,13 @@ class ProductService {
     return productId;
   }
 
-  /// يرفع صور جديدة (إضافة أو تعديل) على Storage ويُعيد روابطها.
+  /// يرفع صور جديدة (إضافة أو تعديل) إلى R2 ويُعيد روابطها.
   Future<List<String>> uploadImages(String artisanUid, String productId, List<XFile> images) async {
     final imageUrls = <String>[];
     for (var i = 0; i < images.length; i++) {
-      final ref = _storage.ref('products/$artisanUid/$productId/${DateTime.now().millisecondsSinceEpoch}_$i.jpg');
-      await ref.putFile(File(images[i].path));
-      imageUrls.add(await ref.getDownloadURL());
+      final key = 'products/$artisanUid/$productId/${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+      final url = await StorageService.instance.uploadFile(File(images[i].path), key);
+      imageUrls.add(url);
     }
     return imageUrls;
   }
