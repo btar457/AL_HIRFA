@@ -38,6 +38,12 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
     if (mounted) setState(() {});
   }
 
+  Future<void> _markShippingSettlementLate(String shippingUid) async {
+    final settlement = await WalletService.instance.calculateSettlement(shippingUid);
+    await WalletService.instance.applyLatePenalty(settlement.id);
+    if (mounted) setState(() {});
+  }
+
   void _rejectWithdrawal(WithdrawalRequestModel withdrawal) {
     final reasonController = TextEditingController();
     showDialog(
@@ -188,10 +194,22 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
                           Text('${_formatPrice(due)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                           const SizedBox(height: 6),
                           if (due > 0)
-                            OutlinedButton(
-                              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
-                              onPressed: () => _confirmShippingSettlement(company.uid),
-                              child: const Text('تأكيد الاستلام', style: TextStyle(color: AppColors.gold, fontSize: 11)),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              alignment: WrapAlignment.end,
+                              children: [
+                                OutlinedButton(
+                                  style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
+                                  onPressed: () => _confirmShippingSettlement(company.uid),
+                                  child: const Text('تأكيد الاستلام', style: TextStyle(color: AppColors.gold, fontSize: 11)),
+                                ),
+                                OutlinedButton(
+                                  style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
+                                  onPressed: () => _markShippingSettlementLate(company.uid),
+                                  child: const Text('تسجيل تأخر السداد', style: TextStyle(color: Colors.redAccent, fontSize: 11)),
+                                ),
+                              ],
                             )
                           else
                             Text('لا يوجد مستحق', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
