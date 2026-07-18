@@ -16,13 +16,16 @@ class StorageService {
   StorageService._();
   static final StorageService instance = StorageService._();
 
-  // TODO: استبدل هذه القيم بعد إنشاء حساب Cloudflare R2 (راجع تعليمات الإعداد).
-  static const _accountId = 'REPLACE_WITH_ACCOUNT_ID';
-  static const _accessKeyId = 'REPLACE_WITH_ACCESS_KEY_ID';
-  static const _secretAccessKey = 'REPLACE_WITH_SECRET_ACCESS_KEY';
+  // القيم الثلاث الحسّاسة تُحقَن فقط في وقت البناء عبر --dart-define من
+  // أسرار CI (build_apk.yml) — لا تُكتب هنا مباشرة أبداً، لأن هذا المستودع
+  // عام (public) وأي قيمة هنا ستكون مقروءة لأي زائر فور الدفع (Push).
+  static const _accountId = String.fromEnvironment('R2_ACCOUNT_ID');
+  static const _accessKeyId = String.fromEnvironment('R2_ACCESS_KEY_ID');
+  static const _secretAccessKey = String.fromEnvironment('R2_SECRET_ACCESS_KEY');
   static const _bucket = 'al-hirfa';
-  // الرابط العام لقراءة الملفات بعد رفعها (r2.dev أو نطاق مخصّص) — بلا شرطة "/" في النهاية.
-  static const _publicBaseUrl = 'REPLACE_WITH_PUBLIC_BASE_URL';
+  // الرابط العام لقراءة الملفات بعد رفعها (Public Development URL — r2.dev)
+  // ليس سرّاً — يُقرأ من الإعدادات العامة مباشرة، آمن تضمينه في الكود.
+  static const _publicBaseUrl = 'https://pub-061b5d191b044be1a41d2403f5537476.r2.dev';
 
   static const _credentialScope = AWSCredentialScope(region: 'auto', service: AWSService.s3);
 

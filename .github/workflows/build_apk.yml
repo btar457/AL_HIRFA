@@ -52,7 +52,11 @@ jobs:
           EOF
 
       - name: Build Android APK
-        run: flutter build apk --release
+        run: |
+          flutter build apk --release \
+            --dart-define=R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }} \
+            --dart-define=R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }} \
+            --dart-define=R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
