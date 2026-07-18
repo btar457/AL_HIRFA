@@ -18,15 +18,15 @@ class AppSettingsModel {
     required this.companyNetDelivery,
   });
 
-  /// حصة AL-HIRFA من سعر التوصيل تبقى 10% منه (نفس نسبة الافتراضي
-  /// 500/5000)، والباقي يذهب لشركة الشحن — كي يبقى السعران متّسقين مهما
-  /// عدّلت الإدارة سعر التوصيل الكلي.
+  /// حصة AL-HIRFA من سعر التوصيل = نسبة shippingCommission (القابلة للتعديل
+  /// من لوحة الإدارة) مضروبة في سعر التوصيل الكلي، والباقي يذهب لشركة الشحن.
   factory AppSettingsModel.fromMap(Map<String, dynamic>? map) {
     final fixedDeliveryFee = (map?['fixedDeliveryFee'] as num?)?.toInt() ?? AppRules.fixedDeliveryFee;
-    final platformDeliveryFee = (fixedDeliveryFee * 0.1).round();
+    final shippingCommission = (map?['shippingCommission'] as num?)?.toDouble() ?? AppRules.shippingCommission;
+    final platformDeliveryFee = (fixedDeliveryFee * shippingCommission).round();
     return AppSettingsModel(
       productCommission: (map?['productCommission'] as num?)?.toDouble() ?? AppRules.productCommission,
-      shippingCommission: (map?['shippingCommission'] as num?)?.toDouble() ?? AppRules.shippingCommission,
+      shippingCommission: shippingCommission,
       fixedDeliveryFee: fixedDeliveryFee,
       platformDeliveryFee: platformDeliveryFee,
       companyNetDelivery: fixedDeliveryFee - platformDeliveryFee,
