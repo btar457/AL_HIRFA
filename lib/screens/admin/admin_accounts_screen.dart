@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/user_model.dart';
@@ -293,7 +294,12 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
         onTap: () => _showViolations(user),
         child: Row(
           children: [
-            CircleAvatar(radius: 25, backgroundColor: AppColors.gold.withOpacity(0.2), child: const Icon(Icons.person, color: AppColors.gold)),
+            CircleAvatar(
+              radius: 25,
+              backgroundColor: AppColors.gold.withOpacity(0.2),
+              backgroundImage: user.photoUrl.isEmpty ? null : CachedNetworkImageProvider(user.photoUrl),
+              child: user.photoUrl.isEmpty ? const Icon(Icons.person, color: AppColors.gold) : null,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

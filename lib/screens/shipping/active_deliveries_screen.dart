@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../models/order_model.dart';
+import '../../widgets/common/product_thumbnail.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import 'update_delivery_screen.dart';
@@ -142,12 +143,7 @@ class _ActiveDeliveriesScreenState extends State<ActiveDeliveriesScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: const LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)])),
-                  child: const Icon(Icons.auto_awesome, color: AppColors.gold, size: 24),
-                ),
+                ProductThumbnail(imageUrl: order.productImage, size: 70, iconSize: 24),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

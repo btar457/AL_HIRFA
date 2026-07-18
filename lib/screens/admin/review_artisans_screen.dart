@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/user_model.dart';
@@ -135,7 +136,12 @@ class _ReviewArtisansScreenState extends State<ReviewArtisansScreen> with Single
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 26, backgroundColor: AppColors.gold.withOpacity(0.2), child: const Icon(Icons.person, color: AppColors.gold)),
+              CircleAvatar(
+                radius: 26,
+                backgroundColor: AppColors.gold.withOpacity(0.2),
+                backgroundImage: artisan.photoUrl.isEmpty ? null : CachedNetworkImageProvider(artisan.photoUrl),
+                child: artisan.photoUrl.isEmpty ? const Icon(Icons.person, color: AppColors.gold) : null,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

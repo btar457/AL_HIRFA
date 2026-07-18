@@ -7,6 +7,7 @@ class ReviewModel {
   final String productId;
   final String buyerUid;
   final String buyerName;
+  final String buyerPhotoUrl;
   final int rating; // 1-5
   final String comment;
   final DateTime createdAt;
@@ -17,6 +18,7 @@ class ReviewModel {
     required this.productId,
     required this.buyerUid,
     required this.buyerName,
+    this.buyerPhotoUrl = '',
     required this.rating,
     this.comment = '',
     required this.createdAt,
@@ -29,6 +31,7 @@ class ReviewModel {
       productId: map['productId'] as String? ?? '',
       buyerUid: map['buyerUid'] as String? ?? '',
       buyerName: map['buyerName'] as String? ?? '',
+      buyerPhotoUrl: map['buyerPhotoUrl'] as String? ?? '',
       rating: map['rating'] as int? ?? 0,
       comment: map['comment'] as String? ?? '',
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -41,6 +44,7 @@ class ReviewModel {
       'productId': productId,
       'buyerUid': buyerUid,
       'buyerName': buyerName,
+      'buyerPhotoUrl': buyerPhotoUrl,
       'rating': rating,
       'comment': comment,
       'createdAt': Timestamp.fromDate(createdAt),

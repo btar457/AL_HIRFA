@@ -33,6 +33,7 @@ class ProductService {
       images: imageUrls,
       artisanUid: product.artisanUid,
       artisanName: product.artisanName,
+      artisanPhotoUrl: product.artisanPhotoUrl,
       narrative: product.narrative,
       material: product.material,
       originPlace: product.originPlace,

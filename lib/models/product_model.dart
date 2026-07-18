@@ -13,6 +13,7 @@ class ProductModel {
   final List<String> images;
   final String artisanUid;
   final String artisanName;
+  final String artisanPhotoUrl;
   final String narrative;
   final String material;
   final String originPlace;
@@ -33,6 +34,7 @@ class ProductModel {
     required this.images,
     required this.artisanUid,
     required this.artisanName,
+    this.artisanPhotoUrl = '',
     this.narrative = '',
     this.material = '',
     this.originPlace = '',
@@ -55,6 +57,7 @@ class ProductModel {
       images: (map['images'] as List?)?.map((e) => e as String).toList() ?? const [],
       artisanUid: map['artisanUid'] as String? ?? '',
       artisanName: map['artisanName'] as String? ?? '',
+      artisanPhotoUrl: map['artisanPhotoUrl'] as String? ?? '',
       narrative: map['narrative'] as String? ?? '',
       material: map['material'] as String? ?? '',
       originPlace: map['originPlace'] as String? ?? '',
@@ -97,6 +100,7 @@ class ProductModel {
       'images': images,
       'artisanUid': artisanUid,
       'artisanName': artisanName,
+      'artisanPhotoUrl': artisanPhotoUrl,
       'narrative': narrative,
       'material': material,
       'originPlace': originPlace,

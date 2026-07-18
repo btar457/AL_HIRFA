@@ -4,6 +4,7 @@ import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/common/product_thumbnail.dart';
 import '../../services/review_service.dart';
 import 'orders_history_screen.dart';
 
@@ -40,6 +41,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
         productId: widget.order.productId,
         buyerUid: buyer.uid,
         buyerName: buyer.name,
+        buyerPhotoUrl: buyer.photoUrl,
         rating: _rating,
         comment: _commentController.text.trim(),
       );
@@ -145,15 +147,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
       child: Column(
         children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: const LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)]),
-            ),
-            child: const Icon(Icons.auto_awesome, color: AppColors.gold, size: 32),
-          ),
+          ProductThumbnail(imageUrl: widget.order.productImage, size: 100, borderRadius: 12, iconSize: 32),
           const SizedBox(height: 12),
           Text(widget.order.productName, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
           const SizedBox(height: 4),

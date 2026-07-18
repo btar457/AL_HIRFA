@@ -183,11 +183,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.background, border: Border.all(color: AppColors.gold.withOpacity(0.4))),
-            child: const Icon(Icons.person, color: AppColors.gold),
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: AppColors.background,
+            backgroundImage: product.artisanPhotoUrl.isEmpty ? null : CachedNetworkImageProvider(product.artisanPhotoUrl),
+            child: product.artisanPhotoUrl.isEmpty ? const Icon(Icons.person, color: AppColors.gold) : null,
           ),
           const SizedBox(width: 12),
           Expanded(

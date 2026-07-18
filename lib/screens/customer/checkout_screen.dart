@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../models/app_settings_model.dart';
+import '../../widgets/common/product_thumbnail.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
@@ -268,15 +269,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Row(
               children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    gradient: const LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)]),
-                  ),
-                  child: const Icon(Icons.auto_awesome, color: AppColors.gold, size: 22),
-                ),
+                ProductThumbnail(imageUrl: item.product.images.isNotEmpty ? item.product.images.first : '', size: 56, iconSize: 22),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

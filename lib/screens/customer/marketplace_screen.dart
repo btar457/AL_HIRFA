@@ -31,6 +31,7 @@ MarketplaceProduct _toMarketplaceProduct(ProductModel product) {
     price: _formatPrice(product.price),
     city: product.city,
     cityTag: product.city.toUpperCase(),
+    imageUrl: product.images.isNotEmpty ? product.images.first : '',
   );
 }
 

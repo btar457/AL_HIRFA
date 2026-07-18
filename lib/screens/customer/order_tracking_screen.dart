@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/order_model.dart';
 import '../../services/order_service.dart';
+import '../../widgets/common/product_thumbnail.dart';
 
 enum _StageStatus { completed, current, pending }
 
@@ -123,15 +124,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              gradient: const LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)]),
-            ),
-            child: const Icon(Icons.auto_awesome, color: AppColors.gold, size: 24),
-          ),
+          ProductThumbnail(imageUrl: order.productImage, size: 60, iconSize: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

@@ -22,7 +22,7 @@ String _formatPrice(int value) {
 }
 
 MarketplaceProduct _toMarketplaceProduct(ProductModel product) {
-  return MarketplaceProduct(name: product.name, price: _formatPrice(product.price), city: product.city, cityTag: product.city.toUpperCase());
+  return MarketplaceProduct(name: product.name, price: _formatPrice(product.price), city: product.city, cityTag: product.city.toUpperCase(), imageUrl: product.images.isNotEmpty ? product.images.first : '');
 }
 
 class _ArtisanProfileData {
@@ -294,11 +294,11 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.background, border: Border.all(color: AppColors.gold.withOpacity(0.4))),
-                    child: const Icon(Icons.person, color: AppColors.gold, size: 20),
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColors.background,
+                    backgroundImage: review.buyerPhotoUrl.isEmpty ? null : CachedNetworkImageProvider(review.buyerPhotoUrl),
+                    child: review.buyerPhotoUrl.isEmpty ? const Icon(Icons.person, color: AppColors.gold, size: 20) : null,
                   ),
                   const SizedBox(width: 10),
                   Expanded(child: Text(review.buyerName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold))),

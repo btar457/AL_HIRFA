@@ -99,7 +99,7 @@ class FavoritesScreen extends StatelessWidget {
             child: const Icon(Icons.delete_outline, color: Colors.white),
           ),
           child: MarketplaceProductCard(
-            product: MarketplaceProduct(name: product.name, price: _formatPrice(product.price), city: product.city, cityTag: product.city.toUpperCase()),
+            product: MarketplaceProduct(name: product.name, price: _formatPrice(product.price), city: product.city, cityTag: product.city.toUpperCase(), imageUrl: product.images.isNotEmpty ? product.images.first : ''),
             isFavorite: true,
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product))),
             onFavoriteToggle: () => ProductService.instance.toggleFavorite(product.id, userId),

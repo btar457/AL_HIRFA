@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/colors.dart';
 import '../../models/order_model.dart';
+import '../../widgets/common/product_thumbnail.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -55,15 +56,7 @@ class ArtisanOrderDetailScreen extends StatelessWidget {
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: const LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)]),
-            ),
-            child: const Icon(Icons.auto_awesome, color: AppColors.gold, size: 36),
-          ),
+          ProductThumbnail(imageUrl: order.productImage, size: 120, borderRadius: 10, iconSize: 36),
           const SizedBox(width: 14),
           Expanded(
             child: Column(

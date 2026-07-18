@@ -19,6 +19,7 @@ class ReviewService {
     required String productId,
     required String buyerUid,
     required String buyerName,
+    String buyerPhotoUrl = '',
     required int rating,
     String comment = '',
   }) async {
@@ -41,6 +42,7 @@ class ReviewService {
           productId: productId,
           buyerUid: buyerUid,
           buyerName: buyerName,
+          buyerPhotoUrl: buyerPhotoUrl,
           rating: rating,
           comment: comment,
           createdAt: DateTime.now(),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../models/cart_item.dart';
 import '../../providers/cart_provider.dart';
+import '../../widgets/common/product_thumbnail.dart';
 import 'checkout_screen.dart';
 import 'customer_nav.dart';
 
@@ -110,15 +111,7 @@ class CartScreen extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                gradient: const LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)]),
-              ),
-              child: const Icon(Icons.auto_awesome, color: AppColors.gold, size: 24),
-            ),
+            ProductThumbnail(imageUrl: item.product.images.isNotEmpty ? item.product.images.first : '', size: 70, iconSize: 24),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

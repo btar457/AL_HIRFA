@@ -146,6 +146,7 @@ class _ProductFormState extends State<ProductForm> {
           images: const [],
           artisanUid: artisan.uid,
           artisanName: artisan.name,
+          artisanPhotoUrl: artisan.photoUrl,
           narrative: _narrativeController.text.trim(),
           material: _materialController.text.trim(),
           originPlace: _originController.text.trim(),

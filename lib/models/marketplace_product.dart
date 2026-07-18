@@ -4,11 +4,13 @@ class MarketplaceProduct {
   final String price;
   final String city;
   final String cityTag;
+  final String imageUrl;
 
   const MarketplaceProduct({
     required this.name,
     required this.price,
     required this.city,
     required this.cityTag,
+    this.imageUrl = '',
   });
 }

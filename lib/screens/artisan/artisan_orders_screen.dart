@@ -4,6 +4,7 @@ import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/common/product_thumbnail.dart';
 import '../../services/order_service.dart';
 import '../../widgets/common/loading_shimmer.dart';
 import 'artisan_order_detail_screen.dart';
@@ -219,15 +220,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    gradient: const LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)]),
-                  ),
-                  child: const Icon(Icons.auto_awesome, color: AppColors.gold, size: 26),
-                ),
+                ProductThumbnail(imageUrl: order.productImage, size: 80, iconSize: 26),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

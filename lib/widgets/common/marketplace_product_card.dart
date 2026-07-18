@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/marketplace_product.dart';
@@ -17,6 +18,15 @@ class MarketplaceProductCard extends StatelessWidget {
     this.onFavoriteToggle,
   });
 
+  Widget _placeholder() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+      ),
+      child: const Center(child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 36)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -29,12 +39,16 @@ class MarketplaceProductCard extends StatelessWidget {
             child: Stack(
               children: [
                 Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: const LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                    ),
-                    child: const Center(child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 36)),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: product.imageUrl.isEmpty
+                        ? _placeholder()
+                        : CachedNetworkImage(
+                            imageUrl: product.imageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => _placeholder(),
+                            errorWidget: (context, url, error) => _placeholder(),
+                          ),
                   ),
                 ),
                 Positioned(
