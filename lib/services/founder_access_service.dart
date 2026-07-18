@@ -1,4 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../core/constants/app_rules.dart';
+import '../models/user_model.dart';
+import 'auth_service.dart';
 import 'notification_service.dart';
 
 /// طبقة تأسيس ودخول حساب المؤسس (Admin) — بديل آمن عن التعديل اليدوي في
@@ -13,26 +17,66 @@ class FounderAccessService {
   static final FounderAccessService instance = FounderAccessService._();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   static const _logCollection = 'founder_access_log';
+  static const _usersCollection = 'users';
   static const _founderLockPath = 'system_config/founder_lock';
 
-  /// يحجز "مقعد التأسيس" بشكل ذرّي عبر Firestore transaction بدل فحص العدد
-  /// ثم الإنشاء بخطوتين منفصلتين (ما كان يسمح لمحاولتين متزامنتين بإنشاء
-  /// أكثر من حساب مؤسس واحد). يُعيد true لمحاولة التأسيس الفائزة فقط.
-  Future<bool> claimFounderSlot() async {
-    final lockRef = _firestore.doc(_founderLockPath);
-    return _firestore.runTransaction<bool>((tx) async {
-      final snap = await tx.get(lockRef);
-      if (snap.exists) return false;
-      tx.set(lockRef, {'claimedAt': Timestamp.now()});
-      return true;
-    });
+  /// هل سبق أن أُسِّس حساب مؤسس؟ قراءة عامة مسموحة (لا بيانات حسّاسة في
+  /// المستند) تُستخدم لتحديد ما إذا كانت المحاولة الحالية "تأسيس" أم "دخول".
+  Future<bool> founderLockExists() async {
+    final doc = await _firestore.doc(_founderLockPath).get();
+    return doc.exists;
   }
 
-  /// يُفرِج عن مقعد التأسيس إن فشل إنشاء الحساب فعلياً بعد حجزه، حتى لا
-  /// يُقفَل التأسيس للأبد بسبب محاولة فاشلة (كلمة مرور ضعيفة، انقطاع شبكة...).
-  Future<void> releaseFounderSlot() => _firestore.doc(_founderLockPath).delete();
+  /// يُنشئ حساب المؤسس الأول بأمان حقيقي على مستوى Security Rules، لا مجرّد
+  /// اتفاق ضمني في التطبيق: يُنشئ حساب Firebase Auth أولاً (uid يصبح
+  /// معروفاً)، ثم يحجز مستند system_config/founder_lock مربوطاً بهذا الـ uid
+  /// تحديداً — تضمن Firestore نجاح إنشاء مستند واحد فقط لنفس المسار مهما
+  /// تزامنت المحاولات (بلا حاجة لـ transaction يدوي)، فتُقبل قاعدة الأمان
+  /// لإنشاء مستند مستخدم بدور admin فقط لهذا الـ uid تحديداً وللأبد. عند
+  /// خسارة السباق أو أي فشل لاحق، يُنظّف كل ما أُنشئ (حذف حساب Auth + تحرير
+  /// القفل إن كان هو من حجزه).
+  Future<UserModel> bootstrapFounder({
+    required String email,
+    required String password,
+    required String name,
+    required String phone,
+  }) async {
+    final credential = await _auth.createUserWithEmailAndPassword(email: email.trim(), password: password);
+    final uid = credential.user!.uid;
+
+    try {
+      await _firestore.doc(_founderLockPath).set({'claimedBy': uid, 'claimedAt': Timestamp.now()});
+    } catch (_) {
+      await credential.user!.delete();
+      throw Exception('تم تأسيس حساب المؤسس بالفعل من جهاز آخر، الرجاء تسجيل الدخول بدلاً من ذلك');
+    }
+
+    try {
+      final user = UserModel(
+        uid: uid,
+        name: name,
+        email: email.trim(),
+        phone: phone,
+        role: 'admin',
+        city: '',
+        createdAt: DateTime.now(),
+        termsAccepted: true,
+        termsAcceptedAt: DateTime.now(),
+        termsVersion: AppRules.currentTermsVersion,
+        approvalStatus: 'approved',
+      );
+      await _firestore.collection(_usersCollection).doc(uid).set(user.toMap());
+      await AuthService.instance.saveFCMToken(uid);
+      return user;
+    } catch (e) {
+      await _firestore.doc(_founderLockPath).delete();
+      await credential.user!.delete();
+      rethrow;
+    }
+  }
 
   /// يسجّل كل محاولة وصول ناجحة لحساب المؤسس (تأسيس أو دخول)، ويُرسل
   /// إشعاراً داخلياً حقيقياً لنفس الحساب كتنبيه أمني.

@@ -1,0 +1,349 @@
+rules_version = '2';
+
+// قواعد أمان Firestore لتطبيق AL-HIRFA (منصة الحرفة).
+// مطابقة للبنية الفعلية الحالية للكود — كل مجموعة وحقل هنا موجود فعلياً
+// ويُكتب/يُقرأ من مكان محدّد في lib/services/*.dart (راجع تعليق كل match
+// لمرجع الملف المصدر). لا Cloud Functions في هذا المشروع — كل الكتابة تتم
+// مباشرة من تطبيق العميل، لذا هذه القواعد هي خط الدفاع الحقيقي الوحيد.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -----------------------------------------------------------------
+    // دوال مساعدة
+    // -----------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // حساب موقوف/محظور يُمنع من أي كتابة فوراً — نفس مبدأ إبطال الجلسة
+    // الحية في auth_provider.dart، لكن هنا كضمان على مستوى الخادم أيضاً.
+    function isActiveNonBanned() {
+      return isSignedIn() && myData().isActive == true && myData().banned == false;
+    }
+
+    function hasRole(r) {
+      return isSignedIn() && myData().role == r;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && myData().role == 'admin' && myData().isActive == true;
+    }
+
+    function onlyFieldsChanged(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    function orderData(orderId) {
+      return get(/databases/$(database)/documents/orders/$(orderId)).data;
+    }
+
+    // -----------------------------------------------------------------
+    // users/{uid} — auth_service.dart, admin_service.dart
+    // -----------------------------------------------------------------
+    match /users/{userId} {
+      // قراءة أي مستخدم مسموحة لأي مسجّل دخول: يعرض التطبيق فعلياً بيانات
+      // حرفيين/شركات شحن آخرين (الملف العام، شاشات تواصل الإدارة، فلترة
+      // منتجات الحرفيين المحظورين). هذا يعني الهاتف/IBAN مقروءان حالياً
+      // لأي طرف — نقلهما لـ subcollection أشد هو المرحلة التالية المخطَّطة.
+      allow read: if isSignedIn();
+
+      // إنشاء الحساب الأول عند التسجيل (auth_service.dart: signUp) — لنفسه
+      // فقط. دور admin مسموح فقط لصاحب system_config/founder_lock الحصري
+      // (راجع founder_access_service.dart: bootstrapFounder) — يمنع نهائياً
+      // أي مستخدم من إنشاء حساب admin لنفسه خارج مسار التأسيس الموثّق.
+      allow create: if isSignedIn() && userId == request.auth.uid
+        && request.resource.data.role in ['customer', 'artisan', 'shipping', 'admin']
+        && (
+             request.resource.data.role != 'admin'
+             || (
+                  exists(/databases/$(database)/documents/system_config/founder_lock)
+                  && get(/databases/$(database)/documents/system_config/founder_lock).data.claimedBy == userId
+                )
+           )
+        && request.resource.data.get('isActive', true) == true
+        && request.resource.data.get('banned', false) == false
+        && request.resource.data.get('warningCount', 0) == 0;
+
+      // تعديل الذات مقصور على الحقول الشخصية فقط — يمنع ترقية role الذاتية
+      // وتعديل isActive/banned/approvalStatus/warningCount ذاتياً (المبدأ
+      // الإلزامي الرابع). الإدارة وحدها تُعدّل أي حقل (admin_service.dart).
+      allow update: if isSignedIn() && (
+        (userId == request.auth.uid && onlyFieldsChanged([
+          'name', 'phone', 'city', 'iban', 'companyName', 'registrationNumber',
+          'provinces', 'photoUrl', 'fcmToken',
+          'termsAccepted', 'termsAcceptedAt', 'termsVersion'
+        ]))
+        || isAdmin()
+      );
+
+      allow delete: if false;
+
+      // product_service.dart: toggleFavorite/getFavorites/getFavoriteIds
+      match /favorites/{productId} {
+        allow read, write: if isSignedIn() && userId == request.auth.uid;
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // products/{productId} — product_service.dart
+    // -----------------------------------------------------------------
+    match /products/{productId} {
+      // عام: المنتجات النشطة فقط. صاحبها يرى كل حالاته (pending/rejected/
+      // suspended أيضاً). الإدارة ترى كل شيء (مراجعة المنتجات المعلّقة).
+      allow read: if isSignedIn() && (
+        resource.data.status == 'active'
+        || resource.data.artisanUid == request.auth.uid
+        || isAdmin()
+      );
+
+      // فقط حرفي موافَق عليه ينشئ منتجاً باسمه، بحالة pending دائماً
+      // (لا يمكن نشر منتج active مباشرة متجاوزاً مراجعة الإدارة).
+      allow create: if isActiveNonBanned() && hasRole('artisan')
+        && myData().approvalStatus == 'approved'
+        && request.resource.data.artisanUid == request.auth.uid
+        && request.resource.data.status == 'pending';
+
+      allow update: if isSignedIn() && (
+        // الحرفي يعدّل تفاصيل منتجه (product_form.dart) — لا يغيّر الحالة
+        // أو الإحصاءات المحسوبة من النظام (rating/reviewCount/salesCount).
+        (resource.data.artisanUid == request.auth.uid && onlyFieldsChanged([
+          'name', 'description', 'price', 'category', 'city',
+          'narrative', 'material', 'originPlace', 'technique', 'images'
+        ]))
+        // زيادة عدد المبيعات عند تأكيد التسليم (order_service.dart:
+        // confirmDelivery) — تنفّذها شركة الشحن، وليست صاحبة المنتج.
+        || (isActiveNonBanned() && onlyFieldsChanged(['salesCount'])
+            && request.resource.data.salesCount is int
+            && request.resource.data.salesCount == resource.data.salesCount + 1)
+        // تحديث متوسط التقييم عند تقييم حقيقي (review_service.dart:
+        // submitReview) — تنفّذه المشتري ضمن معاملة تُحقَّق أيضاً عبر
+        // قاعدة reviews أدناه.
+        || (isActiveNonBanned() && onlyFieldsChanged(['rating', 'reviewCount'])
+            && request.resource.data.reviewCount == resource.data.reviewCount + 1)
+        // الإدارة: موافقة/رفض/إيقاف/إعادة تفعيل + تعديل كامل.
+        || isAdmin()
+      );
+
+      allow delete: if isSignedIn() && (resource.data.artisanUid == request.auth.uid || isAdmin());
+    }
+
+    // -----------------------------------------------------------------
+    // orders/{orderId} — order_service.dart, dispute_service.dart
+    // -----------------------------------------------------------------
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (
+        resource.data.buyerUid == request.auth.uid
+        || resource.data.artisanUid == request.auth.uid
+        || resource.data.shippingUid == request.auth.uid
+        // available_deliveries_screen: شركات الشحن تتصفّح الطلبات المتاحة
+        // ضمن نطاق تغطيتها المسجَّل فقط (نفس القيد المطبَّق في order_service.dart).
+        || (resource.data.status == 'seller_approved' && hasRole('shipping')
+            && resource.data.address.governorate in myData().provinces)
+        || isAdmin()
+      );
+
+      // إنشاء طلب (checkout_screen.dart) — المشتري فقط لنفسه، وartisanUid
+      // يجب أن يطابق فعلياً مالك المنتج الحقيقي (يمنع تحويل الأرباح لطرف آخر).
+      allow create: if isActiveNonBanned()
+        && request.resource.data.buyerUid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.artisanUid == request.resource.data.artisanUid
+        && get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.status == 'active';
+
+      allow update: if isSignedIn() && (
+        // الحرفي يوافق (sellerApproveOrder)
+        (resource.data.status == 'pending' && request.resource.data.status == 'seller_approved'
+          && resource.data.artisanUid == request.auth.uid
+          && onlyFieldsChanged(['status', 'shippingAcceptDeadline']))
+        // الحرفي يرفض (sellerRejectOrder)
+        || (resource.data.status == 'pending' && request.resource.data.status == 'cancelled'
+          && resource.data.artisanUid == request.auth.uid
+          && onlyFieldsChanged(['status', 'rejectionReason', 'rejectedBy']))
+        // شركة شحن تقبل الطلب (shippingAcceptOrder) — لم يُقبل من قبل،
+        // وضمن نطاق تغطيتها المسجَّل.
+        || (resource.data.status == 'seller_approved' && request.resource.data.status == 'shipping_assigned'
+          && resource.data.shippingUid == null
+          && request.resource.data.shippingUid == request.auth.uid
+          && hasRole('shipping')
+          && resource.data.address.governorate in myData().provinces
+          && onlyFieldsChanged(['status', 'shippingUid', 'shippingCompanyName', 'shippingAssignedAt']))
+        // شركة الشحن المعيَّنة تستلم من الحرفي (shippingPickedUp)
+        || (resource.data.status == 'shipping_assigned' && request.resource.data.status == 'picked_up'
+          && resource.data.shippingUid == request.auth.uid
+          && onlyFieldsChanged(['status']))
+        // شركة الشحن المعيَّنة تؤكّد التسليم (confirmDelivery)
+        || (resource.data.status == 'picked_up' && request.resource.data.status == 'delivered'
+          && resource.data.shippingUid == request.auth.uid
+          && onlyFieldsChanged(['status', 'deliveredAt']))
+        // المشتري يقيّم طلباً مُسلَّماً مرة واحدة فقط (review_service.dart)
+        || (resource.data.status == 'delivered' && resource.data.isReviewed == false
+          && resource.data.buyerUid == request.auth.uid
+          && request.resource.data.isReviewed == true
+          && onlyFieldsChanged(['isReviewed']))
+        // أي طرف من أطراف الطلب الثلاثة يُبلغ عن مشكلة (createDispute)
+        || ((resource.data.buyerUid == request.auth.uid || resource.data.artisanUid == request.auth.uid || resource.data.shippingUid == request.auth.uid)
+          && request.resource.data.status == 'disputed'
+          && request.resource.data.preDisputeStatus == resource.data.status
+          && onlyFieldsChanged(['status', 'disputeId', 'preDisputeStatus']))
+        // الإدارة: أي انتقال آخر (إلغاء قسري، حل نزاع، إعادة تعيين شحن...)
+        || isAdmin()
+      );
+
+      allow delete: if false;
+    }
+
+    // -----------------------------------------------------------------
+    // reviews/{reviewId} — review_service.dart (بلا تعديل أو حذف لاحقاً)
+    // -----------------------------------------------------------------
+    match /reviews/{reviewId} {
+      allow read: if isSignedIn();
+      allow create: if isActiveNonBanned()
+        && request.resource.data.buyerUid == request.auth.uid
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+        && orderData(request.resource.data.orderId).buyerUid == request.auth.uid
+        && orderData(request.resource.data.orderId).status == 'delivered'
+        && orderData(request.resource.data.orderId).isReviewed == false
+        && orderData(request.resource.data.orderId).productId == request.resource.data.productId;
+      allow update, delete: if false;
+    }
+
+    // -----------------------------------------------------------------
+    // transactions/{transactionId} — order_service.dart: _createDeliveryTransactions
+    // سجل مالي ثابت لا يُعدَّل أبداً بعد إنشائه.
+    // -----------------------------------------------------------------
+    match /transactions/{transactionId} {
+      allow read: if isSignedIn() && (
+        resource.data.fromUid == request.auth.uid
+        || resource.data.toUid == request.auth.uid
+        || isAdmin()
+      );
+      allow create: if isActiveNonBanned()
+        && request.resource.data.status == 'completed'
+        && orderData(request.resource.data.orderId).shippingUid == request.auth.uid
+        && orderData(request.resource.data.orderId).status == 'delivered'
+        && request.resource.data.fromUid == orderData(request.resource.data.orderId).buyerUid
+        && (
+          (request.resource.data.type == 'sale'
+            && request.resource.data.amount == orderData(request.resource.data.orderId).artisanEarnings
+            && request.resource.data.toUid == orderData(request.resource.data.orderId).artisanUid)
+          || (request.resource.data.type == 'commission'
+            && request.resource.data.amount == orderData(request.resource.data.orderId).platformFee
+            && request.resource.data.toUid == 'platform')
+          || (request.resource.data.type == 'delivery'
+            && request.resource.data.amount == orderData(request.resource.data.orderId).shippingEarnings
+            && request.resource.data.toUid == request.auth.uid)
+        );
+      allow update, delete: if false;
+    }
+
+    // -----------------------------------------------------------------
+    // disputes/{disputeId} — dispute_service.dart
+    // -----------------------------------------------------------------
+    match /disputes/{disputeId} {
+      allow read: if isSignedIn() && (
+        resource.data.reporterUid == request.auth.uid
+        || resource.data.reportedUid == request.auth.uid
+        || isAdmin()
+      );
+      allow create: if isActiveNonBanned()
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.status == 'open'
+        && (
+          orderData(request.resource.data.orderId).buyerUid == request.auth.uid
+          || orderData(request.resource.data.orderId).artisanUid == request.auth.uid
+          || orderData(request.resource.data.orderId).shippingUid == request.auth.uid
+        );
+      // markReviewing/resolveDispute كلاهما إجراء إدارة فقط.
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // -----------------------------------------------------------------
+    // violations/{violationId} — admin_service.dart: warnUser/suspendUser/banUser
+    // -----------------------------------------------------------------
+    match /violations/{violationId} {
+      allow read: if isSignedIn() && (resource.data.userUid == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // -----------------------------------------------------------------
+    // notifications/{notificationId} — notification_service.dart
+    // ملاحظة: sendToUser/sendBulkNotification يُستدعيان من أطراف غير
+    // إدارية أيضاً (مثلاً: حرفي يطلب سحباً يُشعر الإدارة، مشترٍ ينشئ طلباً
+    // يُشعر الحرفي) — لذا الإنشاء مفتوح لأي مستخدم نشط غير محظور، لكن
+    // القراءة/التعليم كمقروء مقصوران على صاحب الإشعار أو الإدارة فقط.
+    // -----------------------------------------------------------------
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isActiveNonBanned()
+        && request.resource.data.keys().hasAll(['userId', 'title', 'body', 'type', 'createdAt'])
+        && request.resource.data.get('isRead', false) == false;
+      allow update: if isSignedIn() && (
+        (resource.data.userId == request.auth.uid && onlyFieldsChanged(['isRead']))
+        || isAdmin()
+      );
+      allow delete: if false;
+    }
+
+    // -----------------------------------------------------------------
+    // settlements/{settlementId} — wallet_service.dart (إدارة فقط تكتب)
+    // -----------------------------------------------------------------
+    match /settlements/{settlementId} {
+      allow read: if isSignedIn() && (resource.data.shippingUid == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // -----------------------------------------------------------------
+    // withdrawal_requests/{withdrawalId} — wallet_service.dart
+    // -----------------------------------------------------------------
+    match /withdrawal_requests/{withdrawalId} {
+      allow read: if isSignedIn() && (resource.data.artisanUid == request.auth.uid || isAdmin());
+      allow create: if isActiveNonBanned() && hasRole('artisan')
+        && request.resource.data.artisanUid == request.auth.uid
+        && request.resource.data.status == 'pending';
+      // confirmWithdrawal/rejectWithdrawal — إدارة فقط.
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // -----------------------------------------------------------------
+    // app_config/rules — app_settings_service.dart (عمولات وسعر التوصيل)
+    // -----------------------------------------------------------------
+    match /app_config/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // -----------------------------------------------------------------
+    // founder_access_log/{logId} — founder_access_service.dart (سجل تدقيق)
+    // -----------------------------------------------------------------
+    match /founder_access_log/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // -----------------------------------------------------------------
+    // system_config/founder_lock — founder_access_service.dart: bootstrapFounder
+    // مستند وحيد يضمن عدم إنشاء أكثر من حساب مؤسس واحد إطلاقاً؛ قراءته
+    // عامة (لا بيانات حسّاسة) لأن التحقق من وجوده يحدث قبل تسجيل الدخول.
+    // -----------------------------------------------------------------
+    match /system_config/founder_lock {
+      allow get: if true;
+      allow list: if false;
+      allow create: if isSignedIn() && request.resource.data.claimedBy == request.auth.uid;
+      allow update: if false;
+      allow delete: if isSignedIn() && resource.data.claimedBy == request.auth.uid;
+    }
+
+    // أي مجموعة أخرى غير مذكورة أعلاه: رفض افتراضي كامل.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

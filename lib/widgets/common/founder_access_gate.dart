@@ -84,14 +84,10 @@ class _FounderAccessDialogState extends State<_FounderAccessDialog> {
 
     final auth = context.read<AuthProvider>();
     try {
-      final isFirstFounder = await FounderAccessService.instance.claimFounderSlot();
-      if (isFirstFounder) {
-        try {
-          await auth.signUp(email: email, password: password, name: name, phone: phone, role: 'admin');
-        } catch (e) {
-          await FounderAccessService.instance.releaseFounderSlot();
-          rethrow;
-        }
+      final founderExists = await FounderAccessService.instance.founderLockExists();
+      if (!founderExists) {
+        await FounderAccessService.instance.bootstrapFounder(email: email, password: password, name: name, phone: phone);
+        await auth.loadCurrentUser();
       } else {
         await auth.signIn(email, password);
         if (auth.currentUser?.role != 'admin') {
@@ -103,7 +99,7 @@ class _FounderAccessDialogState extends State<_FounderAccessDialog> {
       final user = auth.currentUser!;
       await FounderAccessService.instance.logAccess(
         uid: user.uid,
-        action: isFirstFounder ? 'created' : 'login',
+        action: founderExists ? 'login' : 'created',
         name: name,
         email: email,
         phone: phone,
