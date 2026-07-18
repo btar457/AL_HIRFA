@@ -22,6 +22,11 @@ class AppRules {
   static const int shippingRetryMinutes = 10;
   static const int shippingMaxRetries = 3;
   static const int reviewWindowDays = 7;
+  // حماية Best-effort من إساءة إنشاء الطلبات (order_service.dart +
+  // firestore.rules: match /rate_limits/{uid}) — القيمة هنا يجب أن تطابق
+  // الرقم المكتوب مباشرة داخل firestore.rules (لا يمكن لقواعد Firestore
+  // قراءة ثوابت Dart).
+  static const int maxOrdersPerHour = 10;
 
   // العقوبات
   static const int consecutiveRejectsWarning = 3;

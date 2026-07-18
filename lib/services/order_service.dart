@@ -14,12 +14,16 @@ class OrderService {
 
   static const _ordersCollection = 'orders';
   static const _transactionsCollection = 'transactions';
+  static const _rateLimitsCollection = 'rate_limits';
 
   /// يُشتَق من معرّف الطلب الفريد في Firestore (بدل رقم عشوائي قابل للتكرار)
   /// لضمان عدم تصادم رقمين مختلفين إطلاقاً.
   String _generateOrderNumber(String orderId) => 'HRF-${orderId.substring(0, 8).toUpperCase()}';
 
-  /// ينشئ طلباً جديداً بحالة 'pending' ومهلة موافقة 48 ساعة للحرفي.
+  /// ينشئ طلباً جديداً بحالة 'pending' ومهلة موافقة 48 ساعة للحرفي، ضمن
+  /// نفس المعاملة (transaction) التي تتحقق من/تحدّث عدّاد
+  /// rate_limits/{buyerUid} (AppRules.maxOrdersPerHour) — راجع firestore.rules
+  /// لملاحظة أن هذا حماية Best-effort فقط بلا Cloud Function.
   Future<String> createOrder(OrderModel order) async {
     final docRef = _firestore.collection(_ordersCollection).doc();
     final newOrder = order.copyWith(
@@ -28,7 +32,28 @@ class OrderService {
       status: 'pending',
       sellerApprovalDeadline: DateTime.now().add(Duration(hours: AppRules.sellerApprovalHours)),
     );
-    await docRef.set(newOrder.toMap());
+
+    final rateLimitRef = _firestore.collection(_rateLimitsCollection).doc(order.buyerUid);
+    await _firestore.runTransaction((tx) async {
+      final rateLimitDoc = await tx.get(rateLimitRef);
+      final now = Timestamp.now();
+      if (!rateLimitDoc.exists) {
+        tx.set(rateLimitRef, {'hourlyCount': 1, 'windowStart': now});
+      } else {
+        final windowStart = rateLimitDoc.data()!['windowStart'] as Timestamp;
+        final hourlyCount = rateLimitDoc.data()!['hourlyCount'] as int;
+        final windowExpired = now.toDate().difference(windowStart.toDate()) > const Duration(hours: 1);
+        if (windowExpired) {
+          tx.set(rateLimitRef, {'hourlyCount': 1, 'windowStart': now});
+        } else if (hourlyCount >= AppRules.maxOrdersPerHour) {
+          throw Exception('لقد تجاوزت الحد المسموح لعدد الطلبات خلال ساعة واحدة، يرجى المحاولة لاحقاً');
+        } else {
+          tx.update(rateLimitRef, {'hourlyCount': hourlyCount + 1});
+        }
+      }
+      tx.set(docRef, newOrder.toMap());
+    });
+
     await NotificationService.instance.sendToUser(
       userUid: newOrder.artisanUid,
       title: 'طلب جديد ينتظر موافقتك',

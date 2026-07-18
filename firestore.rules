@@ -160,7 +160,14 @@ service cloud.firestore {
         && request.resource.data.buyerUid == request.auth.uid
         && request.resource.data.status == 'pending'
         && get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.artisanUid == request.resource.data.artisanUid
-        && get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.status == 'active';
+        && get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.status == 'active'
+        // حدّ منطقي: لا يتجاوز مشترٍ واحد 10 طلبات ضمن نافذة ساعة واحدة
+        // (order_service.dart: createOrder يحدّث rate_limits/{buyerUid} ضمن
+        // نفس transaction إنشاء الطلب). الرقم 10 يطابق AppRules.maxOrdersPerHour.
+        && (
+             !exists(/databases/$(database)/documents/rate_limits/$(request.auth.uid))
+             || get(/databases/$(database)/documents/rate_limits/$(request.auth.uid)).data.hourlyCount < 10
+           );
 
       allow update: if isSignedIn() && (
         // الحرفي يوافق (sellerApproveOrder)
@@ -316,6 +323,35 @@ service cloud.firestore {
         && request.resource.data.status == 'pending';
       // confirmWithdrawal/rejectWithdrawal — إدارة فقط.
       allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // -----------------------------------------------------------------
+    // rate_limits/{uid} — order_service.dart: createOrder
+    // عدّاد Best-effort لعدد الطلبات خلال ساعة واحدة، يُحدَّث ضمن نفس
+    // transaction إنشاء الطلب في order_service.dart. ملاحظة أمانة: بما أن
+    // هذا المشروع بلا Cloud Functions، لا يمكن لهذه القواعد وحدها إجبار أي
+    // طلب جديد على تحديث هذا العدّاد فعلياً — طرف خبيث يستدعي Firestore
+    // مباشرة (متجاوزاً تطبيق العميل) يمكنه إنشاء طلبات دون تحديث العدّاد
+    // إطلاقاً فيتجاوز الحدّ فعلياً. هذا يحمي من إساءة عرضية عبر التطبيق
+    // نفسه (نقرات متكررة، حلقة إعادة محاولة معطوبة) فقط — لا يعادل حماية
+    // خادم حقيقية. الحماية الكاملة تتطلب Cloud Function خارج نطاق هذا المشروع.
+    // -----------------------------------------------------------------
+    match /rate_limits/{uid} {
+      allow read: if isSignedIn() && uid == request.auth.uid;
+      allow create: if isSignedIn() && uid == request.auth.uid
+        && request.resource.data.hourlyCount == 1
+        && request.resource.data.windowStart is timestamp;
+      allow update: if isSignedIn() && uid == request.auth.uid
+        && onlyFieldsChanged(['hourlyCount', 'windowStart'])
+        && (
+             // إعادة ضبط النافذة بعد انتهائها
+             (request.resource.data.windowStart > resource.data.windowStart
+               && request.resource.data.hourlyCount == 1)
+             // زيادة طبيعية بمقدار 1 ضمن نفس النافذة
+             || (request.resource.data.windowStart == resource.data.windowStart
+               && request.resource.data.hourlyCount == resource.data.hourlyCount + 1)
+           );
       allow delete: if false;
     }
 
