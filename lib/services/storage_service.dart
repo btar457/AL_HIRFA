@@ -27,11 +27,11 @@ class StorageService {
   // ليس سرّاً — يُقرأ من الإعدادات العامة مباشرة، آمن تضمينه في الكود.
   static const _publicBaseUrl = 'https://pub-061b5d191b044be1a41d2403f5537476.r2.dev';
 
-  static const _credentialScope = AWSCredentialScope(region: 'auto', service: AWSService.s3);
+  static final _credentialScope = AWSCredentialScope(region: 'auto', service: AWSService.s3);
 
-  final AWSSigV4Signer _signer = const AWSSigV4Signer(
+  final AWSSigV4Signer _signer = AWSSigV4Signer(
     credentialsProvider: AWSCredentialsProvider(
-      AWSCredentials(accessKeyId: _accessKeyId, secretAccessKey: _secretAccessKey),
+      AWSCredentials(_accessKeyId, _secretAccessKey),
     ),
   );
 
@@ -46,7 +46,7 @@ class StorageService {
       body: bytes,
     );
     final signedRequest = await _signer.sign(request, credentialScope: _credentialScope);
-    final response = await signedRequest.send();
+    final response = await signedRequest.send().response;
     if (response.statusCode != 200) {
       throw Exception('فشل رفع الملف إلى التخزين (${response.statusCode})');
     }
