@@ -12,10 +12,4 @@ class AppColors {
   static const Color goldLight = Color(0xFFE8C96D);
   static const Color text = Colors.white;
   static const Color subText = Color(0xFF888888);
-
-  // ألوان خاصة بشاشة محادثة مستشار الجودة
-  static const Color chatBackground = Color(0xFF0F0F0F);
-  static const Color chatAppBar = Color(0xFF161616);
-  static const Color chatUserBubble = Color(0xFF8B5A2B);
-  static const Color chatInputFill = Color(0xFF262626);
 }
