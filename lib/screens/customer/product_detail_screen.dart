@@ -10,6 +10,7 @@ import '../../providers/cart_provider.dart';
 import '../../services/product_service.dart';
 import '../../services/qr_service.dart';
 import 'artisan_public_profile_screen.dart';
+import 'checkout_screen.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -62,7 +63,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 20),
                     _buildQuantitySelector(),
                     const SizedBox(height: 16),
-                    _buildAddToCartButton(product),
+                    _buildActionButtons(product),
                     const SizedBox(height: 28),
                     _buildNarrative(product),
                     const SizedBox(height: 24),
@@ -232,25 +233,40 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildAddToCartButton(ProductModel product) {
-    return SizedBox(
-      height: 56,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-        onPressed: () {
-          context.read<CartProvider>().addItem(product, quantity: _quantity);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('أُضيف "${product.name}" إلى السلة')));
-          setState(() => _quantity = 1);
-        },
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.shopping_cart_outlined, color: Colors.black),
-            SizedBox(width: 8),
-            Text('أضف إلى السلة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ],
+  Widget _buildActionButtons(ProductModel product) {
+    return Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: 56,
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              onPressed: () {
+                context.read<CartProvider>().addItem(product, quantity: _quantity);
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('أُضيف "${product.name}" إلى السلة')));
+                setState(() => _quantity = 1);
+              },
+              child: const Icon(Icons.add_shopping_cart_outlined, color: AppColors.gold),
+            ),
+          ),
         ),
-      ),
+        const SizedBox(width: 12),
+        Expanded(
+          flex: 2,
+          child: SizedBox(
+            height: 56,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              onPressed: () {
+                context.read<CartProvider>().addItem(product, quantity: _quantity);
+                setState(() => _quantity = 1);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutScreen()));
+              },
+              child: const Text('اشترِ الآن', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
