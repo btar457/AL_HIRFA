@@ -18,6 +18,7 @@ dependencies:
   cloud_firestore: ^5.0.0
   firebase_messaging: ^15.0.0
   firebase_app_check: ^0.3.1
+  firebase_crashlytics: ^4.0.0
   aws_signature_v4: ^0.6.11
   aws_common: ^0.7.14
   provider: ^6.1.0

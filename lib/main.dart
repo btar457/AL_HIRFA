@@ -1,7 +1,10 @@
+import 'dart:ui';
 import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
 import 'core/constants/strings.dart';
@@ -40,6 +43,16 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  // رصد الأعطال الحقيقية على أجهزة المستخدمين بعد النشر (Crashlytics) —
+  // معطّل في وضع التطوير كي لا تُرصد أعطال جهاز المطوّر.
+  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(!kDebugMode);
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
   // يحمي Firestore/Storage من أي طلب لا يأتي من نسخة موقَّعة وأصلية من هذا
   // التطبيق (يرفض سكربتات خارجية استخرجت إعدادات Firebase من الـ APK) —
   // التفعيل الفعلي (Enforce) يتم من Firebase Console بعد نشر هذا الإصدار.

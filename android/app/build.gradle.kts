@@ -6,6 +6,7 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 // android/key.properties لا يُنشأ إلا في CI من الأسرار (راجع build_apk.yml)
