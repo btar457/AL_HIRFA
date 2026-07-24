@@ -188,24 +188,26 @@ class OrderService {
     final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
     final order = OrderModel.fromMap(orderId, orderDoc.data()!);
 
-    await _firestore.collection(_ordersCollection).doc(orderId).update({
-      'status': 'delivered',
-      'deliveredAt': Timestamp.now(),
-    });
-
-    await _createDeliveryTransactions(orderId, order);
+    await _confirmDeliveryAndCreateTransactions(orderId, order);
     await _firestore.collection('products').doc(order.productId).update({'salesCount': FieldValue.increment(1)});
 
     await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'تم التسليم', body: 'قيّم تجربتك مع ${order.productName}', type: 'order_delivered', data: {'orderId': orderId});
     await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'تم التسليم', body: 'أرباحك ستُحوَّل خلال ${AppRules.holdPeriodHours} ساعة', type: 'wallet_credited', data: {'orderId': orderId});
   }
 
-  /// يسجّل حركات مالية حقيقية عند التسليم — حصة الحرفي (بحسبان فترة احتجاز
-  /// 72 ساعة تُحتسب لاحقاً في wallet_service.dart من createdAt)، عمولة
-  /// المنصة، وحصة شركة الشحن (تُدفع كاشاً فوراً بلا احتجاز).
-  Future<void> _createDeliveryTransactions(String orderId, OrderModel order) async {
+  /// يحدّث حالة الطلب إلى delivered ويسجّل الحركات المالية الثلاث — حصة
+  /// الحرفي (بحسبان فترة احتجاز 72 ساعة تُحتسب لاحقاً في wallet_service.dart
+  /// من createdAt)، عمولة المنصة، وحصة شركة الشحن (تُدفع كاشاً فوراً بلا
+  /// احتجاز) — ضمن WriteBatch واحدة ذرّية: إما تنجح الكتابات الأربع معاً أو
+  /// تفشل كلها معاً، فلا يبقى طلب delivered بلا أثر مالي مقابل.
+  Future<void> _confirmDeliveryAndCreateTransactions(String orderId, OrderModel order) async {
     final batch = _firestore.batch();
     final now = DateTime.now();
+
+    batch.update(_firestore.collection(_ordersCollection).doc(orderId), {
+      'status': 'delivered',
+      'deliveredAt': Timestamp.now(),
+    });
 
     // معرّف حتمي (orderId_type) بدل doc() العشوائي — يمنع تكرار نفس المعاملة
     // لنفس الطلب: أي محاولة ثانية تصطدم بوثيقة موجودة فتُعامَل كـupdate
