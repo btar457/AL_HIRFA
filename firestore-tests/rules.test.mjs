@@ -559,7 +559,7 @@ test('رفض: حذف حقيقي لمنتج (delete) — الآن if false للج
   await assertFails(deleteDoc(doc(ctx('adminA'), 'products/productPending')));
 });
 
-test('سماح: الحرفي يخفي منتجه (حذف ناعم status→deleted) ورصيده التقييمي يبقى محفوظاً', async () => {
+test('سماح: الحرفي يخفي منتجه (حذف ناعم status→deleted) — لا يفقد rating/reviewCount من منظور المالك نفسه فقط', async () => {
   await seedBaseFixtures();
   // منتج نشط بتقييم سيّئ فعلي — يخصّ artisanA.
   await testEnv.withSecurityRulesDisabled(async (context) => {
@@ -572,13 +572,39 @@ test('سماح: الحرفي يخفي منتجه (حذف ناعم status→delet
   });
   const db = ctx('artisanA');
   await assertSucceeds(updateDoc(doc(db, 'products/productBadRating'), { status: 'deleted' }));
-  // rating/reviewCount ما زالا محفوظين فعلياً — المالك يقرأ وثيقته دائماً
-  // بغضّ النظر عن الحالة (products/read)، وهذا ما يستند إليه حساب المتوسط
-  // في allProducts (بلا تصفية على الحالة) في الشاشة.
+  // rating/reviewCount ما زالا محفوظين فعلياً حين يقرأهما *المالك نفسه*
+  // (products/read يسمح لصاحب المنتج بقراءة أي حالة). هذا يثبت فقط أن
+  // البيانات لا تُفقَد من القاعدة — لا يثبت أن متوسط أي زائر خارجي محمي؛
+  // راجع الاختبار التالي الذي يوثّق أن ذلك غير صحيح فعلياً.
   const afterDelete = await getDoc(doc(db, 'products/productBadRating'));
   assert.equal(afterDelete.data().rating, 1.0);
   assert.equal(afterDelete.data().reviewCount, 10);
   assert.equal(afterDelete.data().status, 'deleted');
+});
+
+test('[معروف، غير مُصلَح عمداً] زائر خارجي عادي لا يستطيع قراءة منتج محذوف — متوسط الحرفي يبقى "مغسولاً" له فعلياً', async () => {
+  await seedBaseFixtures();
+  // نفس منتج سيّئ التقييم، لكن مباشرة بحالة deleted (كما يكون بعد أي حذف
+  // ناعم حقيقي) — يخصّ artisanA.
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'products/productBadDeleted'), {
+      artisanUid: 'artisanA', name: 'منتج سيّئ محذوف', description: '', price: 5000,
+      category: 'other', city: 'بغداد', images: [], narrative: '', material: '',
+      originPlace: '', technique: '', status: 'deleted', rating: 1.0, reviewCount: 10,
+      salesCount: 2, createdAt: new Date(),
+    });
+  });
+  // زائر خارجي عادي حقيقي — ليس artisanA (المالك) ولا adminA، مجرّد عميل آخر.
+  const db = ctx('customerVisitor');
+  // products/read الحالية: resource.data.status=='active' || artisanUid==caller || isAdmin().
+  // customerVisitor لا يحقق أياً من الشرطين — القراءة تُرفض، أي أن
+  // getArtisanProducts() الحقيقي في التطبيق لن يُعيد هذا المستند إطلاقاً
+  // لهذا الزائر، فلن يدخل rating/reviewCount ضمن متوسطه المعروض إطلاقاً.
+  // إصلاح artisan_public_profile_screen.dart (استخدام allProducts) لا
+  // يغيّر هذه الحقيقة لأن البيانات نفسها غير مقروءة له من الأساس — الثغرة
+  // لا تزال مفتوحة عملياً لأي زائر خارجي حقيقي، بقرار صريح بعدم إصلاحها
+  // الآن (توسيع products/read يكشف تفاصيل غير-active للعامة أيضاً).
+  await assertFails(getDoc(doc(db, 'products/productBadDeleted')));
 });
 
 test('رفض: الحرفي يستخدم فرع الحذف الناعم لتمرير status إلى قيمة أخرى غير deleted (مثلاً active)', async () => {
