@@ -311,12 +311,22 @@ service cloud.firestore {
     // -----------------------------------------------------------------
     match /notifications/{notificationId} {
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      // type مقصور على القائمة الشرعية لأي مستخدم غير-إداري (تشمل 'system'
-      // عمداً — يستخدمها sendBulkNotification أيضاً في مسارات غير إدارية:
-      // منتج جديد/بلاغ جديد/طلب سحب يُشعر الإدارة، بلا Cloud Function تميّزها
-      // عن بث إداري حقيقي). أي نوع إداري آخر (account_banned، product_approved...)
-      // يتطلب isAdmin() صراحة. keys().hasOnly() يقصر الحقول على ما يكتبه
-      // NotificationModel.toMap() فعلياً دائماً.
+      // type مقصور على قائمة شرعية لأي مستخدم غير-إداري. 'system' استُبعدت من
+      // هذه القائمة العامة (كانت تسمح بانتحال بث إداري لأي صندوق) وأصبحت
+      // مشروطة: يُسمح بها لغير-الإدارة فقط إن كان *مستلم* الإشعار نفسه حساباً
+      // إدارياً فعلاً — عبر get() على وثيقة المستلم users/{userId}، وليس عبر
+      // حقل targetAudience: هذا الحقل على النسخة الفردية لكل مستخدم (التي
+      // تحكمها هذه القاعدة تحديداً) يبقى دائماً القيمة الافتراضية 'all' —
+      // notification_service.dart: sendToUser/sendBulkNotification لا يمرّران
+      // targetAudience إطلاقاً عند إنشاء نسخة الإشعار الفردية (فقط مستند سجل
+      // البث المنفصل بـuserId فارغ يحمل القيمة الحقيقية)، فهو لا يعكس هوية
+      // المستلم الفعلي هنا ولا يصلح كأساس للتحقق. 'founder_access' أصبح
+      // إدارياً حصراً (founder_access_service.dart يستدعيه دائماً بعد أن يصبح
+      // role المُرسِل نفسه 'admin' فعلياً، فيمرّ عبر isAdmin() دون أي تغيير).
+      // قراءة إضافية واحدة (get) لكل كتابة من نوع system فقط — بقية الأنواع
+      // بلا أي قراءة إضافية.
+      // keys().hasOnly() يقصر الحقول على ما يكتبه NotificationModel.toMap()
+      // فعلياً دائماً.
       allow create: if isActiveNonBanned()
         && request.resource.data.keys().hasOnly([
              'userId', 'title', 'body', 'type', 'targetAudience',
@@ -327,8 +337,12 @@ service cloud.firestore {
              request.resource.data.type in [
                'new_order', 'shipping_assigned', 'order_rejected', 'order_picked_up',
                'order_delivered', 'wallet_credited', 'order_cancelled', 'new_delivery',
-               'delivery_issue', 'system', 'founder_access'
+               'delivery_issue'
              ]
+             || (
+                  request.resource.data.type == 'system'
+                  && get(/databases/$(database)/documents/users/$(request.resource.data.userId)).data.role == 'admin'
+                )
              || isAdmin()
            );
       allow update: if isSignedIn() && (

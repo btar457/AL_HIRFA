@@ -536,3 +536,11 @@ test('سماح: طلب سحب الحرفي يُشعر الإدارة (system ع�
     userId: 'adminA', type: 'system', title: 'طلب سحب جديد', body: 'حرفي طلب سحب 5000 د.ع',
   })));
 });
+
+test('رفض: مستخدم عادي ينشئ إشعار system في صندوق مستخدم عادي آخر', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'notifications/fakeSystemNotif'), notifBase({
+    userId: 'artisanA', type: 'system', title: 'إشعار نظام مزيَّف',
+  })));
+});
