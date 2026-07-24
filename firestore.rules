@@ -64,6 +64,13 @@ service cloud.firestore {
                   && get(/databases/$(database)/documents/system_config/founder_lock).data.claimedBy == userId
                 )
            )
+        // حرفي/شركة شحن لا يمكنه تسجيل نفسه بحالة اعتماد جاهزة — يجب أن
+        // يبدأ pending دائماً ويمر ببوابة مراجعة الإدارة (auth_service.dart
+        // يرسل pending فعلاً، وهذا يمنع تجاوزه عبر نداء مباشر لـ Firestore).
+        && (
+             (request.resource.data.role != 'artisan' && request.resource.data.role != 'shipping')
+             || request.resource.data.get('approvalStatus', 'pending') == 'pending'
+           )
         && request.resource.data.get('isActive', true) == true
         && request.resource.data.get('banned', false) == false
         && request.resource.data.get('warningCount', 0) == 0;
@@ -382,7 +389,11 @@ service cloud.firestore {
       allow list: if false;
       allow create: if isSignedIn() && request.resource.data.claimedBy == request.auth.uid;
       allow update: if false;
-      allow delete: if isSignedIn() && resource.data.claimedBy == request.auth.uid;
+      // ملاحظة: هذا يكسر مسار تراجع (rollback) موجود فعلياً في
+      // founder_access_service.dart: bootstrapFounder، الذي يحذف هذا
+      // المستند إن فشلت كتابة وثيقة المستخدم بعد حجز القفل بنجاح — أُبقي
+      // على ذلك الكود كما هو بناءً على تعليمات صريحة بعدم لمس أي كود Dart.
+      allow delete: if false;
     }
 
     // أي مجموعة أخرى غير مذكورة أعلاه: رفض افتراضي كامل.
