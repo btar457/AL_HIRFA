@@ -5,6 +5,13 @@ import '../models/product_model.dart';
 import 'notification_service.dart';
 import 'storage_service.dart';
 
+/// هل يظهر منتج مفضَّل لمشترٍ؟ لا، إن حُذف حذفاً ناعماً (status: 'deleted')
+/// أو حُذفت وثيقته فعلياً. دالة مستقلة قابلة للاختبار بلا الحاجة لمحاكاة
+/// Firestore (راجع test/product_service_test.dart).
+bool isFavoriteProductVisible({required bool exists, Map<String, dynamic>? data}) {
+  return exists && data?['status'] != 'deleted';
+}
+
 /// طبقة إدارة المنتجات عبر Firestore وCloudflare R2.
 class ProductService {
   ProductService._();
@@ -185,7 +192,7 @@ class ProductService {
       final products = <ProductModel>[];
       for (final doc in snapshot.docs) {
         final productDoc = await _firestore.collection(_productsCollection).doc(doc.id).get();
-        if (productDoc.exists) {
+        if (isFavoriteProductVisible(exists: productDoc.exists, data: productDoc.data())) {
           products.add(ProductModel.fromMap(productDoc.id, productDoc.data()!));
         }
       }
