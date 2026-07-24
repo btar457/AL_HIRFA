@@ -37,3 +37,6 @@ build/
 
 # Misc
 *.log
+
+# Firestore rules test suite (firestore-tests/)
+firestore-tests/node_modules/
