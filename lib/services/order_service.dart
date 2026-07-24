@@ -39,6 +39,9 @@ class OrderService {
     if (orders.isEmpty) return [];
     final buyerUid = orders.first.buyerUid;
 
+    // قراءة خارج أي transaction/دفعة — نافذة سباق نظرية بين جلستين متزامنتين
+    // لنفس المشتري. مقبول عند الحجم الحالي، مؤجَّل لا محسوم — راجع
+    // POST_LAUNCH_DECISIONS.md البند 2.
     final rateLimitRef = _firestore.collection(_rateLimitsCollection).doc(buyerUid);
     final rateLimitDoc = await rateLimitRef.get();
     var currentCount = 0;
@@ -66,6 +69,9 @@ class OrderService {
     }
     await batch.commit();
 
+    // ما دون هذا السطر غير ذرّي مع الدفعة أعلاه (rate_limits + الإشعارات) —
+    // انقطاع هنا يترك عدّاداً ناقصاً أو إشعاراً ضائعاً. مقبول عند الحجم
+    // الحالي، مؤجَّل لا محسوم — راجع POST_LAUNCH_DECISIONS.md البند 1.
     for (var i = 0; i < newOrders.length; i++) {
       await _incrementRateLimit(buyerUid);
     }

@@ -159,6 +159,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()), (route) => route.isFirst);
     } catch (e) {
       if (!mounted) return;
+      // رسالة عامة لا تحدد السبب الفعلي (تجاوز الحد، منتج لم يعد active...).
+      // مؤجَّل لا محسوم — راجع POST_LAUNCH_DECISIONS.md البند 3.
       AppError.showSnackbar(context, AppError.getFirebaseError(e));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
