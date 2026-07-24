@@ -102,6 +102,53 @@ function ctx(uid) {
   return testEnv.authenticatedContext(uid).firestore();
 }
 
+// -----------------------------------------------------------------------
+// بيانات تأسيسية إضافية للجولة الثانية من الاختبارات — لا تُعدَّل
+// seedBaseFixtures أعلاه، فقط بيانات جديدة لسيناريوهات جديدة.
+// -----------------------------------------------------------------------
+async function seedRoundTwoFixtures() {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+
+    await setDoc(doc(db, 'users/artisanPending'), {
+      role: 'artisan', name: 'حرفي معلَّق', city: 'بغداد',
+      isActive: true, banned: false, warningCount: 0, approvalStatus: 'pending',
+    });
+    await setDoc(doc(db, 'users/shippingPending'), {
+      role: 'shipping', name: 'شركة معلَّقة', city: 'بغداد', provinces: ['بغداد'],
+      isActive: true, banned: false, warningCount: 0, approvalStatus: 'pending',
+    });
+
+    await setDoc(doc(db, 'orders/orderDelivered'), {
+      buyerUid: 'customerA', artisanUid: 'artisanA', shippingUid: 'shippingA',
+      status: 'delivered',
+      address: { governorate: 'بغداد', district: '', notes: '' },
+      price: 20000, deliveryFee: 5000, totalAmount: 25000,
+      platformFee: 2500, artisanEarnings: 17500, shippingEarnings: 4500,
+      isReviewed: false, createdAt: new Date(), deliveredAt: new Date(),
+    });
+
+    await setDoc(doc(db, 'settlements/settlementA'), {
+      shippingUid: 'shippingA', weekStart: new Date(), weekEnd: new Date(),
+      deliveriesCount: 1, totalEarnings: 4500, platformDue: 500,
+      status: 'pending', penaltyAmount: 0, createdAt: new Date(),
+    });
+
+    await setDoc(doc(db, 'app_config/rules'), {
+      productCommission: 0.1, shippingCommission: 0.1, fixedDeliveryFee: 5000,
+    });
+
+    await setDoc(doc(db, 'products/productPending'), {
+      artisanUid: 'artisanA', name: 'منتج معلَّق', description: '', price: 10000,
+      category: 'other', city: 'بغداد', images: [], narrative: '', material: '',
+      originPlace: '', technique: '', status: 'pending', rating: 0, reviewCount: 0,
+      salesCount: 0, createdAt: new Date(),
+    });
+
+    await setDoc(doc(db, 'users/artisanA/private/contact'), { phone: '07701234567' });
+  });
+}
+
 // =========================================================================
 // 1) مستخدم يرقّي نفسه إلى admin عبر update
 // =========================================================================
@@ -272,4 +319,118 @@ test('سماح: مستخدم جديد يؤسّس حساب المؤسس عندم�
     role: 'admin', name: 'المؤسس', city: '',
     isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved',
   }));
+});
+
+// =========================================================================
+// الجولة الثانية — اختبارات إضافية (تكملة لمهمة اختبارات القواعد)
+// =========================================================================
+
+// --- اختبارات تعديل (update) — كلها يجب أن تُرفض ---
+
+test('رفض: حرفي بحالة pending يعدّل وثيقته إلى approved', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanPending');
+  await assertFails(updateDoc(doc(db, 'users/artisanPending'), { approvalStatus: 'approved' }));
+});
+
+test('رفض: شركة شحن بحالة pending تعدّل وثيقتها إلى approved', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('shippingPending');
+  await assertFails(updateDoc(doc(db, 'users/shippingPending'), { approvalStatus: 'approved' }));
+});
+
+test('رفض: مستخدم customer يغيّر role إلى shipping', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertFails(updateDoc(doc(db, 'users/customerA'), { role: 'shipping' }));
+});
+
+test('رفض: مستخدم customer يغيّر role إلى artisan', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertFails(updateDoc(doc(db, 'users/customerA'), { role: 'artisan' }));
+});
+
+test('رفض: حساب موقوف يكتب أي وثيقة (لا يقرأ فقط)', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('bannedA');
+  await assertFails(updateDoc(doc(db, 'users/bannedA'), { photoUrl: 'https://example.com/x.png' }));
+});
+
+test('رفض: حساب موقوف يعدّل حقل حالة الحظر عن نفسه', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('bannedA');
+  await assertFails(updateDoc(doc(db, 'users/bannedA'), { banned: false, isActive: true }));
+});
+
+// --- مجموعات غير مغطّاة — رفض ---
+
+test('رفض: حرفي يكتب رصيد محفظته مباشرة عبر إنشاء transaction وهمية', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA');
+  await assertFails(setDoc(doc(db, 'transactions/txFake'), {
+    orderId: 'orderDelivered', type: 'sale', amount: 999999,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+test('رفض: شركة شحن تغيّر حالة تسويتها إلى paid', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('shippingA');
+  await assertFails(updateDoc(doc(db, 'settlements/settlementA'), { status: 'paid' }));
+});
+
+test('رفض: أي عميل يكتب في transactions', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'transactions/txFake2'), {
+    orderId: 'orderDelivered', type: 'sale', amount: 17500,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+test('رفض: غير-مدير يعدّل نسبة العمولة أو سعر التوصيل في الإعدادات', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertFails(updateDoc(doc(db, 'app_config/rules'), { productCommission: 0.5 }));
+});
+
+test('رفض: حرفي ينقل منتجه من pending إلى active مباشرة', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA');
+  await assertFails(updateDoc(doc(db, 'products/productPending'), { status: 'active' }));
+});
+
+test('رفض: مستخدم يقرأ المجموعة الفرعية للهاتف/IBAN لمستخدم آخر', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanB');
+  await assertFails(getDoc(doc(db, 'users/artisanA/private/contact')));
+});
+
+// --- سماح (تحقّق من عدم الإفراط في التقييد) ---
+
+test('سماح: الحرفي يقرأ مجموعته الفرعية الخاصة به (private/contact)', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA');
+  await assertSucceeds(getDoc(doc(db, 'users/artisanA/private/contact')));
+});
+
+test('سماح: الإدارة تنقل منتجاً من pending إلى active', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('adminA');
+  await assertSucceeds(updateDoc(doc(db, 'products/productPending'), { status: 'active' }));
 });

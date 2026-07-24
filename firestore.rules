@@ -80,8 +80,10 @@ service cloud.firestore {
       // تعديل الذات مقصور على الحقول الشخصية فقط — يمنع ترقية role الذاتية
       // وتعديل isActive/banned/approvalStatus/warningCount ذاتياً (المبدأ
       // الإلزامي الرابع). الإدارة وحدها تُعدّل أي حقل (admin_service.dart).
+      // isActiveNonBanned() هنا تمنع حساباً موقوفاً/محظوراً من تعديل حتى
+      // حقوله الشخصية المسموحة — كانت القراءة فقط محمية سابقاً، لا الكتابة.
       allow update: if isSignedIn() && (
-        (userId == request.auth.uid && onlyFieldsChanged([
+        (userId == request.auth.uid && isActiveNonBanned() && onlyFieldsChanged([
           'name', 'city', 'companyName', 'registrationNumber',
           'provinces', 'photoUrl', 'fcmToken',
           'termsAccepted', 'termsAcceptedAt', 'termsVersion'
