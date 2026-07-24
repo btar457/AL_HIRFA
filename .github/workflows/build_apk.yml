@@ -16,11 +16,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Java JDK
+      # firebase-tools يتطلب JDK 21+ لتشغيل محاكي Firestore (Gradle/Flutter
+      # لاحقاً يحتاجان JDK 17 فقط — راجع خطوة "Setup Java JDK" أدناه التي
+      # تُعيد ضبط JAVA_HOME لـ 17 بعد هذه الخطوة).
+      - name: Setup Java 21 (for Firestore Emulator)
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
 
       # يشغّل اختبارات firestore-tests/rules.test.mjs (@firebase/rules-unit-testing)
       # على محاكي Firestore الحقيقي — بوابة قبل النشر (لا بعده)، فأي انحدار في
@@ -33,6 +36,12 @@ jobs:
           npm install
           cd ..
           firebase emulators:exec --project demo-al-hirfa --only firestore "cd firestore-tests && npm test"
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
       - name: Deploy Firestore Rules, Indexes, and Hosting
         continue-on-error: true
