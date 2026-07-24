@@ -59,8 +59,12 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
     final allProducts = await ProductService.instance.getArtisanProducts(widget.artisanUid).first;
     final activeProducts = allProducts.where((p) => p.status == 'active').toList();
 
-    final totalReviewCount = activeProducts.fold<int>(0, (sum, p) => sum + p.reviewCount);
-    final weightedRatingSum = activeProducts.fold<double>(0, (sum, p) => sum + (p.rating * p.reviewCount));
+    // التقييم يُحسب من كل منتجات الحرفي بلا تصفية على الحالة — منتج مخفي
+    // (حذف ناعم) أو معلَّق أو مرفوض يبقى محسوباً ضمن المتوسط العام، فلا
+    // يستطيع الحرفي غسل تقييمه العام بإخفاء منتج سيّئ التقييم ثم النشر من
+    // جديد بسجل نظيف.
+    final totalReviewCount = allProducts.fold<int>(0, (sum, p) => sum + p.reviewCount);
+    final weightedRatingSum = allProducts.fold<double>(0, (sum, p) => sum + (p.rating * p.reviewCount));
     final averageRating = totalReviewCount > 0 ? weightedRatingSum / totalReviewCount : 0.0;
     final totalSales = activeProducts.fold<int>(0, (sum, p) => sum + p.salesCount);
 

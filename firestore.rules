@@ -143,11 +143,17 @@ service cloud.firestore {
         // قاعدة reviews أدناه.
         || (isActiveNonBanned() && onlyFieldsChanged(['rating', 'reviewCount'])
             && request.resource.data.reviewCount == resource.data.reviewCount + 1)
-        // الإدارة: موافقة/رفض/إيقاف/إعادة تفعيل + تعديل كامل.
+        // حذف ناعم — صاحب المنتج فقط، اتجاه واحد (أي حالة → deleted فقط، لا
+        // رجوع عبر هذه القاعدة ولا تجاوز لبوابة موافقة الإدارة). الحذف
+        // الحقيقي مرفوض أدناه كي تبقى rating/reviewCount محسوبة في متوسط
+        // الحرفي العام (راجع artisan_public_profile_screen.dart).
+        || (resource.data.artisanUid == request.auth.uid && onlyFieldsChanged(['status'])
+            && request.resource.data.status == 'deleted')
+        // الإدارة: موافقة/رفض/إيقاف/إعادة تفعيل + تعديل كامل (بما فيها حذف/استعادة).
         || isAdmin()
       );
 
-      allow delete: if isSignedIn() && (resource.data.artisanUid == request.auth.uid || isAdmin());
+      allow delete: if false;
     }
 
     // -----------------------------------------------------------------

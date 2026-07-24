@@ -544,3 +544,46 @@ test('رفض: مستخدم عادي ينشئ إشعار system في صندوق �
     userId: 'artisanA', type: 'system', title: 'إشعار نظام مزيَّف',
   })));
 });
+
+// =========================================================================
+// طلب المستخدم: حذف ناعم للمنتجات — يمنع غسل السمعة عبر حذف منتج سيّئ
+// التقييم؛ حساب المتوسط نفسه (بلا تصفية على الحالة) مُنفَّذ في
+// artisan_public_profile_screen.dart، خارج نطاق اختبارات القواعد — ما
+// تختبره هذه المجموعة هو أن الحذف الناعم لا يُفقد حقول rating/reviewCount
+// ولا يفتح ثغرة موافقة ذاتية على status.
+// =========================================================================
+test('رفض: حذف حقيقي لمنتج (delete) — الآن if false للجميع بما فيهم المالك والإدارة', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  await assertFails(deleteDoc(doc(ctx('artisanA'), 'products/productPending')));
+  await assertFails(deleteDoc(doc(ctx('adminA'), 'products/productPending')));
+});
+
+test('سماح: الحرفي يخفي منتجه (حذف ناعم status→deleted) ورصيده التقييمي يبقى محفوظاً', async () => {
+  await seedBaseFixtures();
+  // منتج نشط بتقييم سيّئ فعلي — يخصّ artisanA.
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'products/productBadRating'), {
+      artisanUid: 'artisanA', name: 'منتج سيّئ التقييم', description: '', price: 5000,
+      category: 'other', city: 'بغداد', images: [], narrative: '', material: '',
+      originPlace: '', technique: '', status: 'active', rating: 1.0, reviewCount: 10,
+      salesCount: 2, createdAt: new Date(),
+    });
+  });
+  const db = ctx('artisanA');
+  await assertSucceeds(updateDoc(doc(db, 'products/productBadRating'), { status: 'deleted' }));
+  // rating/reviewCount ما زالا محفوظين فعلياً — المالك يقرأ وثيقته دائماً
+  // بغضّ النظر عن الحالة (products/read)، وهذا ما يستند إليه حساب المتوسط
+  // في allProducts (بلا تصفية على الحالة) في الشاشة.
+  const afterDelete = await getDoc(doc(db, 'products/productBadRating'));
+  assert.equal(afterDelete.data().rating, 1.0);
+  assert.equal(afterDelete.data().reviewCount, 10);
+  assert.equal(afterDelete.data().status, 'deleted');
+});
+
+test('رفض: الحرفي يستخدم فرع الحذف الناعم لتمرير status إلى قيمة أخرى غير deleted (مثلاً active)', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA');
+  await assertFails(updateDoc(doc(db, 'products/productPending'), { status: 'active' }));
+});

@@ -118,8 +118,11 @@ class ProductService {
     return _firestore.collection(_productsCollection).doc(productId).update(data);
   }
 
+  /// حذف ناعم — الحذف الحقيقي مرفوض في firestore.rules (allow delete: if
+  /// false) كي تبقى تقييمات المنتج القديمة محسوبة ضمن متوسط الحرفي العام
+  /// بدل اختفائها (راجع artisan_public_profile_screen.dart).
   Future<void> deleteProduct(String productId) {
-    return _firestore.collection(_productsCollection).doc(productId).delete();
+    return _firestore.collection(_productsCollection).doc(productId).update({'status': 'deleted'});
   }
 
   /// Admin: موافقة على منتج معلّق.

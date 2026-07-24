@@ -34,7 +34,10 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
   }
 
   List<ProductModel> _productsFor(List<ProductModel> all, String? status) {
-    if (status == null) return all;
+    // 'deleted' حذف ناعم (product_service.dart: deleteProduct) — لا يظهر
+    // للحرفي في أي تبويب هنا، بما فيها "الكل"، رغم بقائه في القاعدة لأجل
+    // متوسط التقييم العام (artisan_public_profile_screen.dart).
+    if (status == null) return all.where((p) => p.status != 'deleted').toList();
     return all.where((p) => p.status == status).toList();
   }
 
