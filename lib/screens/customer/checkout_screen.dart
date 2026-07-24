@@ -123,11 +123,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     setState(() => _isSubmitting = true);
     try {
       final settings = _settings ?? await AppSettingsService.instance.getSettings();
-      for (final item in cart.items) {
+      final orders = cart.items.map((item) {
         final product = item.product;
         final linePrice = product.price * item.quantity;
         final commission = (linePrice * settings.productCommission).round();
-        final order = OrderModel(
+        return OrderModel(
           id: '',
           orderNumber: '',
           productId: product.id,
@@ -150,8 +150,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           status: 'pending',
           createdAt: DateTime.now(),
         );
-        await OrderService.instance.createOrder(order);
-      }
+      }).toList();
+      // دفعة (WriteBatch) ذرّية واحدة لكل طلبات السلة — إما تُنشأ كلها معاً
+      // أو لا يُنشأ أي منها؛ السلة لا تُفرَّغ إلا بعد نجاحها بالكامل.
+      await OrderService.instance.createOrders(orders);
       cart.clearCart();
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()), (route) => route.isFirst);

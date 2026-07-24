@@ -20,20 +20,70 @@ class OrderService {
   /// لضمان عدم تصادم رقمين مختلفين إطلاقاً.
   String _generateOrderNumber(String orderId) => 'HRF-${orderId.substring(0, 8).toUpperCase()}';
 
-  /// ينشئ طلباً جديداً بحالة 'pending' ومهلة موافقة 48 ساعة للحرفي، ضمن
-  /// نفس المعاملة (transaction) التي تتحقق من/تحدّث عدّاد
-  /// rate_limits/{buyerUid} (AppRules.maxOrdersPerHour) — راجع firestore.rules
-  /// لملاحظة أن هذا حماية Best-effort فقط بلا Cloud Function.
-  Future<String> createOrder(OrderModel order) async {
-    final docRef = _firestore.collection(_ordersCollection).doc();
-    final newOrder = order.copyWith(
-      id: docRef.id,
-      orderNumber: _generateOrderNumber(docRef.id),
-      status: 'pending',
-      sellerApprovalDeadline: DateTime.now().add(Duration(hours: AppRules.sellerApprovalHours)),
-    );
+  /// ينشئ عدّة طلبات دفعة واحدة (سلة بأكثر من منتج، منتج واحد لكل طلب) ضمن
+  /// WriteBatch ذرّية واحدة — إما تُنشأ كل الطلبات معاً أو لا يُنشأ أي منها،
+  /// فلا تبقى حالة جزئية (بعض الطلبات أُنشئت وبعضها لا) كما كان يحدث سابقاً
+  /// مع حلقة تستدعي إنشاءً مستقلاً لكل طلب على حدة.
+  ///
+  /// عدّاد rate_limits/{buyerUid} مُستبعَد عمداً من هذه الدفعة: firestore.rules
+  /// تسمح فقط بزيادة +1 واحدة لكل كتابة (rate_limits/update تشترط
+  /// hourlyCount == القيمة السابقة + 1 بالضبط)، وأثبتت اختبارات
+  /// firestore-tests/rules.test.mjs تجريبياً أن أي محاولتين لكتابة نفس
+  /// المستند ضمن دفعة واحدة تُقيَّمان معاً مقابل حالته *قبل* الدفعة لا
+  /// تصاعدياً، فتفشل كتابة ثانية +1 دائماً — لا يوجد شكل من WriteBatch يزيد
+  /// العدّاد بمقدار N بلا تعديل القاعدة نفسها. الفحص أدناه (قبل بناء الدفعة)
+  /// يمنع الدفعة كاملة إن كانت ستتجاوز الحد، ثم الزيادات الفعلية بعد نجاح
+  /// الدفعة تبقى متسلسلة +1 كما كانت دائماً (AppRules.maxOrdersPerHour) —
+  /// موثوقيتها كما كانت تماماً، لأن دمجها ذرّياً مع الدفعة غير ممكن هنا.
+  Future<List<String>> createOrders(List<OrderModel> orders) async {
+    if (orders.isEmpty) return [];
+    final buyerUid = orders.first.buyerUid;
 
-    final rateLimitRef = _firestore.collection(_rateLimitsCollection).doc(order.buyerUid);
+    final rateLimitRef = _firestore.collection(_rateLimitsCollection).doc(buyerUid);
+    final rateLimitDoc = await rateLimitRef.get();
+    var currentCount = 0;
+    if (rateLimitDoc.exists) {
+      final windowStart = (rateLimitDoc.data()!['windowStart'] as Timestamp).toDate();
+      final windowExpired = DateTime.now().difference(windowStart) > const Duration(hours: 1);
+      currentCount = windowExpired ? 0 : rateLimitDoc.data()!['hourlyCount'] as int;
+    }
+    if (currentCount + orders.length > AppRules.maxOrdersPerHour) {
+      throw Exception('لقد تجاوزت الحد المسموح لعدد الطلبات خلال ساعة واحدة، يرجى المحاولة لاحقاً');
+    }
+
+    final batch = _firestore.batch();
+    final newOrders = <OrderModel>[];
+    for (final order in orders) {
+      final docRef = _firestore.collection(_ordersCollection).doc();
+      final newOrder = order.copyWith(
+        id: docRef.id,
+        orderNumber: _generateOrderNumber(docRef.id),
+        status: 'pending',
+        sellerApprovalDeadline: DateTime.now().add(Duration(hours: AppRules.sellerApprovalHours)),
+      );
+      batch.set(docRef, newOrder.toMap());
+      newOrders.add(newOrder);
+    }
+    await batch.commit();
+
+    for (var i = 0; i < newOrders.length; i++) {
+      await _incrementRateLimit(buyerUid);
+    }
+
+    for (final newOrder in newOrders) {
+      await NotificationService.instance.sendToUser(
+        userUid: newOrder.artisanUid,
+        title: 'طلب جديد ينتظر موافقتك',
+        body: '${newOrder.productName} — ${newOrder.orderNumber}',
+        type: 'new_order',
+        data: {'orderId': newOrder.id},
+      );
+    }
+    return newOrders.map((o) => o.id).toList();
+  }
+
+  Future<void> _incrementRateLimit(String buyerUid) async {
+    final rateLimitRef = _firestore.collection(_rateLimitsCollection).doc(buyerUid);
     await _firestore.runTransaction((tx) async {
       final rateLimitDoc = await tx.get(rateLimitRef);
       final now = Timestamp.now();
@@ -45,23 +95,11 @@ class OrderService {
         final windowExpired = now.toDate().difference(windowStart.toDate()) > const Duration(hours: 1);
         if (windowExpired) {
           tx.set(rateLimitRef, {'hourlyCount': 1, 'windowStart': now});
-        } else if (hourlyCount >= AppRules.maxOrdersPerHour) {
-          throw Exception('لقد تجاوزت الحد المسموح لعدد الطلبات خلال ساعة واحدة، يرجى المحاولة لاحقاً');
         } else {
           tx.update(rateLimitRef, {'hourlyCount': hourlyCount + 1});
         }
       }
-      tx.set(docRef, newOrder.toMap());
     });
-
-    await NotificationService.instance.sendToUser(
-      userUid: newOrder.artisanUid,
-      title: 'طلب جديد ينتظر موافقتك',
-      body: '${newOrder.productName} — ${newOrder.orderNumber}',
-      type: 'new_order',
-      data: {'orderId': docRef.id},
-    );
-    return docRef.id;
   }
 
   /// الحرفي يوافق على الطلب — يفتح نافذة 5 دقائق لشركات الشحن للقبول.

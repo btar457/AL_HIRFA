@@ -15,6 +15,8 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  writeBatch,
+  increment,
 } from 'firebase/firestore';
 
 const PROJECT_ID = 'demo-al-hirfa';
@@ -612,4 +614,66 @@ test('رفض: الحرفي يستخدم فرع الحذف الناعم لتمر�
   await seedRoundTwoFixtures();
   const db = ctx('artisanA');
   await assertFails(updateDoc(doc(db, 'products/productPending'), { status: 'active' }));
+});
+
+// =========================================================================
+// طلب المستخدم: يتحقق من أن دفعة (WriteBatch) واحدة تُنشئ عدّة طلبات (سلة
+// بأكثر من منتج) تمرّ فعلياً عبر firestore.rules الحالية دون أي تعديل.
+//
+// اكتشاف مهم أثبتته أول محاولة (فشلت فعلياً هنا قبل التصحيح): تعدّد
+// الكتابات على *نفس* المستند ضمن دفعة واحدة (rate_limits/{buyerUid} مثلاً)
+// يُقيَّم الكل مقابل حالة المستند *قبل* الدفعة، لا تصاعدياً — فمحاولة
+// كتابتَي +1 منفصلتين على نفس الوثيقة ضمن دفعة واحدة تفشل (`evaluation
+// error`)، ومحاولة كتابة واحدة بقيمة +N تخالف صراحة قيد "زيادة +1 فقط لكل
+// كتابة" في القاعدة. لذا: الدفعة هنا تضم *فقط* وثائق الطلبات (تصلح تماماً
+// لأنها N مستندات *مختلفة*)، وتحديث rate_limits يبقى خارجها، بعمليات +1
+// متسلسلة كما كانت دائماً — لا اختلاف في موثوقية هذا الجزء عمّا كان قبل
+// الإصلاح، لأن دمجه ذرّياً مع الدفعة غير ممكن دون تعديل القاعدة.
+// =========================================================================
+test('سماح: دفعة واحدة تنشئ طلبين معاً (بلا لمس rate_limits داخل الدفعة نفسها)', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'products/productBatchActive'), {
+      artisanUid: 'artisanA', name: 'منتج نشط للدفعة', description: '', price: 10000,
+      category: 'other', city: 'بغداد', images: [], narrative: '', material: '',
+      originPlace: '', technique: '', status: 'active', rating: 0, reviewCount: 0,
+      salesCount: 0, createdAt: new Date(),
+    });
+  });
+  const db = ctx('customerA');
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'orders/batchOrder1'), {
+    buyerUid: 'customerA', artisanUid: 'artisanA', shippingUid: null, status: 'pending',
+    productId: 'productBatchActive',
+    address: { governorate: 'بغداد', district: '', notes: '' },
+    price: 10000, deliveryFee: 5000, totalAmount: 15000,
+    platformFee: 1000, artisanEarnings: 9000, shippingEarnings: 4500,
+    isReviewed: false, createdAt: new Date(),
+  });
+  batch.set(doc(db, 'orders/batchOrder2'), {
+    buyerUid: 'customerA', artisanUid: 'artisanA', shippingUid: null, status: 'pending',
+    productId: 'productBatchActive',
+    address: { governorate: 'بغداد', district: '', notes: '' },
+    price: 12000, deliveryFee: 5000, totalAmount: 17000,
+    platformFee: 1200, artisanEarnings: 10800, shippingEarnings: 4500,
+    isReviewed: false, createdAt: new Date(),
+  });
+  await assertSucceeds(batch.commit());
+
+  const o1 = await getDoc(doc(ctx('customerA'), 'orders/batchOrder1'));
+  const o2 = await getDoc(doc(ctx('customerA'), 'orders/batchOrder2'));
+  assert.equal(o1.exists(), true);
+  assert.equal(o2.exists(), true);
+});
+
+test('رفض: تحديثان +1 على نفس وثيقة rate_limits ضمن دفعة واحدة يفشل (يثبت سبب فصلها عن الدفعة)', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'rate_limits/customerA'), { hourlyCount: 3, windowStart: new Date() });
+  });
+  const db = ctx('customerA');
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'rate_limits/customerA'), { hourlyCount: increment(1) });
+  batch.update(doc(db, 'rate_limits/customerA'), { hourlyCount: increment(1) });
+  await assertFails(batch.commit());
 });
