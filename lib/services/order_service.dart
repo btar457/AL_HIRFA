@@ -207,8 +207,11 @@ class OrderService {
     final batch = _firestore.batch();
     final now = DateTime.now();
 
+    // معرّف حتمي (orderId_type) بدل doc() العشوائي — يمنع تكرار نفس المعاملة
+    // لنفس الطلب: أي محاولة ثانية تصطدم بوثيقة موجودة فتُعامَل كـupdate
+    // وهي if false في firestore.rules (راجع transactions/{transactionId}).
     void addTransaction(String type, int amount, String fromUid, String toUid) {
-      final ref = _firestore.collection(_transactionsCollection).doc();
+      final ref = _firestore.collection(_transactionsCollection).doc('${orderId}_$type');
       batch.set(
         ref,
         TransactionModel(id: ref.id, orderId: orderId, type: type, amount: amount, fromUid: fromUid, toUid: toUid, status: 'completed', createdAt: now).toMap(),

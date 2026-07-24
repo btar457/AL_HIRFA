@@ -249,6 +249,11 @@ service cloud.firestore {
         || isAdmin()
       );
       allow create: if isActiveNonBanned()
+        // معرّف الوثيقة يجب أن يكون orderId_type الحتمي — يمنع تكرار نفس
+        // المعاملة عبر معرّفات عشوائية مختلفة (order_service.dart أصبح
+        // يستخدم نفس المعرّف الحتمي الآن)؛ أي محاولة ثانية على نفس المعرّف
+        // تصطدم بوثيقة موجودة فتُعامَل كـupdate وهي if false أدناه.
+        && transactionId == request.resource.data.orderId + '_' + request.resource.data.type
         && request.resource.data.status == 'completed'
         && orderData(request.resource.data.orderId).shippingUid == request.auth.uid
         && orderData(request.resource.data.orderId).status == 'delivered'

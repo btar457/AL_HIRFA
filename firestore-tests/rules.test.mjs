@@ -434,3 +434,60 @@ test('سماح: الإدارة تنقل منتجاً من pending إلى active'
   const db = ctx('adminA');
   await assertSucceeds(updateDoc(doc(db, 'products/productPending'), { status: 'active' }));
 });
+
+// =========================================================================
+// طلب المستخدم: سدّ ثغرة تكرار transactions لنفس orderId+type — المعرّف
+// الحتمي (orderId_type) بدل doc() العشوائي في order_service.dart.
+// =========================================================================
+test('رفض: معاملة sale مكرَّرة لنفس orderId+type عبر معرّف عشوائي ثانٍ', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('shippingA');
+  const validData = {
+    orderId: 'orderDelivered', type: 'sale', amount: 17500,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  };
+  // المعرّف الحتمي الصحيح — ينجح دائماً (قبل الإصلاح وبعده).
+  await assertSucceeds(setDoc(doc(db, 'transactions/orderDelivered_sale'), validData));
+  // محاولة ثانية بمعرّف عشوائي مختلف تماماً لنفس orderId+type — يحاكي
+  // doc() العشوائي قبل الإصلاح. قبل الإصلاح: تنجح أيضاً (لا فحص تكرار) —
+  // هذا بالضبط ما يجعل هذا السطر فاشلاً قبل تطبيق الإصلاح. بعد الإصلاح:
+  // السطر الجديد في create يفرض transactionId == orderId+'_'+type،
+  // و'randomIdTwo' لا يطابقه أبداً → رفض.
+  await assertFails(setDoc(doc(db, 'transactions/randomIdTwo'), validData));
+  // إعادة الكتابة على المعرّف الحتمي نفسه بعد نجاحه = update (وثيقة موجودة)
+  // وهي if false أصلاً — محمية بغضّ النظر عن هذا الإصلاح، مذكورة هنا لتوثيق
+  // الآلية الكاملة كما وصفها المستخدم: "المحاولة الثانية تصبح update".
+  await assertFails(setDoc(doc(db, 'transactions/orderDelivered_sale'), validData));
+});
+
+// =========================================================================
+// طلب المستخدم: اختباران إضافيان لتكامل transactions
+// =========================================================================
+test('توثيق سلوك حالي (لا يُصلَح الآن): شركة الشحن تحدّث الطلب إلى delivered دون كتابة المعاملات', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('shippingA');
+  // orderX بحالة seller_approved، shippingUid فارغ — نجعله picked_up أولاً
+  // ثم delivered، دون إنشاء أي وثيقة transactions مقابلة، لنثبت أن قاعدة
+  // orders/update لا تفرض إطلاقاً كتابة المعاملات الثلاث كإجراء ذرّي واحد
+  // (order_service.dart: confirmDelivery و_createDeliveryTransactions
+  // كتابتان منفصلتان فعلياً، غير مضمونتين معاً — راجع تقرير التدقيق التكميلي).
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), {
+    status: 'shipping_assigned', shippingUid: 'shippingA',
+    shippingCompanyName: 'شركة أ', shippingAssignedAt: new Date(),
+  }));
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), { status: 'picked_up' }));
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+});
+
+test('رفض: طرف ثالث ليس shippingUid الطلب ينشئ معاملة delivery لنفسه', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  // orderDelivered معيَّن فعلياً لـ shippingA — shippingB ليس طرفاً فيه إطلاقاً.
+  const db = ctx('shippingB');
+  await assertFails(setDoc(doc(db, 'transactions/orderDelivered_delivery_fake'), {
+    orderId: 'orderDelivered', type: 'delivery', amount: 4500,
+    fromUid: 'customerA', toUid: 'shippingB', status: 'completed', createdAt: new Date(),
+  }));
+});
