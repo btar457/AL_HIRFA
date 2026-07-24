@@ -491,3 +491,48 @@ test('رفض: طرف ثالث ليس shippingUid الطلب ينشئ معامل�
     fromUid: 'customerA', toUid: 'shippingB', status: 'completed', createdAt: new Date(),
   }));
 });
+
+// =========================================================================
+// طلب المستخدم: notifications/create — type محصور بقائمة تستبعد الأنواع
+// الإدارية، مع إبقاء 'system' (قرار المستخدم: توسيع القائمة بدل تعديل كود
+// wallet_service/product_service/dispute_service الثلاثة).
+// =========================================================================
+function notifBase(overrides) {
+  return {
+    userId: 'artisanA', title: 'عنوان', body: 'نص', type: 'new_order',
+    targetAudience: 'all', recipientCount: 0, isRead: false, data: {},
+    createdAt: new Date(), ...overrides,
+  };
+}
+
+test('رفض: مستخدم عادي ينشئ إشعاراً بنوع إداري (account_banned)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'notifications/fakeAdminNotif'), notifBase({
+    userId: 'artisanA', type: 'account_banned', title: 'تم حظر حسابك نهائياً',
+  })));
+});
+
+test('سماح: طلب جديد يُشعر الحرفي (new_order)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertSucceeds(setDoc(doc(db, 'notifications/notifNewOrder'), notifBase({
+    userId: 'artisanA', type: 'new_order', title: 'طلب جديد ينتظر موافقتك',
+  })));
+});
+
+test('سماح: رفض الحرفي للطلب يُشعر المشتري (order_rejected)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanA');
+  await assertSucceeds(setDoc(doc(db, 'notifications/notifOrderRejected'), notifBase({
+    userId: 'customerA', type: 'order_rejected', title: 'تم إلغاء طلبك',
+  })));
+});
+
+test('سماح: طلب سحب الحرفي يُشعر الإدارة (system عبر sendBulkNotification)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanA');
+  await assertSucceeds(setDoc(doc(db, 'notifications/notifWithdrawalToAdmin'), notifBase({
+    userId: 'adminA', type: 'system', title: 'طلب سحب جديد', body: 'حرفي طلب سحب 5000 د.ع',
+  })));
+});
