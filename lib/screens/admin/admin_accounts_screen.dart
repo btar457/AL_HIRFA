@@ -155,7 +155,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
               child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () async {
                 final reason = reasonController.text.trim();
                 if (reason.isEmpty) return;
@@ -205,7 +205,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
               child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () async {
                 final reason = reasonController.text.trim();
                 if (reason.isEmpty) return;
