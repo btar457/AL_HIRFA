@@ -8,6 +8,11 @@ import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
+import '../shared/about_screen.dart';
+import '../shared/change_password_screen.dart';
+import '../shared/delete_account_screen.dart';
+import '../shared/privacy_policy_screen.dart';
+import '../shared/terms_screen.dart';
 
 class ArtisanProfileScreen extends StatefulWidget {
   const ArtisanProfileScreen({super.key});
@@ -154,9 +159,13 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildSettingsTile(icon: Icons.lock_outline, title: 'تغيير كلمة المرور'),
-            _buildSettingsTile(icon: Icons.description_outlined, title: 'الشروط والأحكام'),
+            _buildSettingsTile(icon: Icons.lock_outline, title: 'تغيير كلمة المرور', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()))),
+            _buildSettingsTile(icon: Icons.description_outlined, title: 'الشروط والأحكام', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen()))),
+            _buildSettingsTile(icon: Icons.privacy_tip_outlined, title: 'سياسة الخصوصية', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()))),
+            _buildSettingsTile(icon: Icons.info_outline, title: 'عن AL-HIRFA', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()))),
+            Divider(color: AppColors.subText.withOpacity(0.2)),
             _buildSettingsTile(icon: Icons.logout, title: 'تسجيل الخروج', color: Colors.redAccent, onTap: _confirmLogout),
+            _buildSettingsTile(icon: Icons.delete_outline, title: 'حذف الحساب', color: Colors.redAccent, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeleteAccountScreen()))),
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

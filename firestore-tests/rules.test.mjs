@@ -438,6 +438,25 @@ test('سماح: الإدارة تنقل منتجاً من pending إلى active'
 });
 
 // =========================================================================
+// إصلاح: مسار حذف الحساب (deleteAccount في auth_service.dart) يحتاج تعديل
+// الحقل email ذاتياً ضمن نفس الحقول الشخصية المسموحة (name/city/...) —
+// أُضيف 'email' لقائمة onlyFieldsChanged في users/update.
+// =========================================================================
+test('سماح: مستخدم يفرّغ حقل email في مستنده الخاص (خطوة إخفاء الهوية عند حذف الحساب)', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertSucceeds(updateDoc(doc(db, 'users/customerA'), { email: '', name: 'مستخدم محذوف' }));
+});
+
+test('رفض: مستخدم يعدّل email مع حقل غير مسموح به (role) في نفس الكتابة', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertFails(updateDoc(doc(db, 'users/customerA'), { email: '', role: 'admin' }));
+});
+
+// =========================================================================
 // طلب المستخدم: سدّ ثغرة تكرار transactions لنفس orderId+type — المعرّف
 // الحتمي (orderId_type) بدل doc() العشوائي في order_service.dart.
 // =========================================================================

@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import '../auth/login_screen.dart';
 import '../shared/change_password_screen.dart';
+import '../shared/delete_account_screen.dart';
 import '../shared/terms_screen.dart';
 import 'shipping_wallet_screen.dart';
 
@@ -205,6 +206,7 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
                   _buildTile(context, icon: Icons.description_outlined, title: 'شروط الشراكة', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen()))),
                   _buildTile(context, icon: Icons.lock_outline, title: 'تغيير كلمة المرور', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()))),
                   _buildTile(context, icon: Icons.logout, title: 'تسجيل الخروج', color: Colors.redAccent, onTap: () => _confirmLogout(context)),
+                  _buildTile(context, icon: Icons.delete_outline, title: 'حذف الحساب', color: Colors.redAccent, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeleteAccountScreen()))),
                   const SizedBox(height: 24),
                 ],
               ),

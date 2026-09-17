@@ -84,7 +84,7 @@ service cloud.firestore {
       // حقوله الشخصية المسموحة — كانت القراءة فقط محمية سابقاً، لا الكتابة.
       allow update: if isSignedIn() && (
         (userId == request.auth.uid && isActiveNonBanned() && onlyFieldsChanged([
-          'name', 'city', 'companyName', 'registrationNumber',
+          'name', 'email', 'city', 'companyName', 'registrationNumber',
           'provinces', 'photoUrl', 'fcmToken',
           'termsAccepted', 'termsAcceptedAt', 'termsVersion'
         ]))

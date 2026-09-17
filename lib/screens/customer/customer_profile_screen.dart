@@ -9,6 +9,7 @@ import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../shared/about_screen.dart';
 import '../shared/change_password_screen.dart';
+import '../shared/delete_account_screen.dart';
 import '../shared/notifications_screen.dart';
 import '../shared/privacy_policy_screen.dart';
 import '../shared/terms_screen.dart';
@@ -154,6 +155,7 @@ class CustomerProfileScreen extends StatelessWidget {
             _buildSettingsTile(context, icon: Icons.info_outline, title: 'عن التطبيق', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()))),
             Divider(color: AppColors.subText.withOpacity(0.2)),
             _buildSettingsTile(context, icon: Icons.logout, title: 'تسجيل الخروج', color: Colors.redAccent, onTap: () => _confirmLogout(context)),
+            _buildSettingsTile(context, icon: Icons.delete_outline, title: 'حذف الحساب', color: Colors.redAccent, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeleteAccountScreen()))),
             const SizedBox(height: 24),
           ],
         ),

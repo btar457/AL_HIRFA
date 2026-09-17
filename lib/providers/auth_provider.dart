@@ -160,6 +160,13 @@ class AuthProvider extends ChangeNotifier {
     return AuthService.instance.changePassword(currentPassword: currentPassword, newPassword: newPassword);
   }
 
+  /// حذف الحساب نهائياً — راجع AuthService.deleteAccount. authStateChanges
+  /// يلتقط خروج المستخدم تلقائياً بعد user.delete() (يصبح null) ويمسح
+  /// _currentUser محلياً من نفسه، لا حاجة لفعل ذلك هنا يدوياً.
+  Future<void> deleteAccount({required String password}) {
+    return AuthService.instance.deleteAccount(password: password);
+  }
+
   @override
   void dispose() {
     _authSubscription?.cancel();

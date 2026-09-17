@@ -211,6 +211,42 @@ class AuthService {
     return doc.data()?['role'] as String?;
   }
 
+  /// حذف الحساب نهائياً (سياسة Google Play لحذف الحسابات — راجع
+  /// privacy_policy_screen.dart "حذف الحساب وبياناتك"). لا Cloud Functions
+  /// في هذا المشروع، لذا هذا "حذف" فعلي لحساب Firebase Auth + إخفاء هوية
+  /// (anonymize) للحقول الشخصية في مستند users/{uid} ضمن الحقول المسموح
+  /// للمستخدم تعديلها ذاتياً (راجع firestore.rules: users/update). سجلات
+  /// الطلبات/المعاملات المالية (orders/transactions) تبقى كما هي عمداً
+  /// للامتثال القانوني (لا حذف ممكن أصلاً — allow delete: if false)، تماماً
+  /// كما هو موضّح صراحة في نص سياسة الخصوصية للمستخدم قبل تأكيده.
+  ///
+  /// يتطلّب كلمة المرور الحالية لإعادة المصادقة أولاً — نفس متطلب Firebase
+  /// الأمني المطبَّق في changePassword، ومناسب هنا أكثر كونه إجراءً نهائياً
+  /// غير قابل للتراجع.
+  Future<void> deleteAccount({required String password}) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw FirebaseAuthException(code: 'user-not-found', message: 'تعذّر العثور على المستخدم الحالي');
+    }
+    final uid = user.uid;
+    final credential = EmailAuthProvider.credential(email: user.email!, password: password);
+    await user.reauthenticateWithCredential(credential);
+
+    await _firestore.collection(_usersCollection).doc(uid).update({
+      'name': 'مستخدم محذوف',
+      'email': '',
+      'city': '',
+      'photoUrl': '',
+      'fcmToken': null,
+      'companyName': '',
+      'registrationNumber': '',
+      'provinces': <String>[],
+    });
+    await _privateContactRef(uid).set({'phone': '', 'iban': ''}, SetOptions(merge: true));
+
+    await user.delete();
+  }
+
   /// يحدّث إصدار الشروط المقبول من المستخدم بعد موافقته على الشروط الجديدة (PART 11.5).
   Future<void> updateTermsVersion(String uid, String version) {
     return _firestore.collection(_usersCollection).doc(uid).update({
