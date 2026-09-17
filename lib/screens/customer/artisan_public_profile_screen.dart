@@ -140,10 +140,17 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
         alignment: Alignment.topRight,
         child: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: AppColors.card, shape: BoxShape.circle),
-            child: const Icon(Icons.arrow_back, color: AppColors.gold, size: 20),
+          behavior: HitTestBehavior.opaque,
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: AppColors.card, shape: BoxShape.circle),
+                child: const Icon(Icons.arrow_back, color: AppColors.gold, size: 20),
+              ),
+            ),
           ),
         ),
       ),
@@ -178,10 +185,17 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
                   left: 16,
                   child: GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
-                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                    behavior: HitTestBehavior.opaque,
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
+                          child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                        ),
+                      ),
                     ),
                   ),
                 ),

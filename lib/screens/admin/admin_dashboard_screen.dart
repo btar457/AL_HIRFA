@@ -4,6 +4,7 @@ import '../../core/constants/colors.dart';
 import '../../providers/notification_provider.dart';
 import '../../services/admin_service.dart';
 import '../shared/notifications_screen.dart';
+import 'admin_orders_screen.dart';
 import 'review_artisans_screen.dart';
 
 String _formatPrice(int value) {
@@ -25,7 +26,7 @@ class _DashboardData {
   final int revenueToday;
   final int newUsersToday;
   final int ordersToday;
-  final int activeDeliveries;
+  final int commissionOwed;
   final List<double> weeklySales;
   final int pendingArtisans;
   final int openDisputes;
@@ -38,7 +39,7 @@ class _DashboardData {
     required this.revenueToday,
     required this.newUsersToday,
     required this.ordersToday,
-    required this.activeDeliveries,
+    required this.commissionOwed,
     required this.weeklySales,
     required this.pendingArtisans,
     required this.openDisputes,
@@ -65,7 +66,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       admin.getRevenueToday(),
       admin.getNewUsersTodayCount(),
       admin.getOrdersTodayCount(),
-      admin.getActiveDeliveriesCount(),
+      admin.getCommissionOwedTotal(),
       admin.getWeeklySales(),
       admin.getPendingArtisansCount(),
       admin.getOpenDisputesCount(),
@@ -78,7 +79,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       revenueToday: results[0] as int,
       newUsersToday: results[1] as int,
       ordersToday: results[2] as int,
-      activeDeliveries: results[3] as int,
+      commissionOwed: results[3] as int,
       weeklySales: results[4] as List<double>,
       pendingArtisans: results[5] as int,
       openDisputes: results[6] as int,
@@ -173,7 +174,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         _buildStatCard(icon: Icons.payments_outlined, label: 'إيرادات اليوم', value: '${_formatPrice(data.revenueToday)} د.ع', valueColor: AppColors.gold),
         _buildStatCard(icon: Icons.person_add_outlined, label: 'مستخدمون جدد اليوم', value: '${data.newUsersToday}', valueColor: AppColors.text),
         _buildStatCard(icon: Icons.receipt_long_outlined, label: 'طلبات اليوم', value: '${data.ordersToday}', valueColor: AppColors.text),
-        _buildStatCard(icon: Icons.local_shipping_outlined, label: 'توصيلات نشطة', value: '${data.activeDeliveries}', valueColor: Colors.green),
+        _buildStatCard(icon: Icons.percent_outlined, label: 'عمولات مستحقة', value: '${_formatPrice(data.commissionOwed)} د.ع', valueColor: Colors.orange),
       ],
     );
   }
@@ -247,25 +248,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           label: 'بلاغات مفتوحة',
           count: '${data.openDisputes}',
           buttonColor: Colors.redAccent,
-          onTap: () => showDialog(
-            context: context,
-            builder: (context) => Directionality(
-              textDirection: TextDirection.rtl,
-              child: AlertDialog(
-                backgroundColor: AppColors.card,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                title: const Text('البلاغات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-                content: Text('شاشة مراجعة البلاغات التفصيلية ستُضاف لاحقاً.', style: TextStyle(color: AppColors.subText)),
-                actions: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('حسناً', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminOrdersScreen(initialFilter: 'مشكلات'))),
         ),
       ],
     );

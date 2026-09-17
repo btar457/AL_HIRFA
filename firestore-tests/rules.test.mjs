@@ -299,11 +299,20 @@ test('سماح: الحرفي مالك الطلب يوافق عليه (pending ->
   }));
 });
 
-test('سماح: شركة شحن ضمن نطاق تغطيتها تقرأ الطلب وتقبله', async () => {
+test('سماح: شركة شحن ضمن نطاق تغطيتها تقرأ الطلب رغم أن قبوله موقوف', async () => {
   await seedBaseFixtures();
   const db = ctx('shippingA'); // مغطّاة لمحافظة بغداد (نفس orderX)
   await assertSucceeds(getDoc(doc(db, 'orders/orderX')));
-  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), {
+});
+
+// إصلاح: حسابات شركات شحن معتمدة من قبل إغلاق القسم يمكنها تقنياً قبول طلب
+// حرفي جديد (اعتراضه) رغم أن التسجيل الجديد مُخفى من الواجهة فقط — لا حارس
+// فعلي في القاعدة كان يمنع ذلك. أُضيف `&& false` على هذا الفرع في
+// firestore.rules تحديداً لإغلاقه فعلياً، لا شكلياً فقط.
+test('رفض (إصلاح): شركة شحن معتمدة سابقاً تحاول قبول طلب جديد — القسم مغلق فعلياً الآن', async () => {
+  await seedBaseFixtures();
+  const db = ctx('shippingA'); // مغطّاة لمحافظة بغداد (نفس orderX)، حساب approved فعلياً
+  await assertFails(updateDoc(doc(db, 'orders/orderX'), {
     status: 'shipping_assigned',
     shippingUid: 'shippingA',
     shippingCompanyName: 'شركة أ',
@@ -488,16 +497,21 @@ test('رفض: معاملة sale مكرَّرة لنفس orderId+type عبر مع
 test('توثيق سلوك حالي (لا يُصلَح الآن): شركة الشحن تحدّث الطلب إلى delivered دون كتابة المعاملات', async () => {
   await seedBaseFixtures();
   await seedRoundTwoFixtures();
+  // القسم مغلق الآن حتى للحسابات المعتمدة سابقاً (راجع الاختبار أعلاه)، لذا
+  // نصل orderX إلى shipping_assigned عبر بذرة مباشرة (rules معطَّلة) بدل
+  // المرور بقاعدة orders/update — غرض هذا الاختبار توثيق سلوك مرحلة delivered
+  // نفسها لطلب عالق قديماً في هذا المسار، لا اختبار القبول ذاته.
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(doc(context.firestore(), 'orders/orderX'), {
+      status: 'shipping_assigned', shippingUid: 'shippingA',
+      shippingCompanyName: 'شركة أ', shippingAssignedAt: new Date(),
+    });
+  });
   const db = ctx('shippingA');
-  // orderX بحالة seller_approved، shippingUid فارغ — نجعله picked_up أولاً
-  // ثم delivered، دون إنشاء أي وثيقة transactions مقابلة، لنثبت أن قاعدة
-  // orders/update لا تفرض إطلاقاً كتابة المعاملات الثلاث كإجراء ذرّي واحد
-  // (order_service.dart: confirmDelivery و_createDeliveryTransactions
+  // ثم picked_up ثم delivered، دون إنشاء أي وثيقة transactions مقابلة، لنثبت
+  // أن قاعدة orders/update لا تفرض إطلاقاً كتابة المعاملات الثلاث كإجراء
+  // ذرّي واحد (order_service.dart: confirmDelivery و_createDeliveryTransactions
   // كتابتان منفصلتان فعلياً، غير مضمونتين معاً — راجع تقرير التدقيق التكميلي).
-  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), {
-    status: 'shipping_assigned', shippingUid: 'shippingA',
-    shippingCompanyName: 'شركة أ', shippingAssignedAt: new Date(),
-  }));
   await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), { status: 'picked_up' }));
   await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
 });

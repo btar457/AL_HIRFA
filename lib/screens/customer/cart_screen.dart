@@ -119,7 +119,7 @@ class CartScreen extends StatelessWidget {
                 children: [
                   Text(item.product.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
-                  Text(item.product.artisanName, style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                  Text(item.product.artisanName, style: TextStyle(color: AppColors.subText, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
                   Text('د.ع ${_formatPrice(item.product.price)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 8),

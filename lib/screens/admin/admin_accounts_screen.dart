@@ -305,9 +305,9 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(user.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text(user.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 2),
-                  Text(user.email, style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                  Text(user.email, style: TextStyle(color: AppColors.subText, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                   if (user.warningCount > 0) Text('${user.warningCount} إنذار', style: TextStyle(color: Colors.amber, fontSize: 11)),
                 ],
               ),

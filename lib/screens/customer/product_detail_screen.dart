@@ -141,13 +141,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
+  // منطقة اللمس 48×48 كاملة (الحد الأدنى الموصى به) رغم أن الدائرة المرسومة
+  // بصرياً أصغر — GestureDetector وحدها كانت تحصر منطقة اللمس بحجم الحشوة
+  // المرئية فقط (~36×36).
   Widget _circleIconButton({required IconData icon, required VoidCallback onTap, Color iconColor = Colors.white}) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
-        child: Icon(icon, color: iconColor, size: 20),
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+        ),
       ),
     );
   }
@@ -163,7 +173,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: Text(product.city.toUpperCase(), style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
         ),
         const SizedBox(height: 12),
-        Text(product.name, style: const TextStyle(color: AppColors.text, fontSize: 24, fontWeight: FontWeight.bold)),
+        Text(product.name, style: const TextStyle(color: AppColors.text, fontSize: 24, fontWeight: FontWeight.bold), maxLines: 3, overflow: TextOverflow.ellipsis),
         const SizedBox(height: 8),
         Row(
           children: [

@@ -202,14 +202,19 @@ service cloud.firestore {
         || (resource.data.status == 'seller_approved' && request.resource.data.status == 'delivered'
           && resource.data.artisanUid == request.auth.uid
           && onlyFieldsChanged(['status', 'deliveredAt']))
-        // شركة شحن تقبل الطلب (shippingAcceptOrder) — لم يُقبل من قبل،
-        // وضمن نطاق تغطيتها المسجَّل.
+        // شركة شحن تقبل الطلب (shippingAcceptOrder) — القسم مغلق مؤقتاً
+        // (`&& false` أدناه)، فالحرفي يتكفّل بالتوصيل بنفسه الآن. التسجيل
+        // الجديد لشركات الشحن مُخفى فعلاً من الواجهة، لكن أي حساب شحن
+        // approved من قبل هذا الإغلاق يبقى قادراً تقنياً على قبول طلب دون
+        // هذا الحارس الصريح — كان بإمكانه اعتراض طلب حرفي يظنّه مسؤولاً عنه
+        // وحده. لإعادة تفعيل القسم لاحقاً: احذف `&& false` فقط.
         || (resource.data.status == 'seller_approved' && request.resource.data.status == 'shipping_assigned'
           && resource.data.shippingUid == null
           && request.resource.data.shippingUid == request.auth.uid
           && hasRole('shipping')
           && resource.data.address.governorate in myData().provinces
-          && onlyFieldsChanged(['status', 'shippingUid', 'shippingCompanyName', 'shippingAssignedAt']))
+          && onlyFieldsChanged(['status', 'shippingUid', 'shippingCompanyName', 'shippingAssignedAt'])
+          && false)
         // شركة الشحن المعيَّنة تستلم من الحرفي (shippingPickedUp)
         || (resource.data.status == 'shipping_assigned' && request.resource.data.status == 'picked_up'
           && resource.data.shippingUid == request.auth.uid

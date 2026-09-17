@@ -98,6 +98,9 @@ class AdminCommissionsOwedScreen extends StatelessWidget {
         body: StreamBuilder<List<OrderModel>>(
           stream: OrderService.instance.getAllOrders(),
           builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(child: Text('تعذّر تحميل العمولات', style: TextStyle(color: AppColors.subText)));
+            }
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator(color: AppColors.gold));
             }
@@ -129,7 +132,7 @@ class AdminCommissionsOwedScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(due.artisanName.isEmpty ? due.artisanUid : due.artisanName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text(due.artisanName.isEmpty ? 'حرفي غير معروف' : due.artisanName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
                       const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

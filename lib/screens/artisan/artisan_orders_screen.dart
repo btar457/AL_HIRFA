@@ -268,7 +268,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                       const SizedBox(height: 2),
                       Text('د.ع ${_formatPrice(order.price)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                       const SizedBox(height: 4),
-                      Text(order.buyerName, style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                      Text(order.buyerName, style: TextStyle(color: AppColors.subText, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
                       Row(children: [const Icon(Icons.location_on_outlined, color: AppColors.subText, size: 13), const SizedBox(width: 4), Expanded(child: Text('${order.governorate} - ${order.district}', style: TextStyle(color: AppColors.subText, fontSize: 11)))]),
                       const SizedBox(height: 2),

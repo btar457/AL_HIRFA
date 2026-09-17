@@ -77,6 +77,14 @@ class AdminService {
     return snapshot.count ?? 0;
   }
 
+  /// إجمالي عمولات المنصة المستحقة من كل الحرفيين (طلبات delivered لم
+  /// تُعلَّم بعد بأنها دُفعت) — نفس منطق admin_commissions_owed_screen.dart
+  /// مجمَّعاً برقم واحد لبطاقة لوحة التحكم.
+  Future<int> getCommissionOwedTotal() async {
+    final snapshot = await _firestore.collection(_ordersCollection).where('status', isEqualTo: 'delivered').where('commissionPaid', isEqualTo: false).get();
+    return snapshot.docs.fold<int>(0, (acc, doc) => acc + (doc.data()['platformFee'] as int? ?? 0));
+  }
+
   /// إيرادات المنصة اليوم = مجموع حركات العمولة (commission) المكتملة اليوم.
   Future<int> getRevenueToday() async {
     final snapshot = await _firestore

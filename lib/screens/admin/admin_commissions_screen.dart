@@ -92,6 +92,9 @@ class _AdminCommissionsScreenState extends State<AdminCommissionsScreen> {
         body: StreamBuilder<AppSettingsModel>(
           stream: AppSettingsService.instance.watchSettings(),
           builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(child: Text('تعذّر تحميل الإعدادات', style: TextStyle(color: AppColors.subText)));
+            }
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator(color: AppColors.gold));
             }

@@ -25,13 +25,14 @@ const _inProgressStatuses = {'pending', 'seller_approved', 'shipping_assigned', 
 
 /// إدارة الطلبات على مستوى المنصة (ADMIN-6).
 class AdminOrdersScreen extends StatefulWidget {
-  const AdminOrdersScreen({super.key});
+  final String initialFilter;
+  const AdminOrdersScreen({super.key, this.initialFilter = 'الكل'});
   @override
   State<AdminOrdersScreen> createState() => _AdminOrdersScreenState();
 }
 
 class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
-  String _filter = 'الكل';
+  late String _filter = widget.initialFilter;
 
   List<OrderModel> _filtered(List<OrderModel> orders) {
     return switch (_filter) {

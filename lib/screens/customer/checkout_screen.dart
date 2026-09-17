@@ -285,7 +285,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(item.product.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      Text(item.product.artisanName, style: TextStyle(color: AppColors.subText, fontSize: 11)),
+                      Text(item.product.artisanName, style: TextStyle(color: AppColors.subText, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),
