@@ -2,11 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
+import '../../models/order_model.dart';
 import '../../providers/notification_provider.dart';
 import '../../services/admin_service.dart';
 import '../../services/support_service.dart';
 import '../shared/notifications_screen.dart';
 import 'admin_orders_screen.dart';
+import 'admin_stuck_orders_screen.dart';
 import 'admin_support_messages_screen.dart';
 import 'review_artisans_screen.dart';
 
@@ -267,6 +269,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               count: '$count',
               buttonColor: AppColors.gold,
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminSupportMessagesScreen())),
+            );
+          },
+        ),
+        // تظهر فقط إن وُجد طلب عالق فعلياً (نادر/غير متوقَّع بعد إغلاق قسم
+        // الشحن) — لا داعي لإزعاج بطاقة دائمة بقيمة 0 طوال الوقت.
+        StreamBuilder<List<OrderModel>>(
+          stream: AdminService.instance.getStuckLegacyShippingOrders(),
+          builder: (context, snapshot) {
+            final count = snapshot.data?.length ?? 0;
+            if (count == 0) return const SizedBox.shrink();
+            return _buildAlertTile(
+              icon: Icons.build_circle_outlined,
+              label: 'طلبات عالقة (شحن قديم)',
+              count: '$count',
+              buttonColor: Colors.orange,
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminStuckOrdersScreen())),
             );
           },
         ),

@@ -8,6 +8,7 @@ import 'admin_commissions_screen.dart';
 import 'admin_financials_screen.dart';
 import 'admin_notifications_screen.dart';
 import 'admin_products_screen.dart';
+import 'admin_stuck_orders_screen.dart';
 
 /// قائمة إعدادات بوابة المؤسس (تبويب "الإعدادات" ضمن AdminNav).
 class AdminSettingsScreen extends StatelessWidget {
@@ -71,6 +72,7 @@ class AdminSettingsScreen extends StatelessWidget {
             _buildTile(context, icon: Icons.notifications_outlined, title: 'إدارة الإشعارات', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminNotificationsScreen()))),
             _buildTile(context, icon: Icons.inventory_2_outlined, title: 'إدارة المنتجات', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminProductsScreen()))),
             _buildTile(context, icon: Icons.category_outlined, title: 'إدارة الفئات', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminCategoriesScreen()))),
+            _buildTile(context, icon: Icons.build_circle_outlined, title: 'طلبات عالقة (شحن قديم)', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminStuckOrdersScreen()))),
             Divider(color: AppColors.subText.withOpacity(0.2)),
             _buildTile(context, icon: Icons.logout, title: 'تسجيل الخروج', color: Colors.redAccent, onTap: () => _confirmLogout(context)),
             const SizedBox(height: 24),

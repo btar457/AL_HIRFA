@@ -15,6 +15,7 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  deleteField,
   writeBatch,
   increment,
 } from 'firebase/firestore';
@@ -865,6 +866,27 @@ test('سماح: الإدارة تحدّث commissionWarningLevel/At على حس�
   await seedRoundTwoFixtures();
   const db = ctx('adminA');
   await assertSucceeds(updateDoc(doc(db, 'users/artisanA'), { commissionWarningLevel: 1, commissionWarningAt: new Date() }));
+});
+
+// =========================================================================
+// طلب المستخدم: أداة "طلبات عالقة" — AdminService.unstuckLegacyShippingOrder
+// يعيد طلباً بحالة شحن قديمة إلى seller_approved (عبر فرع isAdmin() العام).
+// =========================================================================
+test('سماح: الإدارة تعيد طلباً عالقاً بحالة shipping_assigned إلى seller_approved', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(doc(context.firestore(), 'orders/orderX'), {
+      status: 'shipping_assigned', shippingUid: 'shippingA',
+      shippingCompanyName: 'شركة أ', shippingAssignedAt: new Date(),
+    });
+  });
+  const db = ctx('adminA');
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), {
+    status: 'seller_approved',
+    shippingUid: deleteField(),
+    shippingCompanyName: deleteField(),
+    shippingAssignedAt: deleteField(),
+  }));
 });
 
 test('رفض: الحرفي يعدّل commissionWarningLevel الخاص بنفسه (تجاوز الإنذار)', async () => {

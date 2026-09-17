@@ -347,4 +347,46 @@ class AdminService {
     await _firestore.collection(_usersCollection).doc(uid).update({'isActive': true});
     await NotificationService.instance.sendToUser(userUid: uid, title: 'تم رفع التعليق عن حسابك', body: 'يمكنك الآن استخدام حسابك بشكل طبيعي', type: 'account_reactivated');
   }
+
+  // ---------------------------------------------------------------------
+  // طلبات عالقة بحالات شحن قديمة (shipping_assigned/picked_up) — لا مسار
+  // واجهة يصل إليها بعد إغلاق قسم الشحن مؤقتاً (artisan_orders_screen.dart
+  // تعرضها ضمن "قيد التنفيذ" لكن بلا أي زر إجراء). راجع admin_stuck_orders_screen.dart.
+  // ---------------------------------------------------------------------
+  Stream<List<OrderModel>> getStuckLegacyShippingOrders() {
+    return _firestore
+        .collection(_ordersCollection)
+        .where('status', whereIn: ['shipping_assigned', 'picked_up'])
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data())).toList());
+  }
+
+  /// يعيد طلباً عالقاً إلى seller_approved (يحذف حقول الشحن) ليكمله الحرفي
+  /// بنفسه عبر التوصيل الذاتي (confirmDelivery) بدل أن يبقى عالقاً للأبد.
+  Future<void> unstuckLegacyShippingOrder(String orderId) async {
+    final doc = await _firestore.collection(_ordersCollection).doc(orderId).get();
+    if (!doc.exists) return;
+    final order = OrderModel.fromMap(orderId, doc.data()!);
+
+    await doc.reference.update({
+      'status': 'seller_approved',
+      'shippingUid': FieldValue.delete(),
+      'shippingCompanyName': FieldValue.delete(),
+      'shippingAssignedAt': FieldValue.delete(),
+    });
+    await NotificationService.instance.sendToUser(
+      userUid: order.artisanUid,
+      title: 'طلب بانتظار تسليمك',
+      body: 'أعادت الإدارة تعيين طلب ${order.orderNumber} إليك لتتولّى توصيله بنفسك',
+      type: 'shipping_assigned',
+      data: {'orderId': orderId},
+    );
+    await NotificationService.instance.sendToUser(
+      userUid: order.buyerUid,
+      title: 'تحديث على طلبك',
+      body: 'سيتواصل معك الحرفي مباشرة لتوصيل طلبك ${order.orderNumber}',
+      type: 'shipping_assigned',
+      data: {'orderId': orderId},
+    );
+  }
 }
