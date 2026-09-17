@@ -247,6 +247,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     const SizedBox(height: 24),
                     _buildInvoiceCard(cart),
                     const SizedBox(height: 16),
+                    _buildDeliveryInfo(),
+                    const SizedBox(height: 16),
                     _buildPaymentMethod(),
                     const SizedBox(height: 16),
                     _buildAcceptanceCheckboxes(),
@@ -363,6 +365,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             ),
             onChanged: (val) => setState(() => _policyAccepted = val ?? false),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// معلومات التوصيل — قسم شركات الشحن مغلق مؤقتاً، فالحرفي نفسه يوصّل
+  /// الطلب ويتواصل مع الزبون مباشرة (راجع sellerApproveOrder في
+  /// order_service.dart وبطاقة التوصيل المماثلة في order_tracking_screen.dart).
+  Widget _buildDeliveryInfo() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.delivery_dining_outlined, color: AppColors.gold, size: 26),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('معلومات التوصيل', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 4),
+                Text(
+                  'الحرفي نفسه سيتولّى توصيل طلبك ويتواصل معك على رقم هاتفك لتنسيق موعد التسليم — لا وسيط شحن حالياً.',
+                  style: TextStyle(color: AppColors.subText, fontSize: 12, height: 20 / 12),
+                ),
+              ],
+            ),
           ),
         ],
       ),
