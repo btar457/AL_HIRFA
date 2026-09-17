@@ -49,10 +49,13 @@ class ArtisanDashboardScreen extends StatelessWidget {
                       builder: (context, orderSnapshot) {
                         final orders = orderSnapshot.data ?? const <OrderModel>[];
                         final pendingOrders = orders.where((o) => o.status == 'pending').toList();
+                        final commissionOwed = orders
+                            .where((o) => o.status == 'delivered' && !o.commissionPaid)
+                            .fold<int>(0, (sum, o) => sum + o.platformFee);
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildStatsGrid(context, user.uid, pendingOrders.length),
+                            _buildStatsGrid(context, user.uid, pendingOrders.length, commissionOwed),
                             const SizedBox(height: 20),
                             _buildNewOrdersSection(context, pendingOrders),
                           ],
@@ -117,7 +120,7 @@ class ArtisanDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsGrid(BuildContext context, String artisanUid, int pendingOrdersCount) {
+  Widget _buildStatsGrid(BuildContext context, String artisanUid, int pendingOrdersCount, int commissionOwed) {
     return StreamBuilder<WalletModel>(
       stream: WalletService.instance.getArtisanWallet(artisanUid),
       builder: (context, walletSnapshot) {
@@ -137,7 +140,10 @@ class ArtisanDashboardScreen extends StatelessWidget {
                 _buildStatCard(icon: Icons.payments_outlined, label: 'إجمالي المبيعات', value: '${_formatPrice(wallet.totalEarnings)} د.ع', valueColor: AppColors.gold, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanWalletScreen()))),
                 _buildStatCard(icon: Icons.inventory_2_outlined, label: 'طلبات جديدة', value: '$pendingOrdersCount', valueColor: AppColors.text, showBadge: pendingOrdersCount > 0, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanOrdersScreen()))),
                 _buildStatCard(icon: Icons.storefront_outlined, label: 'منتجاتي النشطة', valueColor: AppColors.gold, value: '$activeProducts'),
-                _buildStatCard(icon: Icons.account_balance_wallet_outlined, label: 'رصيد متاح للسحب', value: '${_formatPrice(wallet.availableBalance)} د.ع', valueColor: Colors.green, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanWalletScreen()))),
+                // عمولة المنصة (5%) المستحقة عليك — دَين تسدّده أنت للمنصة، لا
+                // رصيد تسحبه منها (قسم الشحن مغلق مؤقتاً، تستلم كامل المبلغ
+                // كاشاً من الزبون مباشرة). راجع admin_commissions_owed_screen.dart.
+                _buildStatCard(icon: Icons.receipt_long_outlined, label: 'عمولة مستحقة عليك', value: '${_formatPrice(commissionOwed)} د.ع', valueColor: Colors.orange, showBadge: commissionOwed > 0),
               ],
             );
           },

@@ -220,7 +220,11 @@ class OrderService {
     await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'طلبك في الطريق إليك', body: order.productName, type: 'order_picked_up', data: {'orderId': orderId});
   }
 
-  /// تأكيد التسليم — يبدأ عداد 72 ساعة لتحويل أرباح الحرفي.
+  /// تأكيد التسليم — الحرفي يستلم كامل المبلغ كاشاً من الزبون مباشرة عند
+  /// التسليم، وعمولة المنصة (platformFee) تُسجَّل كدَين يسدّده لاحقاً (راجع
+  /// admin_commissions_owed_screen.dart) بدل تحويل مؤجَّل من المنصة إليه
+  /// كما كان في نموذج الدفع الإلكتروني القديم — لا علاقة لـ holdPeriodHours
+  /// بهذا المسار إطلاقاً.
   Future<void> confirmDelivery(String orderId) async {
     final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
     final order = OrderModel.fromMap(orderId, orderDoc.data()!);
@@ -229,7 +233,7 @@ class OrderService {
     await _firestore.collection('products').doc(order.productId).update({'salesCount': FieldValue.increment(1)});
 
     await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'تم التسليم', body: 'قيّم تجربتك مع ${order.productName}', type: 'order_delivered', data: {'orderId': orderId});
-    await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'تم التسليم', body: 'أرباحك ستُحوَّل خلال ${AppRules.holdPeriodHours} ساعة', type: 'wallet_credited', data: {'orderId': orderId});
+    await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'تم التسليم', body: 'لا تنسَ تسديد عمولة المنصة (${order.platformFee} د.ع) عن هذا الطلب', type: 'wallet_credited', data: {'orderId': orderId});
   }
 
   /// يحدّث حالة الطلب إلى delivered ثم يسجّل الحركات المالية — حصة الحرفي،
