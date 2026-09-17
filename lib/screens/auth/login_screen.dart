@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
@@ -6,8 +7,16 @@ import '../../core/navigation/role_router.dart';
 import '../../core/utils/error_handler.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/common/founder_access_gate.dart';
+import '../shared/about_screen.dart';
 import 'forgot_password_screen.dart';
 import 'onboarding_screen.dart';
+
+// رموز حظر/تعليق/رفض الحساب — signIn يسجّل خروج الحساب فوراً في هذه الحالات
+// (AuthService.accessBlockCode)، فلا يستطيع صاحبه أبداً الوصول لشاشة "تواصل
+// مع الدعم" الداخلية التي تتطلّب تسجيل دخول فعلي؛ القناة الوحيدة المتاحة له
+// هي التواصل الخارجي (بريد/واتساب) في AboutScreen، لذا نعرضها هنا مباشرة
+// بدل ترك النص في الرسالة بلا أي زر فعلي يفتحها.
+const _accountBlockCodes = {'account-suspended', 'user-disabled', 'account-banned', 'account-rejected'};
 
 /// شاشة تسجيل الدخول (تصميم على شكل بطاقة فوق خلفية ضبابية داكنة).
 class LoginScreen extends StatefulWidget {
@@ -31,8 +40,41 @@ class _LoginScreenState extends State<LoginScreen> {
       navigateByRole(context, user.role, user: user);
     } catch (e) {
       if (!mounted) return;
+      if (e is FirebaseAuthException && _accountBlockCodes.contains(e.code)) {
+        _showAccountBlockedDialog(AppError.getFirebaseError(e));
+        return;
+      }
       AppError.showSnackbar(context, AppError.getFirebaseError(e));
     }
+  }
+
+  void _showAccountBlockedDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: const Text('تعذّر تسجيل الدخول', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(message, style: TextStyle(color: AppColors.subText)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('إغلاق', style: TextStyle(color: AppColors.subText)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()));
+              },
+              child: const Text('تواصل مع الدعم', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildField({required IconData icon, required String hint, TextEditingController? controller, bool obscure = false, Widget? suffix, TextInputType? keyboardType}) {
