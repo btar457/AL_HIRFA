@@ -39,26 +39,29 @@ class _CustomerNavState extends State<CustomerNav> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_index],
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(color: Color(0xFF111111)),
-        child: BottomNavigationBar(
-          currentIndex: _index,
-          onTap: (i) => setState(() => _index = i),
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          selectedItemColor: AppColors.gold,
-          unselectedItemColor: AppColors.subText,
-          selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-          unselectedLabelStyle: const TextStyle(fontSize: 11),
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'الرئيسية'),
-            BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), activeIcon: Icon(Icons.storefront), label: 'المتجر'),
-            BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'طلباتي'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'الحساب'),
-          ],
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        body: _screens[_index],
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(color: Color(0xFF111111)),
+          child: BottomNavigationBar(
+            currentIndex: _index,
+            onTap: (i) => setState(() => _index = i),
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            selectedItemColor: AppColors.gold,
+            unselectedItemColor: AppColors.subText,
+            selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            unselectedLabelStyle: const TextStyle(fontSize: 11),
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'الرئيسية'),
+              BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), activeIcon: Icon(Icons.storefront), label: 'المتجر'),
+              BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'طلباتي'),
+              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'الحساب'),
+            ],
+          ),
         ),
       ),
     );

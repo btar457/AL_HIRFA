@@ -41,27 +41,30 @@ class _AdminNavState extends State<AdminNav> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_index],
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(color: Color(0xFF111111)),
-        child: BottomNavigationBar(
-          currentIndex: _index,
-          onTap: (i) => setState(() => _index = i),
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          selectedItemColor: AppColors.gold,
-          unselectedItemColor: AppColors.subText,
-          selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-          unselectedLabelStyle: const TextStyle(fontSize: 10),
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: 'لوحة التحكم'),
-            BottomNavigationBarItem(icon: Icon(Icons.people_outline), activeIcon: Icon(Icons.people), label: 'المستخدمون'),
-            BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'الطلبات'),
-            BottomNavigationBarItem(icon: Icon(Icons.percent_outlined), activeIcon: Icon(Icons.percent), label: 'العمولات'),
-            BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: 'الإعدادات'),
-          ],
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        body: _screens[_index],
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(color: Color(0xFF111111)),
+          child: BottomNavigationBar(
+            currentIndex: _index,
+            onTap: (i) => setState(() => _index = i),
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            selectedItemColor: AppColors.gold,
+            unselectedItemColor: AppColors.subText,
+            selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            unselectedLabelStyle: const TextStyle(fontSize: 10),
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: 'لوحة التحكم'),
+              BottomNavigationBarItem(icon: Icon(Icons.people_outline), activeIcon: Icon(Icons.people), label: 'المستخدمون'),
+              BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'الطلبات'),
+              BottomNavigationBarItem(icon: Icon(Icons.percent_outlined), activeIcon: Icon(Icons.percent), label: 'العمولات'),
+              BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: 'الإعدادات'),
+            ],
+          ),
         ),
       ),
     );

@@ -39,26 +39,29 @@ class _ShippingNavState extends State<ShippingNav> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_index],
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(color: Color(0xFF111111)),
-        child: BottomNavigationBar(
-          currentIndex: _index,
-          onTap: (i) => setState(() => _index = i),
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          selectedItemColor: AppColors.gold,
-          unselectedItemColor: AppColors.subText,
-          selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-          unselectedLabelStyle: const TextStyle(fontSize: 11),
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), activeIcon: Icon(Icons.local_shipping), label: 'المتاحة'),
-            BottomNavigationBarItem(icon: Icon(Icons.pin_drop_outlined), activeIcon: Icon(Icons.pin_drop), label: 'النشطة'),
-            BottomNavigationBarItem(icon: Icon(Icons.history), activeIcon: Icon(Icons.history), label: 'السجل'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'حسابي'),
-          ],
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        body: _screens[_index],
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(color: Color(0xFF111111)),
+          child: BottomNavigationBar(
+            currentIndex: _index,
+            onTap: (i) => setState(() => _index = i),
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            selectedItemColor: AppColors.gold,
+            unselectedItemColor: AppColors.subText,
+            selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            unselectedLabelStyle: const TextStyle(fontSize: 11),
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), activeIcon: Icon(Icons.local_shipping), label: 'المتاحة'),
+              BottomNavigationBarItem(icon: Icon(Icons.pin_drop_outlined), activeIcon: Icon(Icons.pin_drop), label: 'النشطة'),
+              BottomNavigationBarItem(icon: Icon(Icons.history), activeIcon: Icon(Icons.history), label: 'السجل'),
+              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'حسابي'),
+            ],
+          ),
         ),
       ),
     );
