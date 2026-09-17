@@ -633,6 +633,53 @@ test('رفض: مستخدم عادي ينشئ إشعار system في صندوق �
 });
 
 // =========================================================================
+// طلب المستخدم: تواصل دعم داخل التطبيق يصل مباشرة للإدارة (support_service.dart)
+// =========================================================================
+function supportMessageBase(overrides) {
+  return {
+    uid: 'customerA', name: 'زبون أ', role: 'customer', message: 'لدي مشكلة في طلبي',
+    status: 'open', adminReply: null, createdAt: new Date(), ...overrides,
+  };
+}
+
+test('سماح: مستخدم ينشئ رسالة دعم باسمه هو', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertSucceeds(setDoc(doc(db, 'support_messages/msg1'), supportMessageBase({})));
+});
+
+test('رفض: مستخدم ينشئ رسالة دعم منتحلاً uid مستخدم آخر', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'support_messages/msg2'), supportMessageBase({ uid: 'artisanA' })));
+});
+
+test('رفض: مستخدم ينشئ رسالة دعم بحالة resolved مباشرة (تجاوز المراجعة)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'support_messages/msg3'), supportMessageBase({ status: 'resolved' })));
+});
+
+test('سماح: صاحب الرسالة والإدارة يقرآن رسالة الدعم، ورفض لطرف ثالث', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'support_messages/msg4'), supportMessageBase({}));
+  });
+  await assertSucceeds(getDoc(doc(ctx('customerA'), 'support_messages/msg4')));
+  await assertSucceeds(getDoc(doc(ctx('adminA'), 'support_messages/msg4')));
+  await assertFails(getDoc(doc(ctx('artisanA'), 'support_messages/msg4')));
+});
+
+test('سماح: الإدارة تردّ على رسالة دعم وتعلّمها كمُعالَجة، ورفض لصاحبها نفسه', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'support_messages/msg5'), supportMessageBase({}));
+  });
+  await assertSucceeds(updateDoc(doc(ctx('adminA'), 'support_messages/msg5'), { status: 'resolved', adminReply: 'تم الحل', resolvedAt: new Date() }));
+  await assertFails(updateDoc(doc(ctx('customerA'), 'support_messages/msg5'), { status: 'resolved' }));
+});
+
+// =========================================================================
 // طلب المستخدم: حذف ناعم للمنتجات — يمنع غسل السمعة عبر حذف منتج سيّئ
 // التقييم؛ حساب المتوسط نفسه (بلا تصفية على الحالة) مُنفَّذ في
 // artisan_public_profile_screen.dart، خارج نطاق اختبارات القواعد — ما

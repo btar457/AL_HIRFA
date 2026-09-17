@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../providers/notification_provider.dart';
 import '../../services/admin_service.dart';
+import '../../services/support_service.dart';
 import '../shared/notifications_screen.dart';
 import 'admin_orders_screen.dart';
+import 'admin_support_messages_screen.dart';
 import 'review_artisans_screen.dart';
 
 String _formatPrice(int value) {
@@ -254,6 +256,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           count: '${data.openDisputes}',
           buttonColor: Colors.redAccent,
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminOrdersScreen(initialFilter: 'مشكلات'))),
+        ),
+        StreamBuilder<int>(
+          stream: SupportService.instance.getOpenMessagesCount(),
+          builder: (context, snapshot) {
+            final count = snapshot.data ?? 0;
+            return _buildAlertTile(
+              icon: Icons.support_agent_outlined,
+              label: 'رسائل دعم جديدة',
+              count: '$count',
+              buttonColor: AppColors.gold,
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminSupportMessagesScreen())),
+            );
+          },
         ),
       ],
     );

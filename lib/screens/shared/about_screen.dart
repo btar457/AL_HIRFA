@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/colors.dart';
+import 'contact_support_screen.dart';
 
 /// شاشة "عن AL-HIRFA" (SHARED-6).
 class AboutScreen extends StatelessWidget {
@@ -21,7 +22,8 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(width: 12),
             Text(label, style: TextStyle(color: AppColors.subText, fontSize: 13)),
             const Spacer(),
-            Text(value, style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.bold)),
+            if (value.isNotEmpty) Text(value, style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.bold)),
+            if (value.isEmpty && onTap != null) Icon(Icons.arrow_back_ios, color: AppColors.subText, size: 12),
           ],
         ),
       ),
@@ -90,6 +92,13 @@ class AboutScreen extends StatelessWidget {
                     label: 'الموقع الإلكتروني',
                     value: 'alhirfa.iq',
                     onTap: () => _open(Uri.parse('https://alhirfa.iq')),
+                  ),
+                  Divider(color: AppColors.subText.withOpacity(0.15), height: 1),
+                  _buildContactTile(
+                    icon: Icons.support_agent_outlined,
+                    label: 'راسل الدعم من داخل التطبيق',
+                    value: '',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ContactSupportScreen())),
                   ),
                 ],
               ),
