@@ -51,16 +51,18 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
       return _StageStatus.pending;
     }
 
-    final approved = !['pending'].contains(order.status);
-    final shipped = ['shipping_assigned', 'picked_up', 'delivered'].contains(order.status);
-    final pickedUp = ['picked_up', 'delivered'].contains(order.status);
+    final approved = order.status != 'pending';
+    // قيد التوصيل: يشمل seller_approved (توصيل ذاتي من الحرفي — المسار
+    // الافتراضي الآن بعد إغلاق قسم الشحن) وshipping_assigned/picked_up
+    // (طلبات قديمة عبر شركة شحن). لا فرق بينهما من منظور الزبون هنا.
+    final inDelivery = ['seller_approved', 'shipping_assigned', 'picked_up'].contains(order.status);
     final delivered = order.status == 'delivered';
 
     return [
       const _TimelineStage(title: 'تم استلام الطلب', subtitle: '', status: _StageStatus.completed),
       _TimelineStage(title: 'موافقة البائع', subtitle: approved ? '' : 'بانتظار موافقة الحرفي...', status: stageStatus(approved, order.status == 'pending')),
-      _TimelineStage(title: 'جاري الشحن', subtitle: pickedUp ? '' : (shipped ? 'بانتظار الاستلام من الحرفي...' : ''), status: stageStatus(pickedUp, order.status == 'shipping_assigned')),
-      _TimelineStage(title: 'تم التسليم', subtitle: '', status: stageStatus(delivered, order.status == 'picked_up')),
+      _TimelineStage(title: 'قيد التوصيل', subtitle: delivered ? '' : (inDelivery ? 'الحرفي في طريقه إليك...' : ''), status: stageStatus(delivered, inDelivery)),
+      _TimelineStage(title: 'تم التسليم', subtitle: '', status: delivered ? _StageStatus.completed : _StageStatus.pending),
     ];
   }
 
@@ -109,6 +111,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
                       if (order.shippingUid != null) ...[
                         const SizedBox(height: 28),
                         _buildShippingCompanyCard(order),
+                      ] else if (order.status == 'seller_approved') ...[
+                        const SizedBox(height: 28),
+                        _buildSelfDeliveryCard(order),
                       ],
                       if (!['cancelled', 'disputed'].contains(order.status)) ...[
                         const SizedBox(height: 20),
@@ -257,6 +262,29 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
         },
         icon: const Icon(Icons.report_problem_outlined, color: AppColors.subText, size: 18),
         label: Text('الإبلاغ عن مشكلة', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+      ),
+    );
+  }
+
+  Widget _buildSelfDeliveryCard(OrderModel order) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
+      child: Row(
+        children: [
+          const Icon(Icons.delivery_dining_outlined, color: AppColors.gold, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(order.artisanName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 2),
+                Text('سيتواصل معك الحرفي لتوصيل طلبك — الدفع كاشاً عند الاستلام', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
