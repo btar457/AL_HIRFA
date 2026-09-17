@@ -20,6 +20,18 @@ class OrderService {
   /// لضمان عدم تصادم رقمين مختلفين إطلاقاً.
   String _generateOrderNumber(String orderId) => 'HRF-${orderId.substring(0, 8).toUpperCase()}';
 
+  /// يجلب طلباً ويتحقق من وجوده فعلياً قبل قراءة حقوله — بدل orderDoc.data()!
+  /// المباشر الذي كان يرمي null-check exception غامضاً لو حُذف/فُقد المستند.
+  /// نظري بحت حالياً (allow delete: if false على orders في كل الحالات)، لكن
+  /// رسالة خطأ واضحة أفضل من انهيار null-check صامت لو تغيّر ذلك مستقبلاً.
+  Future<OrderModel> _requireOrder(String orderId) async {
+    final doc = await _firestore.collection(_ordersCollection).doc(orderId).get();
+    if (!doc.exists) {
+      throw Exception('تعذّر العثور على الطلب');
+    }
+    return OrderModel.fromMap(orderId, doc.data()!);
+  }
+
   /// ينشئ عدّة طلبات دفعة واحدة (سلة بأكثر من منتج، منتج واحد لكل طلب) ضمن
   /// WriteBatch ذرّية واحدة — إما تُنشأ كل الطلبات معاً أو لا يُنشأ أي منها،
   /// فلا تبقى حالة جزئية (بعض الطلبات أُنشئت وبعضها لا) كما كان يحدث سابقاً
@@ -112,8 +124,7 @@ class OrderService {
   /// يتكفّل بالتوصيل ويؤكّده لاحقاً عبر confirmDelivery مباشرة من هذه الحالة
   /// (راجع firestore.rules: فرع "الحرفي يؤكّد التسليم بنفسه").
   Future<void> sellerApproveOrder(String orderId) async {
-    final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
-    final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+    final order = await _requireOrder(orderId);
 
     await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'seller_approved'});
 
@@ -128,8 +139,7 @@ class OrderService {
 
   /// الحرفي يرفض الطلب مع ذكر السبب.
   Future<void> sellerRejectOrder(String orderId, String reason) async {
-    final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
-    final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+    final order = await _requireOrder(orderId);
 
     await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'cancelled', 'rejectionReason': reason, 'rejectedBy': 'seller'});
 
@@ -202,8 +212,7 @@ class OrderService {
     });
 
     if (accepted) {
-      final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
-      final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+      final order = await _requireOrder(orderId);
       await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'تم تعيين شركة شحن لطلبك', body: shippingCompanyName, type: 'shipping_assigned', data: {'orderId': orderId});
       await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'بدأ الشحن', body: 'شركة $shippingCompanyName ستستلم طلبك قريباً', type: 'shipping_assigned', data: {'orderId': orderId});
     }
@@ -212,8 +221,7 @@ class OrderService {
 
   /// شركة الشحن استلمت المنتج من الحرفي.
   Future<void> shippingPickedUp(String orderId) async {
-    final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
-    final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+    final order = await _requireOrder(orderId);
 
     await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'picked_up'});
 
@@ -226,8 +234,7 @@ class OrderService {
   /// كما كان في نموذج الدفع الإلكتروني القديم — لا علاقة لـ holdPeriodHours
   /// بهذا المسار إطلاقاً.
   Future<void> confirmDelivery(String orderId) async {
-    final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
-    final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+    final order = await _requireOrder(orderId);
 
     await _confirmDeliveryAndCreateTransactions(orderId, order);
     await _firestore.collection('products').doc(order.productId).update({'salesCount': FieldValue.increment(1)});
@@ -332,8 +339,7 @@ class OrderService {
   /// Admin: إلغاء قسري لطلب (عادة أثناء حل نزاع). إن كان الطلب مرتبطاً ببلاغ
   /// مفتوح، يُغلق البلاغ أيضاً بنفس السبب بدل تركه مفتوحاً للأبد.
   Future<void> adminCancelOrder(String orderId, String reason) async {
-    final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
-    final order = OrderModel.fromMap(orderId, orderDoc.data()!);
+    final order = await _requireOrder(orderId);
 
     await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'cancelled', 'rejectionReason': reason});
 
@@ -347,9 +353,20 @@ class OrderService {
 
   /// Admin: يعلّم كل عمولات حرفي معيّن المستحقة والمؤكَّدة (طلبات delivered
   /// لم تُعلَّم بعد) بأنها دُفعت — بعد أن يحوّل الحرفي المبلغ للمنصة يدوياً
-  /// خارج التطبيق (تحويل بنكي). راجع admin_commissions_screen.dart.
-  Future<void> markArtisanCommissionPaid(List<String> orderIds) async {
+  /// خارج التطبيق (تحويل بنكي). راجع admin_commissions_owed_screen.dart.
+  ///
+  /// [artisanUid] دفاع إضافي بلا فائدة أمنية فعلية (Firestore rules تعيد
+  /// فحص isAdmin() بشكل مستقل بغضّ النظر) — يمنع فقط خطأ برمجي مستقبلي في
+  /// تجميع _groupByArtisan من تعليم عمولات حرفي آخر مدفوعة بالخطأ بصمت؛ لو
+  /// حدث تطابق خاطئ يفشل الاستدعاء بالكامل بدل تنفيذ جزء منه فقط.
+  Future<void> markArtisanCommissionPaid(String artisanUid, List<String> orderIds) async {
     if (orderIds.isEmpty) return;
+    final orders = await Future.wait(orderIds.map(_requireOrder));
+    final mismatched = orders.where((o) => o.artisanUid != artisanUid);
+    if (mismatched.isNotEmpty) {
+      throw Exception('طلب لا يخص هذا الحرفي — تم إلغاء العملية بالكامل');
+    }
+
     final batch = _firestore.batch();
     for (final orderId in orderIds) {
       batch.update(_firestore.collection(_ordersCollection).doc(orderId), {'commissionPaid': true});

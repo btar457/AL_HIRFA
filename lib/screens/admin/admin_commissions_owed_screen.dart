@@ -79,7 +79,7 @@ class AdminCommissionsOwedScreen extends StatelessWidget {
       ),
     );
     if (confirm == true) {
-      await OrderService.instance.markArtisanCommissionPaid(due.confirmedOrderIds);
+      await OrderService.instance.markArtisanCommissionPaid(due.artisanUid, due.confirmedOrderIds);
     }
   }
 
