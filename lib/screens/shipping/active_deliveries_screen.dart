@@ -139,7 +139,7 @@ class _ActiveDeliveriesScreenState extends State<ActiveDeliveriesScreen> {
                 ),
               ],
             ),
-            const Divider(color: Color(0xFF2A2A2A)),
+            const Divider(color: AppColors.divider),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

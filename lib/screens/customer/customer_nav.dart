@@ -44,7 +44,7 @@ class _CustomerNavState extends State<CustomerNav> {
       child: Scaffold(
         body: _screens[_index],
         bottomNavigationBar: Container(
-          decoration: const BoxDecoration(color: Color(0xFF111111)),
+          decoration: const BoxDecoration(color: AppColors.navBackground),
           child: BottomNavigationBar(
             currentIndex: _index,
             onTap: (i) => setState(() => _index = i),

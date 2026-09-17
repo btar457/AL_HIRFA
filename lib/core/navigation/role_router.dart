@@ -3,6 +3,7 @@ import '../../models/user_model.dart';
 import '../../screens/admin/admin_nav.dart';
 import '../../screens/artisan/artisan_nav.dart';
 import '../../screens/customer/customer_nav.dart';
+import '../../screens/shared/privacy_policy_screen.dart';
 import '../../screens/shared/terms_screen.dart';
 import '../../screens/shipping/shipping_nav.dart';
 import '../../services/auth_service.dart';
@@ -70,9 +71,17 @@ void _showTermsUpdateSheet(BuildContext context, UserModel user, VoidCallback on
                 style: TextStyle(color: AppColors.subText, fontSize: 13, height: 24 / 14),
               ),
               const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => Navigator.push(sheetContext, MaterialPageRoute(builder: (_) => const TermsScreen())),
-                child: const Text('عرض الشروط الكاملة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+              Row(
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.push(sheetContext, MaterialPageRoute(builder: (_) => const TermsScreen())),
+                    child: const Text('عرض الشروط الكاملة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.push(sheetContext, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen())),
+                    child: const Text('سياسة الخصوصية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               SizedBox(

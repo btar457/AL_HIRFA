@@ -254,7 +254,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                 Text(order.orderNumber, style: const TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
               ],
             ),
-            const Divider(color: Color(0xFF2A2A2A)),
+            const Divider(color: AppColors.divider),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

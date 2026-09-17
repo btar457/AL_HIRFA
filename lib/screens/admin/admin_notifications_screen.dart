@@ -116,7 +116,10 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
             StreamBuilder<List<NotificationModel>>(
               stream: NotificationService.instance.getBroadcastLog(),
               builder: (context, snapshot) {
-                final log = snapshot.data ?? const [];
+                if (!snapshot.hasData) {
+                  return const Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Center(child: CircularProgressIndicator(color: AppColors.gold)));
+                }
+                final log = snapshot.data!;
                 if (log.isEmpty) {
                   return Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text('لا يوجد إشعارات مرسلة بعد', style: TextStyle(color: AppColors.subText)));
                 }

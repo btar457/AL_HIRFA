@@ -225,7 +225,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             ],
           ),
           Text(_formatDate(order.createdAt), style: TextStyle(color: AppColors.subText, fontSize: 11)),
-          const Divider(color: Color(0xFF2A2A2A)),
+          const Divider(color: AppColors.divider),
           Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
           Text('د.ع ${_formatPrice(order.totalAmount)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12)),
           const SizedBox(height: 6),

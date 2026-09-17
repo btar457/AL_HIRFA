@@ -238,7 +238,7 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
               ),
             ],
           ),
-          const Divider(color: Color(0xFF2A2A2A), height: 20),
+          const Divider(color: AppColors.divider, height: 20),
           Row(children: [const Icon(Icons.location_on_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Text('المحافظة: ${order.governorate}', style: TextStyle(color: AppColors.subText, fontSize: 12))]),
           const SizedBox(height: 4),
           Row(children: [const Icon(Icons.flag_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Expanded(child: Text('العنوان: ${order.district}', style: TextStyle(color: AppColors.subText, fontSize: 12)))]),

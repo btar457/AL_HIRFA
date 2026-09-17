@@ -280,7 +280,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          const Divider(color: Color(0xFF2A2A2A)),
+          const Divider(color: AppColors.divider),
           const SizedBox(height: 8),
           Text('${order.governorate}، ${order.district}', style: const TextStyle(color: AppColors.text, fontSize: 13)),
           if (order.addressNotes.isNotEmpty) ...[

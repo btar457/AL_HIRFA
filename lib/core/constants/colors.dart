@@ -12,4 +12,9 @@ class AppColors {
   static const Color goldLight = Color(0xFFE8C96D);
   static const Color text = Colors.white;
   static const Color subText = Color(0xFF888888);
+
+  // مركزيان بدل تكرارهما كقيم Color خام في نحو 9 ملفات (شريط التنقل السفلي
+  // في الأدوار الأربعة، فواصل داخل بطاقات الطلبات).
+  static const Color navBackground = Color(0xFF111111);
+  static const Color divider = Color(0xFF2A2A2A);
 }

@@ -176,7 +176,10 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
             child: StreamBuilder<List<ViolationModel>>(
               stream: AdminService.instance.getUserViolations(user.uid),
               builder: (context, snapshot) {
-                final violations = snapshot.data ?? const [];
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                }
+                final violations = snapshot.data!;
                 if (violations.isEmpty) {
                   return Text('لا توجد مخالفات مسجّلة.', style: TextStyle(color: AppColors.subText));
                 }
