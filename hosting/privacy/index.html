@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AL-HIRFA — سياسة الخصوصية</title>
+<meta name="description" content="سياسة الخصوصية لتطبيق AL-HIRFA (منصة الحرفة)">
+<style>
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0D0D0D; color: #EDEDED; margin: 0; padding: 24px; line-height: 1.8; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; padding: 24px 0 32px; }
+  h1 { color: #D4AF37; font-size: 22px; margin: 0 0 6px; }
+  .sub { color: #999; font-size: 13px; }
+  h2 { color: #D4AF37; font-size: 17px; margin: 32px 0 12px; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 8px; }
+  p { color: #cfcfcf; font-size: 14px; }
+  .card { background: #171717; border: 1px solid rgba(212,175,55,0.3); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+  .card h3 { color: #D4AF37; font-size: 14px; margin: 0 0 10px; }
+  ul { margin: 0; padding-right: 18px; }
+  li { margin-bottom: 8px; color: #EDEDED; font-size: 14px; }
+  .notice { background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 14px 16px; color: #EDEDED; font-size: 13px; margin-bottom: 14px; }
+  footer { text-align: center; color: #888; font-size: 12px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #222; }
+  a { color: #D4AF37; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>AL-HIRFA — سياسة الخصوصية</h1>
+    <div class="sub">منصّة الحرفة — نسخة عامة مطابقة للنص داخل التطبيق</div>
+  </header>
+
+  <p>نحرص في AL-HIRFA على حماية بياناتك الشخصية، ونجمع فقط ما يلزم لتشغيل المنصة وتقديم تجربة آمنة لجميع الأطراف.</p>
+
+  <h2>البيانات المجمّعة</h2>
+  <div class="card">
+    <h3>من المشتري</h3>
+    <ul>
+      <li>الاسم، البريد، الهاتف، العنوان</li>
+      <li>سجل الطلبات والتقييمات</li>
+      <li>صورة الملف الشخصي (اختياري)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>من الحرفي</h3>
+    <ul>
+      <li>الهوية المهنية، IBAN، الموقع</li>
+      <li>سجل المنتجات والمبيعات</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>من شركة الشحن</h3>
+    <ul>
+      <li>بيانات الشركة، IBAN، السجل التجاري</li>
+      <li>سجل التوصيلات</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>بيانات تقنية</h3>
+    <ul>
+      <li>رمز إشعارات الدفع (FCM Token) — لإرسال إشعارات الطلبات والتحديثات لجهازك</li>
+      <li>بيانات أعطال وتشخيص تقني (Firebase Crashlytics) — لتحسين استقرار التطبيق فقط</li>
+    </ul>
+  </div>
+
+  <h2>مزوّدو الخدمة (الأطراف الثالثة)</h2>
+  <div class="card">
+    <h3>نستعين بهم لتشغيل المنصة فقط</h3>
+    <ul>
+      <li>Firebase (Google) — تسجيل الدخول، قاعدة البيانات، الإشعارات، وتقارير الأعطال</li>
+      <li>Cloudflare R2 — تخزين صور المنتجات المرفوعة</li>
+    </ul>
+  </div>
+  <div class="notice">لا نبيع بياناتك ولا نشاركها لأغراض تسويقية مع أي جهة. مزوّدو الخدمة أعلاه يعالجون بياناتك تقنياً بصفتهم البنية التحتية للتطبيق فقط، ولا نفصح عنها لأي طرف آخر إلا بأمر قانوني صادر من الجهات المختصة.</div>
+
+  <h2>أمان البيانات</h2>
+  <div class="card">
+    <h3>الإجراءات المتّبعة</h3>
+    <ul>
+      <li>تشفير HTTPS لكل الاتصالات</li>
+      <li>Firebase Security Rules لحماية Firestore</li>
+      <li>IBAN مشفّر في قاعدة البيانات</li>
+      <li>رمز QR للتحقق من هوية المنتج</li>
+      <li>لا يرى المشتري رقم IBAN الحرفي</li>
+    </ul>
+  </div>
+
+  <h2>حذف الحساب وبياناتك</h2>
+  <div class="notice">يمكنك طلب حذف حسابك وجميع بياناتك الشخصية في أي وقت من داخل التطبيق عبر "الملف الشخصي ← حذف الحساب"، أو بمراسلتنا على <a href="mailto:support@alhirfa.iq">support@alhirfa.iq</a>. تُحذف بياناتك خلال 30 يوماً كحد أقصى، عدا سجلات المعاملات المالية التي نحتفظ بها للامتثال القانوني.</div>
+
+  <h2>الحد الأدنى للعمر</h2>
+  <p>يجب أن يكون عمرك 18 عاماً فأكثر لإنشاء حساب وإجراء معاملات مالية عبر AL-HIRFA.</p>
+
+  <footer>
+    آخر تحديث: سبتمبر 2026 — للاستفسارات: <a href="mailto:support@alhirfa.iq">support@alhirfa.iq</a><br>
+    AL-HIRFA — منصّة الحرفة، بغداد، العراق
+  </footer>
+</div>
+</body>
+</html>

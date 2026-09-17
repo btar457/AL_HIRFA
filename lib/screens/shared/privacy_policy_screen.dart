@@ -8,7 +8,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
   static const _buyerData = [
     'الاسم، البريد، الهاتف، العنوان',
     'سجل الطلبات والتقييمات',
-    'سلوك التصفح (للتوصيات)',
+    'صورة الملف الشخصي (اختياري)',
   ];
 
   static const _artisanData = [
@@ -21,13 +21,22 @@ class PrivacyPolicyScreen extends StatelessWidget {
     'سجل التوصيلات',
   ];
 
+  static const _technicalData = [
+    'رمز إشعارات الدفع (FCM Token) — لإرسال إشعارات الطلبات والتحديثات لجهازك',
+    'بيانات أعطال وتشخيص تقني (Firebase Crashlytics) — لتحسين استقرار التطبيق فقط',
+  ];
+
+  static const _thirdParties = [
+    'Firebase (Google) — تسجيل الدخول، قاعدة البيانات، الإشعارات، وتقارير الأعطال',
+    'Cloudflare R2 — تخزين صور المنتجات المرفوعة',
+  ];
+
   static const _securityMeasures = [
     'تشفير HTTPS لكل الاتصالات',
     'Firebase Security Rules لحماية Firestore',
     'IBAN مشفّر في قاعدة البيانات',
     'رمز QR للتحقق من هوية المنتج',
     'لا يرى المشتري رقم IBAN الحرفي',
-    'لا يرى الحرفي بيانات بطاقة المشتري',
   ];
 
   @override
@@ -58,11 +67,25 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildSection(title: 'من شركة الشحن', points: _shippingData),
             const SizedBox(height: 16),
-            _buildNotice('لا تُشارك بياناتك مع أي طرف ثالث، إلا بأمر قانوني صادر من الجهات المختصة.'),
+            _buildSection(title: 'بيانات تقنية', points: _technicalData),
+            const SizedBox(height: 24),
+            const Text('مزوّدو الخدمة (الأطراف الثالثة)', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 12),
+            _buildSection(title: 'نستعين بهم لتشغيل المنصة فقط', points: _thirdParties),
+            const SizedBox(height: 16),
+            _buildNotice('لا نبيع بياناتك ولا نشاركها لأغراض تسويقية مع أي جهة. مزوّدو الخدمة أعلاه يعالجون بياناتك تقنياً بصفتهم البنية التحتية للتطبيق فقط، ولا نفصح عنها لأي طرف آخر إلا بأمر قانوني صادر من الجهات المختصة.'),
             const SizedBox(height: 24),
             const Text('أمان البيانات', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
             _buildSection(title: 'الإجراءات المتّبعة', points: _securityMeasures),
+            const SizedBox(height: 24),
+            const Text('حذف الحساب وبياناتك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 12),
+            _buildNotice('يمكنك طلب حذف حسابك وجميع بياناتك الشخصية في أي وقت من "الملف الشخصي ← حذف الحساب"، أو بمراسلتنا على support@alhirfa.iq. تُحذف بياناتك خلال 30 يوماً كحد أقصى، عدا سجلات المعاملات المالية التي نحتفظ بها للامتثال القانوني.'),
+            const SizedBox(height: 24),
+            Center(
+              child: Text('آخر تحديث: سبتمبر 2026 — للاستفسارات: support@alhirfa.iq', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+            ),
             const SizedBox(height: 8),
           ],
         ),
