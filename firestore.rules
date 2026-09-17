@@ -268,8 +268,16 @@ service cloud.firestore {
         // تصطدم بوثيقة موجودة فتُعامَل كـupdate وهي if false أدناه.
         && transactionId == request.resource.data.orderId + '_' + request.resource.data.type
         && request.resource.data.status == 'completed'
-        && orderData(request.resource.data.orderId).shippingUid == request.auth.uid
         && orderData(request.resource.data.orderId).status == 'delivered'
+        // مَن يُنشئ المعاملة: إما شركة الشحن المعيَّنة على الطلب (المسار
+        // القديم)، أو الحرفي نفسه عندما لا توجد شركة شحن مُعيَّنة (التوصيل
+        // الذاتي — قسم الشحن مغلق مؤقتاً، راجع sellerApproveOrder/confirmDelivery
+        // في order_service.dart وفرع orders/update "الحرفي يؤكّد التسليم بنفسه").
+        && (
+          orderData(request.resource.data.orderId).shippingUid == request.auth.uid
+          || (orderData(request.resource.data.orderId).shippingUid == null
+              && orderData(request.resource.data.orderId).artisanUid == request.auth.uid)
+        )
         && request.resource.data.fromUid == orderData(request.resource.data.orderId).buyerUid
         && (
           (request.resource.data.type == 'sale'

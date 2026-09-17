@@ -232,19 +232,28 @@ class OrderService {
     await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'تم التسليم', body: 'أرباحك ستُحوَّل خلال ${AppRules.holdPeriodHours} ساعة', type: 'wallet_credited', data: {'orderId': orderId});
   }
 
-  /// يحدّث حالة الطلب إلى delivered ويسجّل الحركات المالية الثلاث — حصة
-  /// الحرفي (بحسبان فترة احتجاز 72 ساعة تُحتسب لاحقاً في wallet_service.dart
-  /// من createdAt)، عمولة المنصة، وحصة شركة الشحن (تُدفع كاشاً فوراً بلا
-  /// احتجاز) — ضمن WriteBatch واحدة ذرّية: إما تنجح الكتابات الأربع معاً أو
-  /// تفشل كلها معاً، فلا يبقى طلب delivered بلا أثر مالي مقابل.
+  /// يحدّث حالة الطلب إلى delivered ثم يسجّل الحركات المالية — حصة الحرفي،
+  /// عمولة المنصة، وحصة شركة الشحن إن وُجدت (تُدفع كاشاً فوراً بلا احتجاز).
+  ///
+  /// عمداً نداءان متتاليان لا WriteBatch واحدة: قاعدة transactions/create في
+  /// firestore.rules تشترط orderData(orderId).status == 'delivered'، وهذا
+  /// الـ get() يُقيَّم مقابل حالة قاعدة البيانات *قبل* تنفيذ أي WriteBatch لا
+  /// تسلسلياً معه (نفس قيد Firestore الموثّق أعلاه في createOrders بخصوص
+  /// rate_limits، لكنه هنا يمس مستنداً مختلفاً ضمن نفس الدفعة) — فدمج تحديث
+  /// حالة الطلب مع إنشاء المعاملات في batch واحدة يجعل الفحص يفشل دائماً
+  /// ويُرفَض التسليم كلياً. الفجوة الناتجة عن الفصل (تحديث الطلب قد ينجح ثم
+  /// تفشل المعاملات لاحقاً) مقبولة بنفس منطق الفجوات الموثّقة في
+  /// POST_LAUNCH_DECISIONS.md، وتُعالَج تلقائياً: طلب delivered بلا معاملات
+  /// قابل لإعادة المحاولة لاحقاً بنفس المعرّفات الحتمية (orderId_type) بلا
+  /// ازدواج.
   Future<void> _confirmDeliveryAndCreateTransactions(String orderId, OrderModel order) async {
-    final batch = _firestore.batch();
-    final now = DateTime.now();
-
-    batch.update(_firestore.collection(_ordersCollection).doc(orderId), {
+    await _firestore.collection(_ordersCollection).doc(orderId).update({
       'status': 'delivered',
       'deliveredAt': Timestamp.now(),
     });
+
+    final batch = _firestore.batch();
+    final now = DateTime.now();
 
     // معرّف حتمي (orderId_type) بدل doc() العشوائي — يمنع تكرار نفس المعاملة
     // لنفس الطلب: أي محاولة ثانية تصطدم بوثيقة موجودة فتُعامَل كـupdate

@@ -483,6 +483,58 @@ test('توثيق سلوك حالي (لا يُصلَح الآن): شركة الش
   await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
 });
 
+// =========================================================================
+// إصلاح: تأكيد التسليم الذاتي من الحرفي (قسم الشحن مغلق مؤقتاً) كان معطَّلاً
+// بالكامل لأن transactions/create كانت تشترط shippingUid == caller دائماً،
+// حتى لو لم توجد شركة شحن على الطلب أصلاً (shippingUid == null). الإصلاح:
+// السماح أيضاً بمسار الحرفي مالك الطلب عندما shippingUid == null.
+// =========================================================================
+test('سماح: الحرفي (توصيل ذاتي، shippingUid فارغ) ينشئ معاملة sale بعد تسليم طلبه', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const artisanDb = ctx('artisanA');
+  // orderX: shippingUid null, artisanUid=artisanA, seller_approved.
+  await assertSucceeds(updateDoc(doc(artisanDb, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+  await assertSucceeds(setDoc(doc(artisanDb, 'transactions/orderX_sale'), {
+    orderId: 'orderX', type: 'sale', amount: 17500,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+test('سماح: الحرفي (توصيل ذاتي) ينشئ معاملة commission بعد تسليم طلبه', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const artisanDb = ctx('artisanA');
+  await assertSucceeds(updateDoc(doc(artisanDb, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+  await assertSucceeds(setDoc(doc(artisanDb, 'transactions/orderX_commission'), {
+    orderId: 'orderX', type: 'commission', amount: 2500,
+    fromUid: 'customerA', toUid: 'platform', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+test('رفض: حرفي آخر (ليس مالك الطلب) ينشئ معاملة رغم أن shippingUid فارغ', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const ownerDb = ctx('artisanA');
+  await assertSucceeds(updateDoc(doc(ownerDb, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+  const intruderDb = ctx('artisanB');
+  await assertFails(setDoc(doc(intruderDb, 'transactions/orderX_sale'), {
+    orderId: 'orderX', type: 'sale', amount: 17500,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+test('رفض: الحرفي ينشئ معاملة قبل أن يصل الطلب فعلياً لحالة delivered', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  // orderX ما زال seller_approved — لم يُحدَّث إلى delivered بعد.
+  const artisanDb = ctx('artisanA');
+  await assertFails(setDoc(doc(artisanDb, 'transactions/orderX_sale'), {
+    orderId: 'orderX', type: 'sale', amount: 17500,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  }));
+});
+
 test('رفض: طرف ثالث ليس shippingUid الطلب ينشئ معاملة delivery لنفسه', async () => {
   await seedBaseFixtures();
   await seedRoundTwoFixtures();
