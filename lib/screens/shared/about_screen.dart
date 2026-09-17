@@ -94,6 +94,27 @@ class AboutScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 28),
+            const Text('الجهة المسؤولة قانونياً عن المنصة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
+              child: Column(
+                children: [
+                  _buildContactTile(icon: Icons.person_outline, label: 'المالك والمسؤول', value: 'Mustafa Alshlany'),
+                  Divider(color: AppColors.subText.withOpacity(0.15), height: 1),
+                  _buildContactTile(
+                    icon: Icons.mail_outline,
+                    label: 'البريد الرسمي',
+                    value: 'mustafaalshlany@gmail.com',
+                    onTap: () => _open(Uri(scheme: 'mailto', path: 'mustafaalshlany@gmail.com')),
+                  ),
+                  Divider(color: AppColors.subText.withOpacity(0.15), height: 1),
+                  _buildContactTile(icon: Icons.location_on_outlined, label: 'الموقع', value: 'بغداد، العراق'),
+                ],
+              ),
+            ),
             const SizedBox(height: 32),
             const Center(
               child: Text('صنع بكل فخر في العراق 🇮🇶', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),

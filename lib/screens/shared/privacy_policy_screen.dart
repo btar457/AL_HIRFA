@@ -87,6 +87,10 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 12),
             _buildNotice('يمكنك طلب حذف حسابك وجميع بياناتك الشخصية في أي وقت من "الملف الشخصي ← حذف الحساب"، أو بمراسلتنا على support@alhirfa.iq. تُحذف بياناتك خلال 30 يوماً كحد أقصى، عدا سجلات المعاملات المالية التي نحتفظ بها للامتثال القانوني.'),
             const SizedBox(height: 24),
+            const Text('الجهة المسؤولة عن معالجة بياناتك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 12),
+            Text('يُدار تطبيق AL-HIRFA من قِبل Mustafa Alshlany (بغداد، العراق). للتواصل بخصوص بياناتك الشخصية: mustafaalshlany@gmail.com', style: TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 13)),
+            const SizedBox(height: 24),
             Center(
               child: Text('آخر تحديث: سبتمبر 2026 — للاستفسارات: support@alhirfa.iq', style: TextStyle(color: AppColors.subText, fontSize: 11)),
             ),

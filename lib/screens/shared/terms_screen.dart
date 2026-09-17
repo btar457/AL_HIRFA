@@ -56,6 +56,11 @@ class TermsScreen extends StatelessWidget {
             _buildSection(title: 'للحرفي', rules: _artisanRules),
             const SizedBox(height: 24),
             _buildSection(title: 'لشركة الشحن', rules: _shippingRules),
+            const SizedBox(height: 24),
+            Text(
+              'يُدار تطبيق AL-HIRFA من قِبل Mustafa Alshlany (بغداد، العراق) — للتواصل الرسمي: mustafaalshlany@gmail.com',
+              style: TextStyle(color: AppColors.subText, fontSize: 12, height: 22 / 12),
+            ),
             const SizedBox(height: 8),
           ],
         ),
