@@ -807,3 +807,22 @@ test('رفض: الحرفي (مالك الطلب) يعلّم عمولة طلبه 
   const db = ctx('artisanA'); // مالك orderDelivered
   await assertFails(updateDoc(doc(db, 'orders/orderDelivered'), { commissionPaid: true }));
 });
+
+// =========================================================================
+// طلب المستخدم: سلسلة تنبيه-تنبيه-حظر لعدم سداد العمولة
+// (AdminService.checkCommissionCompliance) — تكتب commissionWarningLevel/At
+// على users/{uid}، حقلان جديدان ليسا ضمن قائمة التعديل الذاتي المسموحة.
+// =========================================================================
+test('سماح: الإدارة تحدّث commissionWarningLevel/At على حساب حرفي', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('adminA');
+  await assertSucceeds(updateDoc(doc(db, 'users/artisanA'), { commissionWarningLevel: 1, commissionWarningAt: new Date() }));
+});
+
+test('رفض: الحرفي يعدّل commissionWarningLevel الخاص بنفسه (تجاوز الإنذار)', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA');
+  await assertFails(updateDoc(doc(db, 'users/artisanA'), { commissionWarningLevel: 0 }));
+});

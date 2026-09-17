@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/constants/app_rules.dart';
 import '../models/order_model.dart';
 import '../models/user_model.dart';
 import '../models/violation_model.dart';
@@ -229,6 +230,88 @@ class AdminService {
     await _recordViolation(uid, type: 'ban', description: reason, severity: 'ban');
     await NotificationService.instance.sendToUser(userUid: uid, title: 'تم حظر حسابك نهائياً', body: reason, type: 'account_banned');
     await _reassignStuckShippingOrders(uid);
+  }
+
+  /// يفحص التزام كل حرفي بسداد عمولة المنصة المستحقة (طلبات delivered لم
+  /// تُعلَّم بعد بأنها دُفعت — راجع admin_commissions_owed_screen.dart) ويطبّق
+  /// قرار المالك: تنبيه أول بعد commissionWarningIntervalDays يوماً من أقدم
+  /// عمولة مستحقة غير مسدَّدة، تنبيه ثانٍ بعد نفس المدة من دون سداد، ثم حظر
+  /// تلقائي (banUser) إن لم يستجب الحرفي للتنبيهين خلال مدة ثالثة مماثلة.
+  /// يعيد ضبط أي حرفي سدَّد كامل دَينه (لم يعد يملك عمولة مستحقة) إلى الحالة
+  /// الأولى تلقائياً.
+  ///
+  /// لا Cloud Functions/cron في هذا المشروع (راجع تعليق أعلى الملف في
+  /// firestore.rules)، فهذا الفحص "أفضل جهد" client-driven: يُستدعى صامتاً
+  /// عند فتح admin_dashboard_screen.dart، وأيضاً عبر زر يدوي في
+  /// admin_commissions_owed_screen.dart — لا ضمان تشغيله بالضبط "نهاية كل
+  /// شهر" تقويمياً كما لو كان مجدولاً على خادم، بل تقريب عملي بفاصل ثابت من
+  /// تاريخ أول عمولة غير مسدَّدة، يعمل طالما فتح أي أدمن التطبيق مرة كل فترة.
+  Future<void> checkCommissionCompliance() async {
+    final unpaidSnapshot = await _firestore
+        .collection(_ordersCollection)
+        .where('status', isEqualTo: 'delivered')
+        .where('commissionPaid', isEqualTo: false)
+        .get();
+    final unpaidOrders = unpaidSnapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data())).toList();
+
+    final oldestUnpaidByArtisan = <String, DateTime>{};
+    for (final order in unpaidOrders) {
+      final deliveredAt = order.deliveredAt ?? order.createdAt;
+      final current = oldestUnpaidByArtisan[order.artisanUid];
+      if (current == null || deliveredAt.isBefore(current)) {
+        oldestUnpaidByArtisan[order.artisanUid] = deliveredAt;
+      }
+    }
+
+    final now = DateTime.now();
+    for (final entry in oldestUnpaidByArtisan.entries) {
+      final artisanUid = entry.key;
+      final oldestUnpaid = entry.value;
+      final userDoc = await _firestore.collection(_usersCollection).doc(artisanUid).get();
+      if (!userDoc.exists) continue;
+      final user = UserModel.fromMap(artisanUid, userDoc.data()!);
+      if (user.banned) continue;
+
+      final level = user.commissionWarningLevel;
+      final lastActionAt = user.commissionWarningAt ?? oldestUnpaid;
+      final daysSinceOldestUnpaid = now.difference(oldestUnpaid).inDays;
+      final daysSinceLastAction = now.difference(lastActionAt).inDays;
+
+      if (level == 0 && daysSinceOldestUnpaid >= AppRules.commissionWarningIntervalDays) {
+        await _sendCommissionWarning(artisanUid, level: 1);
+      } else if (level == 1 && daysSinceLastAction >= AppRules.commissionWarningIntervalDays) {
+        await _sendCommissionWarning(artisanUid, level: 2);
+      } else if (level == 2 && daysSinceLastAction >= AppRules.commissionWarningIntervalDays) {
+        await banUser(artisanUid, 'عدم سداد عمولة المنصة المستحقة رغم تنبيهين متتاليين خلال ${AppRules.commissionWarningIntervalDays * 3} يوماً');
+        await _firestore.collection(_usersCollection).doc(artisanUid).update({'commissionWarningLevel': 0, 'commissionWarningAt': null});
+      }
+    }
+
+    // إعادة ضبط أي حرفي كان قد أُنذر ثم سدَّد كامل دَينه (لم يعد يظهر ضمن
+    // oldestUnpaidByArtisan) — بلا ذلك يبقى مستوى إنذاره مرتفعاً زوراً.
+    final warnedSnapshot = await _firestore.collection(_usersCollection).where('commissionWarningLevel', isGreaterThan: 0).get();
+    for (final doc in warnedSnapshot.docs) {
+      if (!oldestUnpaidByArtisan.containsKey(doc.id)) {
+        await doc.reference.update({'commissionWarningLevel': 0, 'commissionWarningAt': null});
+      }
+    }
+  }
+
+  Future<void> _sendCommissionWarning(String artisanUid, {required int level}) async {
+    final message = level == 1
+        ? 'لديك عمولة منصة مستحقة لم تُسدَّد منذ أكثر من ${AppRules.commissionWarningIntervalDays} يوماً. يرجى التحويل البنكي للمنصة خلال ${AppRules.commissionWarningIntervalDays} يوماً لتجنّب مزيد من الإجراءات.'
+        : 'تنبيه أخير: لم تسدّد عمولتك المستحقة رغم التنبيه السابق. سيُحظر حسابك خلال ${AppRules.commissionWarningIntervalDays} يوماً ما لم تسدّد فوراً.';
+    await _firestore.collection(_usersCollection).doc(artisanUid).update({
+      'commissionWarningLevel': level,
+      'commissionWarningAt': Timestamp.now(),
+    });
+    await _recordViolation(artisanUid, type: 'commission_overdue', description: message, severity: 'warning');
+    await NotificationService.instance.sendToUser(
+      userUid: artisanUid,
+      title: level == 1 ? 'تنبيه: عمولة منصة مستحقة' : 'تنبيه أخير قبل الحظر',
+      body: message,
+      type: 'account_warning',
+    );
   }
 
   /// إن كان [uid] شركة شحن أوقِفت/حُظرت أثناء وجود طلبات بعهدتها، تُعاد هذه

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
@@ -62,6 +63,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Future<_DashboardData> _load() async {
     final admin = AdminService.instance;
+    // فحص "أفضل جهد" لعدم سداد العمولات — صامت ومنفصل عن Future.wait أدناه
+    // عمداً كي لا يؤخّر تحميل اللوحة أو يفشلها لو تعثّر هو نفسه (راجع تعليق
+    // AdminService.checkCommissionCompliance بخصوص غياب Cloud Functions/cron).
+    unawaited(admin.checkCommissionCompliance());
     final results = await Future.wait([
       admin.getRevenueToday(),
       admin.getNewUsersTodayCount(),

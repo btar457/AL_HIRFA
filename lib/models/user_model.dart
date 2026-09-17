@@ -15,6 +15,12 @@ class UserModel {
   final String approvalStatus; // pending/approved/rejected — بوابة مراجعة الحرفيين وشركات الشحن الجدد
   final int warningCount;
 
+  // تنبيه-تنبيه-حظر لعدم سداد عمولة المنصة المستحقة (راجع
+  // AdminService.checkCommissionCompliance): 0 = لا تنبيه، 1 = تنبيه أول،
+  // 2 = تنبيه ثانٍ وأخير قبل الحظر التلقائي.
+  final int commissionWarningLevel;
+  final DateTime? commissionWarningAt;
+
   // حقول خاصة بشركات الشحن (SHIPPING-2)
   final String companyName;
   final String registrationNumber;
@@ -46,6 +52,8 @@ class UserModel {
     this.banned = false,
     this.approvalStatus = 'approved',
     this.warningCount = 0,
+    this.commissionWarningLevel = 0,
+    this.commissionWarningAt,
     this.companyName = '',
     this.registrationNumber = '',
     this.provinces = const [],
@@ -72,6 +80,8 @@ class UserModel {
       banned: map['banned'] as bool? ?? false,
       approvalStatus: map['approvalStatus'] as String? ?? 'approved',
       warningCount: map['warningCount'] as int? ?? 0,
+      commissionWarningLevel: map['commissionWarningLevel'] as int? ?? 0,
+      commissionWarningAt: (map['commissionWarningAt'] as Timestamp?)?.toDate(),
       companyName: map['companyName'] as String? ?? '',
       registrationNumber: map['registrationNumber'] as String? ?? '',
       provinces: (map['provinces'] as List?)?.map((e) => e as String).toList() ?? const [],
@@ -101,6 +111,8 @@ class UserModel {
       'banned': banned,
       'approvalStatus': approvalStatus,
       'warningCount': warningCount,
+      'commissionWarningLevel': commissionWarningLevel,
+      'commissionWarningAt': commissionWarningAt != null ? Timestamp.fromDate(commissionWarningAt!) : null,
       'companyName': companyName,
       'registrationNumber': registrationNumber,
       'provinces': provinces,
@@ -129,6 +141,8 @@ class UserModel {
       banned: banned,
       approvalStatus: approvalStatus,
       warningCount: warningCount,
+      commissionWarningLevel: commissionWarningLevel,
+      commissionWarningAt: commissionWarningAt,
       companyName: companyName,
       registrationNumber: registrationNumber,
       provinces: provinces,

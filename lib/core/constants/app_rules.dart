@@ -36,6 +36,11 @@ class AppRules {
   static const int suspensionDays = 7;
   static const int longSuspensionDays = 30;
 
+  // عمولة متأخرة السداد: تنبيه أول بعد هذه المدة من أول عمولة مستحقة غير
+  // مسدَّدة، تنبيه ثانٍ بعد نفس المدة من دون سداد، ثم حظر تلقائي إن لم
+  // يستجب الحرفي للتنبيهين (راجع AdminService.checkCommissionCompliance).
+  static const int commissionWarningIntervalDays = 30;
+
   // التقييم
   static const double badRatingThreshold = 2.5;
   static const double goodRatingThreshold = 4.5;

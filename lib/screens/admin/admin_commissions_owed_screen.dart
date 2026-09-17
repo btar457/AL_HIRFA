@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/order_model.dart';
+import '../../services/admin_service.dart';
 import '../../services/order_service.dart';
 
 String _formatPrice(int value) {
@@ -83,6 +84,26 @@ class AdminCommissionsOwedScreen extends StatelessWidget {
     }
   }
 
+  /// تشغيل فحص الالتزام بالسداد يدوياً (بالإضافة للتشغيل الصامت التلقائي عند
+  /// فتح لوحة تحكم الأدمن) — مفيد لو لم يفتح أي أدمن الصفحة الرئيسية منذ فترة.
+  Future<void> _runComplianceCheck(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator(color: AppColors.gold)),
+    );
+    try {
+      await AdminService.instance.checkCommissionCompliance();
+      if (!context.mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم فحص الالتزام بالسداد لكل الحرفيين')));
+    } catch (e) {
+      if (!context.mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تعذّر إتمام الفحص: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -94,6 +115,13 @@ class AdminCommissionsOwedScreen extends StatelessWidget {
           elevation: 0,
           automaticallyImplyLeading: false,
           title: const Text('عمولات الحرفيين', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.fact_check_outlined, color: AppColors.gold),
+              tooltip: 'فحص الالتزام بالسداد (تنبيه/حظر)',
+              onPressed: () => _runComplianceCheck(context),
+            ),
+          ],
         ),
         body: StreamBuilder<List<OrderModel>>(
           stream: OrderService.instance.getAllOrders(),
