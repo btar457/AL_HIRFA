@@ -44,6 +44,11 @@ flutter:
   assets:
     - assets/images/
 
+# تحذير: android/app/src/main/res/mipmap-{mdpi,hdpi}/ic_launcher.png عُدِّلا
+# يدوياً بعد آخر تشغيل لهذه الأداة (نسخة مبسّطة من assets/icon/icon_simplified_small.png
+# تستبعد الحلقة الزخرفية الدقيقة — غير مقروءة عند 48/72px بالتصميم الكامل).
+# إعادة تشغيل flutter_launcher_icons ستكتب فوق هذا التبسيط بالأيقونة الكاملة
+# من جديد — إن أعدت التشغيل، أعد توليد mdpi/hdpi من icon_simplified_small.png يدوياً بعده.
 flutter_launcher_icons:
   android: true
   ios: true
