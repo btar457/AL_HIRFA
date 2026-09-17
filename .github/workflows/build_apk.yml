@@ -88,6 +88,22 @@ jobs:
           name: al-hirfa-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
+      # Google Play يتطلّب App Bundle (.aab) لتقديم إصدار على مسار الإنتاج —
+      # الـ APK أعلاه يبقى فقط لتوزيع/اختبار سريع عبر GitHub Releases، هذا
+      # الملف هو ما يُرفَع فعلياً على Play Console.
+      - name: Build Android App Bundle (AAB)
+        run: |
+          flutter build appbundle --release \
+            --dart-define=R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }} \
+            --dart-define=R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }} \
+            --dart-define=R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: al-hirfa-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+
       - name: Publish APK to a downloadable Release
         uses: softprops/action-gh-release@v2
         with:
