@@ -30,8 +30,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   int _selectedRole = 0;
   String _selectedCity = kCities.first;
 
-  final _roles = const ['مشتري', 'حرفي', 'شركة شحن'];
-  static const _roleKeys = ['customer', 'artisan', 'shipping'];
+  // "شركة شحن" مخفاة مؤقتاً — قسم الشحن مغلق (راجع onboarding_screen.dart
+  // لنفس القرار). ShippingRegisterScreen نفسها لم تُحذف، فقط لا مدخل إليها.
+  final _roles = const ['مشتري', 'حرفي'];
+  static const _roleKeys = ['customer', 'artisan'];
 
   @override
   void initState() {

@@ -11,10 +11,12 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   int? _selectedRole;
 
+  // "شركة شحن" مخفاة مؤقتاً من الاختيار — قسم الشحن مغلق (الحرفي يتكفّل
+  // بالتوصيل بنفسه حالياً). لم تُحذف شاشة تسجيل شركات الشحن نفسها، فقط هذا
+  // المدخل إليها — راجع register_screen.dart لنفس القرار.
   final _roles = const [
     {'emoji': '🛒', 'name': 'مشتري'},
     {'emoji': '🎨', 'name': 'حرفي'},
-    {'emoji': '🚚', 'name': 'شركة شحن'},
   ];
 
   void _continueToRegister() {
@@ -44,7 +46,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.85),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.85),
                       itemCount: _roles.length,
                       itemBuilder: (context, i) {
                         final selected = _selectedRole == i;
