@@ -5,10 +5,10 @@ import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../services/notification_service.dart';
 import 'admin_accounts_screen.dart';
+import 'admin_commissions_owed_screen.dart';
 import 'admin_dashboard_screen.dart';
 import 'admin_orders_screen.dart';
 import 'admin_settings_screen.dart';
-import 'admin_shipping_screen.dart';
 
 /// الحاوية الرئيسية لبوابة المؤسس (الأدمن) عبر شريط تنقل سفلي بخمس تبويبات (ADMIN-1).
 class AdminNav extends StatefulWidget {
@@ -25,7 +25,7 @@ class _AdminNavState extends State<AdminNav> {
     AdminDashboardScreen(),
     AdminAccountsScreen(),
     AdminOrdersScreen(),
-    AdminShippingScreen(),
+    AdminCommissionsOwedScreen(),
     AdminSettingsScreen(),
   ];
 
@@ -59,7 +59,7 @@ class _AdminNavState extends State<AdminNav> {
             BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: 'لوحة التحكم'),
             BottomNavigationBarItem(icon: Icon(Icons.people_outline), activeIcon: Icon(Icons.people), label: 'المستخدمون'),
             BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'الطلبات'),
-            BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), activeIcon: Icon(Icons.local_shipping), label: 'الشحن'),
+            BottomNavigationBarItem(icon: Icon(Icons.percent_outlined), activeIcon: Icon(Icons.percent), label: 'العمولات'),
             BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: 'الإعدادات'),
           ],
         ),

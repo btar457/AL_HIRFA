@@ -704,3 +704,21 @@ test('رفض: الحرفي يقفز من pending إلى delivered مباشرة (
   const db = ctx('artisanA'); // orderPending بحالة pending، مالكه artisanA
   await assertFails(updateDoc(doc(db, 'orders/orderPending'), { status: 'delivered', deliveredAt: new Date() }));
 });
+
+// =========================================================================
+// admin_commissions_owed_screen.dart: commissionPaid — إدارة فقط تكتبه
+// (عبر فرع isAdmin() العام في orders/update، بلا حاجة لقاعدة جديدة).
+// =========================================================================
+test('سماح: الإدارة تعلّم عمولة طلب مُسلَّم بأنها دُفعت', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('adminA');
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderDelivered'), { commissionPaid: true }));
+});
+
+test('رفض: الحرفي (مالك الطلب) يعلّم عمولة طلبه المُسلَّم بأنها دُفعت بنفسه', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA'); // مالك orderDelivered
+  await assertFails(updateDoc(doc(db, 'orders/orderDelivered'), { commissionPaid: true }));
+});

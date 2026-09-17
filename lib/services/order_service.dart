@@ -331,4 +331,16 @@ class OrderService {
     await NotificationService.instance.sendToUser(userUid: order.buyerUid, title: 'تم إلغاء طلبك', body: reason, type: 'order_cancelled', data: {'orderId': orderId});
     await NotificationService.instance.sendToUser(userUid: order.artisanUid, title: 'تم إلغاء الطلب', body: reason, type: 'order_cancelled', data: {'orderId': orderId});
   }
+
+  /// Admin: يعلّم كل عمولات حرفي معيّن المستحقة والمؤكَّدة (طلبات delivered
+  /// لم تُعلَّم بعد) بأنها دُفعت — بعد أن يحوّل الحرفي المبلغ للمنصة يدوياً
+  /// خارج التطبيق (تحويل بنكي). راجع admin_commissions_screen.dart.
+  Future<void> markArtisanCommissionPaid(List<String> orderIds) async {
+    if (orderIds.isEmpty) return;
+    final batch = _firestore.batch();
+    for (final orderId in orderIds) {
+      batch.update(_firestore.collection(_ordersCollection).doc(orderId), {'commissionPaid': true});
+    }
+    await batch.commit();
+  }
 }

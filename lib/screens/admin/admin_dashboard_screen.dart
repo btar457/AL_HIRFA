@@ -4,7 +4,6 @@ import '../../core/constants/colors.dart';
 import '../../providers/notification_provider.dart';
 import '../../services/admin_service.dart';
 import '../shared/notifications_screen.dart';
-import 'admin_shipping_screen.dart';
 import 'review_artisans_screen.dart';
 
 String _formatPrice(int value) {
@@ -29,7 +28,6 @@ class _DashboardData {
   final int activeDeliveries;
   final List<double> weeklySales;
   final int pendingArtisans;
-  final int pendingShippingCompanies;
   final int openDisputes;
   final int activeArtisans;
   final int buyers;
@@ -43,7 +41,6 @@ class _DashboardData {
     required this.activeDeliveries,
     required this.weeklySales,
     required this.pendingArtisans,
-    required this.pendingShippingCompanies,
     required this.openDisputes,
     required this.activeArtisans,
     required this.buyers,
@@ -71,7 +68,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       admin.getActiveDeliveriesCount(),
       admin.getWeeklySales(),
       admin.getPendingArtisansCount(),
-      admin.getPendingShippingCompaniesCount(),
       admin.getOpenDisputesCount(),
       admin.getActiveArtisansCount(),
       admin.getBuyersCount(),
@@ -85,12 +81,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       activeDeliveries: results[3] as int,
       weeklySales: results[4] as List<double>,
       pendingArtisans: results[5] as int,
-      pendingShippingCompanies: results[6] as int,
-      openDisputes: results[7] as int,
-      activeArtisans: results[8] as int,
-      buyers: results[9] as int,
-      shippingCompanies: results[10] as int,
-      totalProducts: results[11] as int,
+      openDisputes: results[6] as int,
+      activeArtisans: results[7] as int,
+      buyers: results[8] as int,
+      shippingCompanies: results[9] as int,
+      totalProducts: results[10] as int,
     );
   }
 
@@ -244,13 +239,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           buttonColor: AppColors.gold,
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReviewArtisansScreen())),
         ),
-        _buildAlertTile(
-          icon: Icons.local_shipping_outlined,
-          label: 'شركات شحن جديدة',
-          count: '${data.pendingShippingCompanies}',
-          buttonColor: AppColors.gold,
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminShippingScreen())),
-        ),
+        // بطاقة "شركات شحن جديدة" أُزيلت مؤقتاً من هنا — قسم الشحن مغلق،
+        // لا تسجيل جديد ممكن (راجع register_screen.dart). AdminShippingScreen
+        // نفسها لم تُحذف، فقط هذا الرابط السريع إليها من لوحة التحكم.
         _buildAlertTile(
           icon: Icons.report_gmailerrorred_outlined,
           label: 'بلاغات مفتوحة',

@@ -31,6 +31,10 @@ class OrderModel {
   final String? disputeId;
   final DateTime createdAt;
   final DateTime? deliveredAt;
+  // هل حوّل الحرفي عمولة المنصة (platformFee) المستحقة عليه لهذا الطلب فعلياً
+  // (تحويل بنكي يدوي خارج التطبيق)؟ لا معنى له قبل status=='delivered' —
+  // راجع admin_commissions_owed_screen.dart.
+  final bool commissionPaid;
 
   const OrderModel({
     required this.id,
@@ -61,6 +65,7 @@ class OrderModel {
     this.disputeId,
     required this.createdAt,
     this.deliveredAt,
+    this.commissionPaid = false,
   });
 
   OrderModel copyWith({
@@ -73,6 +78,7 @@ class OrderModel {
     DateTime? shippingAcceptDeadline,
     bool? isReviewed,
     DateTime? deliveredAt,
+    bool? commissionPaid,
   }) {
     return OrderModel(
       id: id ?? this.id,
@@ -103,6 +109,7 @@ class OrderModel {
       disputeId: disputeId,
       createdAt: createdAt,
       deliveredAt: deliveredAt ?? this.deliveredAt,
+      commissionPaid: commissionPaid ?? this.commissionPaid,
     );
   }
 
@@ -137,6 +144,7 @@ class OrderModel {
       disputeId: map['disputeId'] as String?,
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       deliveredAt: (map['deliveredAt'] as Timestamp?)?.toDate(),
+      commissionPaid: map['commissionPaid'] as bool? ?? false,
     );
   }
 
@@ -167,6 +175,7 @@ class OrderModel {
       'disputeId': disputeId,
       'createdAt': Timestamp.fromDate(createdAt),
       'deliveredAt': deliveredAt != null ? Timestamp.fromDate(deliveredAt!) : null,
+      'commissionPaid': commissionPaid,
     };
   }
 }
