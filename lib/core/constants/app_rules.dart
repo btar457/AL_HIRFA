@@ -3,7 +3,9 @@ class AppRules {
   AppRules._();
 
   // العمولات
-  static const double productCommission = 0.10;
+  // عمولة المنصة 5% من سعر المنتج فقط (بدون رسم التوصيل) — قسم الشحن مغلق
+  // مؤقتاً، الحرفي يتكفّل بالتوصيل ويقبض رسمه الثابت كاملاً مباشرة.
+  static const double productCommission = 0.05;
   static const double shippingCommission = 0.10;
   static const int fixedDeliveryFee = 5000;
   static const int companyNetDelivery = 4500;

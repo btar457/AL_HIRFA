@@ -195,6 +195,13 @@ service cloud.firestore {
         || (resource.data.status == 'pending' && request.resource.data.status == 'cancelled'
           && resource.data.artisanUid == request.auth.uid
           && onlyFieldsChanged(['status', 'rejectionReason', 'rejectedBy']))
+        // الحرفي يؤكّد التسليم بنفسه مباشرة (confirmDelivery) — قسم شركات
+        // الشحن مغلق مؤقتاً، الحرفي يتكفّل بالتوصيل (راجع sellerApproveOrder).
+        // يتعايش بلا تعارض مع فرع شركة الشحن (picked_up->delivered) أدناه:
+        // حالتا resource.data.status سابقتان مختلفتان تماماً.
+        || (resource.data.status == 'seller_approved' && request.resource.data.status == 'delivered'
+          && resource.data.artisanUid == request.auth.uid
+          && onlyFieldsChanged(['status', 'deliveredAt']))
         // شركة شحن تقبل الطلب (shippingAcceptOrder) — لم يُقبل من قبل،
         // وضمن نطاق تغطيتها المسجَّل.
         || (resource.data.status == 'seller_approved' && request.resource.data.status == 'shipping_assigned'

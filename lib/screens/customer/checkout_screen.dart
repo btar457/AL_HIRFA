@@ -127,6 +127,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         final product = item.product;
         final linePrice = product.price * item.quantity;
         final commission = (linePrice * settings.productCommission).round();
+        // قسم التوصيل مغلق مؤقتاً — الحرفي يتكفّل بالتوصيل بنفسه ويقبض
+        // كامل رسم التوصيل الثابت كاشاً مباشرة من الزبون، بلا وسيط شحن.
+        // العمولة 5% تُحسب على سعر المنتج فقط (لا تشمل رسم التوصيل) وتُسجَّل
+        // "مستحقة" على الحرفي فور إنشاء الطلب، وتصبح مؤكَّدة فقط بعد التسليم
+        // (يُحتسَب هذا لاحقاً من حالة الطلب نفسها، لا حقل منفصل).
         return OrderModel(
           id: '',
           orderNumber: '',
@@ -136,9 +141,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           price: linePrice,
           deliveryFee: settings.fixedDeliveryFee,
           totalAmount: linePrice + settings.fixedDeliveryFee,
-          platformFee: commission + settings.platformDeliveryFee,
-          artisanEarnings: linePrice - commission,
-          shippingEarnings: settings.companyNetDelivery,
+          platformFee: commission,
+          artisanEarnings: linePrice - commission + settings.fixedDeliveryFee,
+          shippingEarnings: 0,
           buyerUid: buyer.uid,
           buyerName: _nameController.text.trim(),
           buyerPhone: _phoneController.text.trim(),

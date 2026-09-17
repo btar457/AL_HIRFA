@@ -108,26 +108,19 @@ class OrderService {
     });
   }
 
-  /// الحرفي يوافق على الطلب — يفتح نافذة 5 دقائق لشركات الشحن للقبول.
+  /// الحرفي يوافق على الطلب. قسم شركات الشحن مغلق مؤقتاً — الحرفي نفسه
+  /// يتكفّل بالتوصيل ويؤكّده لاحقاً عبر confirmDelivery مباشرة من هذه الحالة
+  /// (راجع firestore.rules: فرع "الحرفي يؤكّد التسليم بنفسه").
   Future<void> sellerApproveOrder(String orderId) async {
     final orderDoc = await _firestore.collection(_ordersCollection).doc(orderId).get();
     final order = OrderModel.fromMap(orderId, orderDoc.data()!);
 
-    await _firestore.collection(_ordersCollection).doc(orderId).update({
-      'status': 'seller_approved',
-      'shippingAcceptDeadline': Timestamp.fromDate(DateTime.now().add(Duration(minutes: AppRules.shippingAcceptMinutes))),
-    });
+    await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'seller_approved'});
 
-    await NotificationService.instance.sendToShippingCompanies(
-      city: order.governorate,
-      orderId: orderId,
-      title: 'طلب توصيل جديد في ${order.governorate}',
-      body: '${order.productName} — أجر التوصيل ${order.shippingEarnings} د.ع',
-    );
     await NotificationService.instance.sendToUser(
       userUid: order.buyerUid,
       title: 'البائع وافق على طلبك',
-      body: 'نبحث الآن عن شركة شحن لطلبك ${order.orderNumber}',
+      body: 'سيتواصل معك الحرفي لتوصيل طلبك ${order.orderNumber}',
       type: 'shipping_assigned',
       data: {'orderId': orderId},
     );

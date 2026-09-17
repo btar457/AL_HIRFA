@@ -212,10 +212,10 @@ test('رفض: المشتري (مالك الطلب) يكتب حقل platformFee �
   await assertFails(updateDoc(doc(db, 'orders/orderX'), { platformFee: 999999 }));
 });
 
-test('رفض: الحرفي (مالك الطلب) يغيّر status مباشرة إلى delivered متجاوزاً الشحن', async () => {
+test('سماح (تغيّر عمداً): الحرفي مالك الطلب يغيّر status مباشرة إلى delivered — قسم الشحن مغلق مؤقتاً، الحرفي يتكفّل بالتوصيل بنفسه الآن', async () => {
   await seedBaseFixtures();
   const db = ctx('artisanA'); // مالك orderX كحرفي
-  await assertFails(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered' }));
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
 });
 
 // =========================================================================
@@ -676,4 +676,31 @@ test('رفض: تحديثان +1 على نفس وثيقة rate_limits ضمن دف
   batch.update(doc(db, 'rate_limits/customerA'), { hourlyCount: increment(1) });
   batch.update(doc(db, 'rate_limits/customerA'), { hourlyCount: increment(1) });
   await assertFails(batch.commit());
+});
+
+// =========================================================================
+// قسم الشحن مغلق مؤقتاً — الحرفي يؤكّد التسليم بنفسه مباشرة من seller_approved
+// =========================================================================
+test('سماح: الحرفي مالك الطلب يؤكّد التسليم مباشرة (seller_approved -> delivered)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanA'); // orderX بحالة seller_approved، مالكه artisanA
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+});
+
+test('رفض: حرفي آخر (ليس مالك الطلب) يؤكّد التسليم', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanB'); // ليس مالك orderX
+  await assertFails(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+});
+
+test('رفض: المشتري يحاول تأكيد التسليم مباشرة', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA'); // مشتري orderX
+  await assertFails(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+});
+
+test('رفض: الحرفي يقفز من pending إلى delivered مباشرة (يتجاوز seller_approved)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanA'); // orderPending بحالة pending، مالكه artisanA
+  await assertFails(updateDoc(doc(db, 'orders/orderPending'), { status: 'delivered', deliveredAt: new Date() }));
 });

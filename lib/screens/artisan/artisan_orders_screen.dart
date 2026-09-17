@@ -9,7 +9,10 @@ import '../../services/order_service.dart';
 import '../../widgets/common/loading_shimmer.dart';
 import 'artisan_order_detail_screen.dart';
 
-const _inProgressStatuses = {'seller_approved', 'shipping_assigned', 'picked_up'};
+// حالتا شركة الشحن (shipping_assigned/picked_up) تبقيان هنا فقط لعرض طلبات
+// قديمة قد تكون عالقة فيهما من قبل إغلاق القسم مؤقتاً — لا مسار جديد يصل
+// إليهما الآن (راجع sellerApproveOrder).
+const _legacyShippingStatuses = {'shipping_assigned', 'picked_up'};
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -47,7 +50,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: const Text('قبول الطلب؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text('بعد قبولك سيُرسل إشعار لشركات الشحن.', style: TextStyle(color: AppColors.subText)),
+          content: Text('بعد قبولك، أنت المسؤول عن توصيل الطلب للزبون وتحصيل المبلغ كاشاً.', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -119,6 +122,41 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
     );
   }
 
+  void _confirmDelivery(OrderModel order) {
+    showDialog(
+      context: context,
+      builder: (context) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: const Text('تأكيد التسليم؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text('أكِّد فقط بعد تسليم المنتج فعلياً واستلام كامل المبلغ من الزبون.', style: TextStyle(color: AppColors.subText)),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () async {
+                Navigator.pop(context);
+                try {
+                  await OrderService.instance.confirmDelivery(order.id);
+                } catch (e) {
+                  if (!mounted) return;
+                  AppError.showSnackbar(context, AppError.getFirebaseError(e));
+                }
+              },
+              child: const Text('تم التسليم', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final artisanUid = context.watch<AuthProvider>().currentUser?.uid;
@@ -160,7 +198,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                           controller: _tabController,
                           children: [
                             _buildOrdersList(newOrders),
-                            _buildOrdersList(_ordersFor(orders, _inProgressStatuses)),
+                            _buildOrdersList(_ordersFor(orders, {'seller_approved', ..._legacyShippingStatuses})),
                             _buildOrdersList(_ordersFor(orders, {'delivered'})),
                             _buildOrdersList(_ordersFor(orders, {'cancelled'})),
                           ],
@@ -260,7 +298,18 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                 ),
               ),
             ],
-            if (_inProgressStatuses.contains(order.status)) ...[
+            if (order.status == 'seller_approved') ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                  onPressed: () => _confirmDelivery(order),
+                  child: const Text('تم التسليم', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+            if (_legacyShippingStatuses.contains(order.status)) ...[
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
