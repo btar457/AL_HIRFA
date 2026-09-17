@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../models/order_model.dart';
+import '../../models/product_model.dart';
 import '../../providers/notification_provider.dart';
 import '../../services/admin_service.dart';
+import '../../services/product_service.dart';
 import '../../services/support_service.dart';
 import '../shared/notifications_screen.dart';
 import 'admin_orders_screen.dart';
+import 'admin_products_screen.dart';
 import 'admin_stuck_orders_screen.dart';
 import 'admin_support_messages_screen.dart';
 import 'review_artisans_screen.dart';
@@ -269,6 +272,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               count: '$count',
               buttonColor: AppColors.gold,
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminSupportMessagesScreen())),
+            );
+          },
+        ),
+        StreamBuilder<List<ProductModel>>(
+          stream: ProductService.instance.getProductsByStatus('pending'),
+          builder: (context, snapshot) {
+            final count = snapshot.data?.length ?? 0;
+            return _buildAlertTile(
+              icon: Icons.inventory_2_outlined,
+              label: 'منتجات جديدة بانتظار المراجعة',
+              count: '$count',
+              buttonColor: AppColors.gold,
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminProductsScreen())),
             );
           },
         ),
