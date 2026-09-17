@@ -4,6 +4,7 @@ import '../../core/constants/colors.dart';
 import '../../models/user_model.dart';
 import '../../models/violation_model.dart';
 import '../../services/admin_service.dart';
+import '../customer/artisan_public_profile_screen.dart';
 
 String _formatDate(DateTime date) {
   const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -79,6 +80,14 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
                   },
                 ),
               ],
+              ListTile(
+                leading: const Icon(Icons.history, color: AppColors.gold),
+                title: const Text('سجل المخالفات', style: TextStyle(color: AppColors.text)),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _showViolations(user);
+                },
+              ),
               ListTile(
                 leading: const Icon(Icons.warning_amber_outlined, color: Colors.amber),
                 title: const Text('تحذير', style: TextStyle(color: AppColors.text)),
@@ -353,7 +362,9 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
       child: GestureDetector(
-        onTap: () => _showViolations(user),
+        onTap: () => user.role == 'artisan'
+            ? Navigator.push(context, MaterialPageRoute(builder: (_) => ArtisanPublicProfileScreen(artisanUid: user.uid)))
+            : _showViolations(user),
         child: Row(
           children: [
             CircleAvatar(
