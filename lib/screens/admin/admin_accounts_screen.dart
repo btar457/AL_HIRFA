@@ -116,6 +116,15 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم رفع التعليق عن ${user.name}')));
                   },
                 ),
+              if (!user.deleted)
+                ListTile(
+                  leading: const Icon(Icons.delete_forever, color: Colors.red),
+                  title: const Text('حذف الحساب', style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _confirmDeleteAccount(user);
+                  },
+                ),
             ],
           ),
         ),
@@ -155,6 +164,56 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
                 Navigator.pop(dialogContext);
               },
               child: const Text('تأكيد', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteAccount(UserModel user) {
+    final reasonController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: const Text('حذف الحساب نهائياً؟', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'سيُحذف اسم ${user.name} وبريده وصورته وبياناته الشخصية نهائياً، ويُحظر حسابه من الدخول إلى الأبد. لا يمكن التراجع عن هذا الإجراء. تبقى سجلات طلباته/معاملاته المالية محفوظة للامتثال القانوني.',
+                style: TextStyle(color: AppColors.subText),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: reasonController,
+                maxLines: 3,
+                style: const TextStyle(color: AppColors.text),
+                decoration: InputDecoration(hintText: 'سبب الحذف', hintStyle: TextStyle(color: AppColors.subText), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
+              ),
+            ],
+          ),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () async {
+                final reason = reasonController.text.trim();
+                if (reason.isEmpty) return;
+                await AdminService.instance.deleteUserAccount(user.uid, reason);
+                if (!dialogContext.mounted) return;
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('حذف نهائياً', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -326,7 +385,10 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
   Widget _buildStatusChip(UserModel user) {
     final Color color;
     final String label;
-    if (user.approvalStatus == 'pending') {
+    if (user.deleted) {
+      color = Colors.grey;
+      label = 'محذوف';
+    } else if (user.approvalStatus == 'pending') {
       color = AppColors.gold;
       label = 'قيد المراجعة';
     } else if (user.approvalStatus == 'rejected') {

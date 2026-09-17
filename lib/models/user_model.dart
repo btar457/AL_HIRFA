@@ -12,6 +12,7 @@ class UserModel {
   final String? fcmToken;
   final bool isActive; // false = محسوب أو معلّق مؤقتاً (راجع banned للتمييز بينهما)
   final bool banned; // true = حظر نهائي (isActive تكون false أيضاً)
+  final bool deleted; // true = حُذف الحساب من الإدارة (راجع AdminService.deleteUserAccount) — banned تكون true أيضاً دائماً
   final String approvalStatus; // pending/approved/rejected — بوابة مراجعة الحرفيين وشركات الشحن الجدد
   final int warningCount;
 
@@ -50,6 +51,7 @@ class UserModel {
     this.fcmToken,
     this.isActive = true,
     this.banned = false,
+    this.deleted = false,
     this.approvalStatus = 'approved',
     this.warningCount = 0,
     this.commissionWarningLevel = 0,
@@ -78,6 +80,7 @@ class UserModel {
       fcmToken: map['fcmToken'] as String?,
       isActive: map['isActive'] as bool? ?? true,
       banned: map['banned'] as bool? ?? false,
+      deleted: map['deleted'] as bool? ?? false,
       approvalStatus: map['approvalStatus'] as String? ?? 'approved',
       warningCount: map['warningCount'] as int? ?? 0,
       commissionWarningLevel: map['commissionWarningLevel'] as int? ?? 0,
@@ -109,6 +112,7 @@ class UserModel {
       'fcmToken': fcmToken,
       'isActive': isActive,
       'banned': banned,
+      'deleted': deleted,
       'approvalStatus': approvalStatus,
       'warningCount': warningCount,
       'commissionWarningLevel': commissionWarningLevel,
@@ -139,6 +143,7 @@ class UserModel {
       fcmToken: fcmToken,
       isActive: isActive,
       banned: banned,
+      deleted: deleted,
       approvalStatus: approvalStatus,
       warningCount: warningCount,
       commissionWarningLevel: commissionWarningLevel,

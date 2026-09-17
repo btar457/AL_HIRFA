@@ -232,6 +232,35 @@ class AdminService {
     await _reassignStuckShippingOrders(uid);
   }
 
+  /// حذف حساب من قِبل الإدارة (زر "حذف الحساب" في admin_accounts_screen.dart).
+  /// Firebase Auth لا يسمح لأي حساب بحذف حساب آخر غير حسابه هو من جهة
+  /// العميل، ولا Cloud Functions/Admin SDK في هذا المشروع (راجع
+  /// AuthService.deleteAccount للحذف الذاتي الذي يتطلّب كلمة مرور المستخدم
+  /// نفسه) — فحذف حساب Firebase Auth الخاص بمستخدم آخر غير ممكن تقنياً هنا.
+  /// أقصى ما يمكن تطبيقه إدارياً: إخفاء هوية (anonymize) كل الحقول الشخصية
+  /// بنفس أسلوب الحذف الذاتي بالضبط، مع حظر نهائي دائم (banned) يمنع تسجيل
+  /// الدخول للأبد (accessBlockCode)، وعلامة deleted منفصلة لتمييزه في واجهة
+  /// الإدارة عن حظر عادي قابل لإعادة النظر فيه.
+  Future<void> deleteUserAccount(String uid, String reason) async {
+    await NotificationService.instance.sendToUser(userUid: uid, title: 'تم حذف حسابك', body: reason, type: 'account_deleted');
+    await _recordViolation(uid, type: 'deletion', description: reason, severity: 'ban');
+    await _reassignStuckShippingOrders(uid);
+    await _firestore.collection(_usersCollection).doc(uid).update({
+      'name': 'مستخدم محذوف',
+      'email': '',
+      'city': '',
+      'photoUrl': '',
+      'fcmToken': null,
+      'companyName': '',
+      'registrationNumber': '',
+      'provinces': <String>[],
+      'isActive': false,
+      'banned': true,
+      'deleted': true,
+    });
+    await _firestore.collection(_usersCollection).doc(uid).collection('private').doc('contact').set({'phone': '', 'iban': ''}, SetOptions(merge: true));
+  }
+
   /// يفحص التزام كل حرفي بسداد عمولة المنصة المستحقة (طلبات delivered لم
   /// تُعلَّم بعد بأنها دُفعت — راجع admin_commissions_owed_screen.dart) ويطبّق
   /// قرار المالك: تنبيه أول بعد commissionWarningIntervalDays يوماً من أقدم
