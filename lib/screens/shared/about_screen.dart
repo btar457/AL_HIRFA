@@ -1,21 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/colors.dart';
 
 /// شاشة "عن AL-HIRFA" (SHARED-6).
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
-  Widget _buildContactTile({required IconData icon, required String label, required String value}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.gold, size: 18),
-          const SizedBox(width: 12),
-          Text(label, style: TextStyle(color: AppColors.subText, fontSize: 13)),
-          const Spacer(),
-          Text(value, style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.bold)),
-        ],
+  Future<void> _open(Uri uri) async {
+    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Widget _buildContactTile({required IconData icon, required String label, required String value, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.gold, size: 18),
+            const SizedBox(width: 12),
+            Text(label, style: TextStyle(color: AppColors.subText, fontSize: 13)),
+            const Spacer(),
+            Text(value, style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
     );
   }
@@ -63,11 +71,26 @@ class AboutScreen extends StatelessWidget {
               decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
               child: Column(
                 children: [
-                  _buildContactTile(icon: Icons.email_outlined, label: 'البريد الإلكتروني', value: 'support@alhirfa.iq'),
+                  _buildContactTile(
+                    icon: Icons.email_outlined,
+                    label: 'البريد الإلكتروني',
+                    value: 'support@alhirfa.iq',
+                    onTap: () => _open(Uri(scheme: 'mailto', path: 'support@alhirfa.iq')),
+                  ),
                   Divider(color: AppColors.subText.withOpacity(0.15), height: 1),
-                  _buildContactTile(icon: Icons.chat_outlined, label: 'واتساب', value: '+964 770 000 0000'),
+                  _buildContactTile(
+                    icon: Icons.chat_outlined,
+                    label: 'واتساب',
+                    value: '+964 781 627 8766',
+                    onTap: () => _open(Uri.parse('https://wa.me/9647816278766')),
+                  ),
                   Divider(color: AppColors.subText.withOpacity(0.15), height: 1),
-                  _buildContactTile(icon: Icons.language, label: 'الموقع الإلكتروني', value: 'alhirfa.iq'),
+                  _buildContactTile(
+                    icon: Icons.language,
+                    label: 'الموقع الإلكتروني',
+                    value: 'alhirfa.iq',
+                    onTap: () => _open(Uri.parse('https://alhirfa.iq')),
+                  ),
                 ],
               ),
             ),
