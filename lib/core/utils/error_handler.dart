@@ -8,9 +8,15 @@ class AppError {
   AppError._();
 
   /// يحوّل استثناء (FirebaseAuthException أو أي خطأ آخر) إلى رسالة عربية مفهومة.
+  ///
+  /// تشخيص مؤقّت (إصدار الاختبار الداخلي الأول على Play): الفرعان أدناه
+  /// يُلحقان تفاصيل الخطأ الفعلي بالرسالة بدل إخفائه خلف نص عام، لمعرفة
+  /// السبب الحقيقي وراء فشل تسجيل الدخول على كل الحسابات في أول بناء موزَّع
+  /// عبر Play (مرشّح رئيسي: App Check/Play Integrity). يُزال هذا التفصيل
+  /// الإضافي بعد تحديد السبب وإصلاحه.
   static String getFirebaseError(Object error) {
     if (error is! FirebaseAuthException) {
-      return 'حدث خطأ، حاول مرة أخرى';
+      return 'حدث خطأ، حاول مرة أخرى (${error.runtimeType}: $error)';
     }
     switch (error.code) {
       case 'user-not-found':
@@ -38,7 +44,7 @@ class AppError {
       case 'account-rejected':
         return 'تم رفض طلب انضمامك، تواصل مع الدعم لمزيد من التفاصيل';
       default:
-        return 'حدث خطأ، حاول مرة أخرى';
+        return 'حدث خطأ، حاول مرة أخرى (${error.code})';
     }
   }
 
