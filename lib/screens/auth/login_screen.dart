@@ -235,6 +235,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text('صنع بكل فخر في العراق', style: TextStyle(color: AppColors.subText, fontSize: 11)),
                     const SizedBox(height: 8),
                     const FounderAccessCredit(),
+                    const SizedBox(height: 4),
+                    // تشخيص مؤقّت: يحسم بشكل قاطع أي نسخة فعلياً مثبَّتة على الجهاز
+                    // (اسم الإصدار وحده في "معلومات التطبيق" بنظام أندرويد لا يُظهر
+                    // رقم البناء بعد الـ +، فيصعب التأكد من وصول تحديث Play). يُحذف
+                    // بعد انتهاء التشخيص.
+                    Text('Build 1.0.0+6', style: TextStyle(color: AppColors.subText.withOpacity(0.4), fontSize: 9)),
                     const SizedBox(height: 12),
                   ],
                 ),
