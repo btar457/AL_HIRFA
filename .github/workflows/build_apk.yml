@@ -2,62 +2,120 @@ name: Build Flutter APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["claude/development-start-4zc9r8", "main"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Setup Java JDK
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
+      # firebase-tools يتطلب JDK 21+ لتشغيل محاكي Firestore (Gradle/Flutter
+      # لاحقاً يحتاجان JDK 17 فقط — راجع خطوة "Setup Java JDK" أدناه التي
+      # تُعيد ضبط JAVA_HOME لـ 17 بعد هذه الخطوة).
+      - name: Setup Java 21 (for Firestore Emulator)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
 
-    - name: Setup Flutter Environment
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.19.x'
-        channel: 'stable'
+      # يشغّل اختبارات firestore-tests/rules.test.mjs (@firebase/rules-unit-testing)
+      # على محاكي Firestore الحقيقي — بوابة قبل النشر (لا بعده)، فأي انحدار في
+      # القواعد (مثلاً: ترقية دور ذاتية، اعتماد ذاتي لحرفي/شركة شحن) يوقف
+      # الـ CI هنا قبل أن يصل التغيير للإنتاج. بلا continue-on-error عمداً.
+      - name: Test Firestore Security Rules (Emulator)
+        run: |
+          npm install -g firebase-tools
+          cd firestore-tests
+          npm install
+          cd ..
+          firebase emulators:exec --project demo-al-hirfa --only firestore "cd firestore-tests && npm test"
 
-    # 1. إعادة توليد منصة أندرويد نظيفة ومستقرة للمشروع
-    - name: Recreate Android Project Platform
-      run: |
-        mv lib _lib_backup
-        mv pubspec.yaml _pubspec_backup
-        flutter create . --project-name=al_hirfa --platforms=android
-        rm -rf lib pubspec.yaml
-        mv _lib_backup lib
-        mv _pubspec_backup pubspec.yaml
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
-    # 2. 🔥 الحل الهندسي: حقن كود جبري لتجاوز توافقية الـ SDK ومنع تعارض الحزم
-    - name: Force Android SDK Configurations
-      run: |
-        cat << EOF >> android/app/build.gradle
+      - name: Deploy Firestore Rules, Indexes, and Hosting
+        continue-on-error: true
+        run: |
+          npm install -g firebase-tools
+          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > "$RUNNER_TEMP/firebase-service-account.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json"
+          firebase deploy --only firestore:rules,firestore:indexes,hosting --project al-hirfa --non-interactive
 
-        // إجبار نظام أندرويد على تخطي القيم الافتراضية واعتماد القيم المتوافقة مع الحزم
-        android {
-            compileSdkVersion 34
-            defaultConfig {
-                minSdkVersion 21
-                targetSdkVersion 34
-            }
-        }
-        EOF
+      - name: Setup Flutter Environment
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
 
-    - name: Install Dependencies
-      run: flutter pub get
+      - name: Install Dependencies
+        run: flutter pub get
 
-    - name: Build Android APK
-      run: |
-        flutter build apk --release --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+      - name: Analyze
+        run: flutter analyze
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Al-Hirfa-App
-        path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Test
+        run: flutter test
+
+      - name: Set up release signing
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/al-hirfa-release.jks
+          cat > android/key.properties <<EOF
+          storeFile=al-hirfa-release.jks
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          EOF
+
+      - name: Build Android APK
+        run: |
+          flutter build apk --release \
+            --dart-define=R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }} \
+            --dart-define=R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }} \
+            --dart-define=R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: al-hirfa-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      # Google Play يتطلّب App Bundle (.aab) لتقديم إصدار على مسار الإنتاج —
+      # الـ APK أعلاه يبقى فقط لتوزيع/اختبار سريع عبر GitHub Releases، هذا
+      # الملف هو ما يُرفَع فعلياً على Play Console.
+      - name: Build Android App Bundle (AAB)
+        run: |
+          flutter build appbundle --release \
+            --dart-define=R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }} \
+            --dart-define=R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }} \
+            --dart-define=R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: al-hirfa-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+
+      # نشر اختياري (تنزيل سريع للاختبار) — ليس بوابة نجاح البناء، والـAPK/AAB
+      # الفعليان مرفوعان بالفعل كـ artifacts أعلاه بغضّ النظر عن هذه الخطوة.
+      # continue-on-error لأن رفع GitHub Release واجه أحياناً Headers Timeout
+      # عابراً من جهة GitHub نفسها، وهذا لا يجب أن يُظهر البناء كاملاً فاشلاً.
+      - name: Publish APK to a downloadable Release
+        continue-on-error: true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-build
+          name: "AL-HIRFA — آخر بناء تلقائي"
+          body: "بناء تلقائي من فرع ${{ github.ref_name }} — commit ${{ github.sha }}"
+          files: build/app/outputs/flutter-apk/app-release.apk
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

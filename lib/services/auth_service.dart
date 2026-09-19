@@ -1,0 +1,258 @@
+import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/constants/app_rules.dart';
+import '../models/user_model.dart';
+import 'storage_service.dart';
+
+/// طبقة المصادقة وإدارة حسابات المستخدمين عبر Firebase Auth وFirestore.
+class AuthService {
+  AuthService._();
+  static final AuthService instance = AuthService._();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  static const _usersCollection = 'users';
+
+  /// phone وiban حسّاسان — يُخزَّنان في users/{uid}/private/contact بدل
+  /// المستند العام users/{uid} المقروء من أي مستخدم مسجَّل دخوله، حتى لا
+  /// يطّلع عليهما أي طرف آخر غير صاحب الحساب أو الإدارة (راجع firestore.rules).
+  DocumentReference<Map<String, dynamic>> _privateContactRef(String uid) {
+    return _firestore.collection(_usersCollection).doc(uid).collection('private').doc('contact');
+  }
+
+  Future<void> _writePrivateContact(String uid, {String? phone, String? iban}) async {
+    final data = <String, dynamic>{};
+    if (phone != null) data['phone'] = phone;
+    if (iban != null) data['iban'] = iban;
+    if (data.isEmpty) return;
+    await _privateContactRef(uid).set(data, SetOptions(merge: true));
+  }
+
+  Future<UserModel> _hydrateWithPrivateContact(UserModel user) async {
+    final doc = await _privateContactRef(user.uid).get();
+    return user.withPrivateContact(phone: doc.data()?['phone'] as String?, iban: doc.data()?['iban'] as String?);
+  }
+
+  /// مستخدم Firebase Auth الحالي (null إن لم يسجّل الدخول).
+  User? get firebaseUser => _auth.currentUser;
+
+  /// تيار حالة تسجيل الدخول — يُستخدم لإعادة التوجيه التلقائي عند بدء التطبيق.
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+  /// تسجيل مستخدم جديد: إنشاء الحساب في Firebase Auth، حفظ بياناته الكاملة
+  /// في Firestore، وحفظ FCM token الخاص بالجهاز.
+  Future<UserModel> signUp({
+    required String email,
+    required String password,
+    required String name,
+    required String phone,
+    required String role,
+    String city = '',
+  }) async {
+    final credential = await _auth.createUserWithEmailAndPassword(email: email.trim(), password: password);
+    final uid = credential.user!.uid;
+
+    final user = UserModel(
+      uid: uid,
+      name: name,
+      email: email.trim(),
+      phone: phone,
+      role: role,
+      city: city,
+      createdAt: DateTime.now(),
+      // register_screen لا يسمح بإنشاء الحساب أصلاً قبل تفعيل Checkbox
+      // الموافقة على الشروط، لذا نُثبّت القبول بالإصدار الحالي هنا مباشرة.
+      termsAccepted: true,
+      termsAcceptedAt: DateTime.now(),
+      termsVersion: AppRules.currentTermsVersion,
+      // الحرفيون وشركات الشحن يمرّون ببوابة مراجعة الإدارة (ADMIN-4/ADMIN-5) قبل تفعيل حسابهم.
+      approvalStatus: (role == 'artisan' || role == 'shipping') ? 'pending' : 'approved',
+    );
+    await _firestore.collection(_usersCollection).doc(uid).set(user.toMap());
+    await _writePrivateContact(uid, phone: phone);
+    await saveFCMToken(uid);
+
+    return user;
+  }
+
+  /// يتحقق مما إذا كانت حالة الحساب (المراجعة/التفعيل) تمنع الدخول، ويعيد
+  /// رمز السبب أو null إن كان الحساب سليماً. يُستخدم عند تسجيل الدخول
+  /// الصريح (signIn) وأيضاً عند استعادة الجلسة تلقائياً في AuthProvider،
+  /// كي لا تبقى حسابات مُعلَّقة أو محظورة أو مرفوضة مسجّلة دخولها فعلياً
+  /// لمجرّد أن جلستها في Firebase Auth ما تزال سارية.
+  static String? accessBlockCode(UserModel user) {
+    if (user.approvalStatus == 'rejected') return 'account-rejected';
+    if (user.approvalStatus == 'pending') return 'account-pending';
+    if (!user.isActive) return user.banned ? 'account-banned' : 'account-suspended';
+    return null;
+  }
+
+  /// تسجيل الدخول، جلب بيانات المستخدم من Firestore، والتحقق من حالة
+  /// الحساب (المراجعة/التعليق/الحظر) قبل السماح بالدخول.
+  Future<UserModel> signIn({
+    required String email,
+    required String password,
+  }) async {
+    final credential = await _auth.signInWithEmailAndPassword(email: email.trim(), password: password);
+    final uid = credential.user!.uid;
+
+    final doc = await _firestore.collection(_usersCollection).doc(uid).get();
+    if (!doc.exists) {
+      await _auth.signOut();
+      throw FirebaseAuthException(code: 'user-not-found', message: 'تعذّر العثور على بيانات الحساب');
+    }
+
+    final user = UserModel.fromMap(uid, doc.data()!);
+    final blockCode = accessBlockCode(user);
+    if (blockCode != null) {
+      await _auth.signOut();
+      throw FirebaseAuthException(code: blockCode, message: 'تعذّر تسجيل الدخول');
+    }
+
+    await saveFCMToken(uid);
+    return _hydrateWithPrivateContact(user);
+  }
+
+  /// تسجيل الخروج من Firebase Auth.
+  Future<void> signOut() => _auth.signOut();
+
+  /// إرسال بريد إعادة تعيين كلمة المرور — الرابط يفتح داخل التطبيق مباشرة
+  /// (App Links عبر al-hirfa.web.app) بدل صفحة Firebase الافتراضية، راجع
+  /// AndroidManifest.xml وhosting/.well-known/assetlinks.json.
+  Future<void> resetPassword(String email) {
+    return _auth.sendPasswordResetEmail(
+      email: email.trim(),
+      actionCodeSettings: ActionCodeSettings(
+        url: 'https://al-hirfa.web.app/reset-password',
+        handleCodeInApp: true,
+        androidPackageName: 'com.alhirfa.app',
+        androidInstallApp: false,
+      ),
+    );
+  }
+
+  /// يكمل إعادة تعيين كلمة المرور بعد استقبال oobCode من رابط البريد
+  /// (راجع ResetPasswordScreen وapp_links في main.dart).
+  Future<void> confirmPasswordReset({required String oobCode, required String newPassword}) {
+    return _auth.confirmPasswordReset(code: oobCode, newPassword: newPassword);
+  }
+
+  /// تغيير كلمة مرور المستخدم الحالي — يتطلب إعادة مصادقة بكلمة المرور
+  /// الحالية أولاً (متطلب Firebase Auth الأمني قبل السماح بتحديثها).
+  Future<void> changePassword({required String currentPassword, required String newPassword}) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw FirebaseAuthException(code: 'user-not-found', message: 'تعذّر العثور على المستخدم الحالي');
+    }
+    final credential = EmailAuthProvider.credential(email: user.email!, password: currentPassword);
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
+  }
+
+  /// بث حيّ لمستند مستخدم معيّن — يُستخدم لإبطال الجلسة فوراً عند حظره/
+  /// تعليقه بينما هو مسجّل دخوله فعلياً على هذا الجهاز، دون انتظار إعادة
+  /// تشغيل التطبيق أو تسجيل دخول جديد.
+  Stream<UserModel?> watchUser(String uid) {
+    return _firestore.collection(_usersCollection).doc(uid).snapshots().map(
+      (doc) => doc.exists ? UserModel.fromMap(doc.id, doc.data()!) : null,
+    );
+  }
+
+  /// جلب بيانات المستخدم الحالي الكاملة (UserModel) من Firestore.
+  Future<UserModel?> getCurrentUser() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return null;
+
+    final doc = await _firestore.collection(_usersCollection).doc(uid).get();
+    if (!doc.exists) return null;
+    return _hydrateWithPrivateContact(UserModel.fromMap(uid, doc.data()!));
+  }
+
+  /// تحديث بيانات المستخدم الحالي في Firestore. phone/iban (إن وُجدا ضمن
+  /// data) يُوجَّهان تلقائياً إلى users/{uid}/private/contact بدل المستند
+  /// العام؛ باقي الحقول تُكتب في users/{uid} كالمعتاد.
+  Future<void> updateProfile(Map<String, dynamic> data) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+
+    final publicData = Map<String, dynamic>.from(data)..remove('phone')..remove('iban');
+    if (publicData.isNotEmpty) {
+      await _firestore.collection(_usersCollection).doc(uid).update(publicData);
+    }
+    await _writePrivateContact(uid, phone: data['phone'] as String?, iban: data['iban'] as String?);
+  }
+
+  /// يرفع صورة شخصية جديدة إلى R2 ويحدّث photoUrl في مستند المستخدم. اسم
+  /// الملف فريد بالطابع الزمني لكل رفعة كي لا يبقى الرابط ثابتاً (نفس مسار
+  /// الملف يُبقي الصورة المخزَّنة مؤقتاً في التطبيق قديمة رغم تحديثها فعلياً).
+  Future<String> uploadProfilePhoto(String uid, File imageFile) async {
+    final key = 'profile_photos/$uid/${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final url = await StorageService.instance.uploadFile(imageFile, key);
+    await _firestore.collection(_usersCollection).doc(uid).update({'photoUrl': url});
+    return url;
+  }
+
+  /// جلب FCM token الخاص بالجهاز الحالي وحفظه في مستند المستخدم.
+  Future<void> saveFCMToken(String uid) async {
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token == null) return;
+    await _firestore.collection(_usersCollection).doc(uid).update({'fcmToken': token});
+  }
+
+  /// يقرأ دور المستخدم الحالي من Firestore (customer/artisan/shipping/admin).
+  Future<String?> getUserRole() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return null;
+
+    final doc = await _firestore.collection(_usersCollection).doc(uid).get();
+    return doc.data()?['role'] as String?;
+  }
+
+  /// حذف الحساب نهائياً (سياسة Google Play لحذف الحسابات — راجع
+  /// privacy_policy_screen.dart "حذف الحساب وبياناتك"). لا Cloud Functions
+  /// في هذا المشروع، لذا هذا "حذف" فعلي لحساب Firebase Auth + إخفاء هوية
+  /// (anonymize) للحقول الشخصية في مستند users/{uid} ضمن الحقول المسموح
+  /// للمستخدم تعديلها ذاتياً (راجع firestore.rules: users/update). سجلات
+  /// الطلبات/المعاملات المالية (orders/transactions) تبقى كما هي عمداً
+  /// للامتثال القانوني (لا حذف ممكن أصلاً — allow delete: if false)، تماماً
+  /// كما هو موضّح صراحة في نص سياسة الخصوصية للمستخدم قبل تأكيده.
+  ///
+  /// يتطلّب كلمة المرور الحالية لإعادة المصادقة أولاً — نفس متطلب Firebase
+  /// الأمني المطبَّق في changePassword، ومناسب هنا أكثر كونه إجراءً نهائياً
+  /// غير قابل للتراجع.
+  Future<void> deleteAccount({required String password}) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw FirebaseAuthException(code: 'user-not-found', message: 'تعذّر العثور على المستخدم الحالي');
+    }
+    final uid = user.uid;
+    final credential = EmailAuthProvider.credential(email: user.email!, password: password);
+    await user.reauthenticateWithCredential(credential);
+
+    await _firestore.collection(_usersCollection).doc(uid).update({
+      'name': 'مستخدم محذوف',
+      'email': '',
+      'city': '',
+      'photoUrl': '',
+      'fcmToken': null,
+      'companyName': '',
+      'registrationNumber': '',
+      'provinces': <String>[],
+    });
+    await _privateContactRef(uid).set({'phone': '', 'iban': ''}, SetOptions(merge: true));
+
+    await user.delete();
+  }
+
+  /// يحدّث إصدار الشروط المقبول من المستخدم بعد موافقته على الشروط الجديدة (PART 11.5).
+  Future<void> updateTermsVersion(String uid, String version) {
+    return _firestore.collection(_usersCollection).doc(uid).update({
+      'termsAccepted': true,
+      'termsAcceptedAt': Timestamp.now(),
+      'termsVersion': version,
+    });
+  }
+}
