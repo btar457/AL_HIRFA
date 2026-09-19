@@ -55,10 +55,16 @@ Future<void> main() async {
   // يحمي Firestore/Storage من أي طلب لا يأتي من نسخة موقَّعة وأصلية من هذا
   // التطبيق (يرفض سكربتات خارجية استخرجت إعدادات Firebase من الـ APK) —
   // التفعيل الفعلي (Enforce) يتم من Firebase Console بعد نشر هذا الإصدار.
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: AndroidProvider.playIntegrity,
-    appleProvider: AppleProvider.appAttest,
-  );
+  //
+  // تشخيص مؤقّت (فشل دخول عام FirebaseAuthException(code: unknown) على أول
+  // إصدار Play، حتى بعد ربط Play Integrity API بمشروع al-hirfa في Play
+  // Console — راجع نقاش الجلسة): مُعطَّل هنا مؤقتاً لاختبار ما إذا كان هو
+  // فعلاً سبب الفشل أم لا، قبل الاستمرار بإعداد Play Console. يُعاد تفعيله
+  // فور تأكيد السبب.
+  // await FirebaseAppCheck.instance.activate(
+  //   androidProvider: AndroidProvider.playIntegrity,
+  //   appleProvider: AppleProvider.appAttest,
+  // );
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   _listenForPasswordResetLinks();
   runApp(
