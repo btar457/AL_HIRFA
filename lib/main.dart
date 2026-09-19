@@ -1,7 +1,7 @@
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-// import 'package:firebase_app_check/firebase_app_check.dart'; // مُعطَّل مؤقتاً — راجع main() أدناه
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -56,15 +56,12 @@ Future<void> main() async {
   // التطبيق (يرفض سكربتات خارجية استخرجت إعدادات Firebase من الـ APK) —
   // التفعيل الفعلي (Enforce) يتم من Firebase Console بعد نشر هذا الإصدار.
   //
-  // تشخيص مؤقّت (فشل دخول عام FirebaseAuthException(code: unknown) على أول
-  // إصدار Play، حتى بعد ربط Play Integrity API بمشروع al-hirfa في Play
-  // Console — راجع نقاش الجلسة): مُعطَّل هنا مؤقتاً لاختبار ما إذا كان هو
-  // فعلاً سبب الفشل أم لا، قبل الاستمرار بإعداد Play Console. يُعاد تفعيله
-  // فور تأكيد السبب.
-  // await FirebaseAppCheck.instance.activate(
-  //   androidProvider: AndroidProvider.playIntegrity,
-  //   appleProvider: AppleProvider.appAttest,
-  // );
+  // (تشخيص سابق أكّد أن هذا الاستدعاء ليس سبب فشل تسجيل الدخول العام على
+  // إصدار Play — أُعيد تفعيله هنا بعد التأكد.)
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.playIntegrity,
+    appleProvider: AppleProvider.appAttest,
+  );
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   _listenForPasswordResetLinks();
   runApp(
