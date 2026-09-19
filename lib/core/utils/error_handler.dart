@@ -44,7 +44,7 @@ class AppError {
       case 'account-rejected':
         return 'تم رفض طلب انضمامك، تواصل مع الدعم لمزيد من التفاصيل';
       default:
-        return 'حدث خطأ، حاول مرة أخرى (${error.code})';
+        return 'حدث خطأ، حاول مرة أخرى (${error.code}: ${error.message})';
     }
   }
 

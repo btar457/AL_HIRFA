@@ -44,8 +44,32 @@ class _LoginScreenState extends State<LoginScreen> {
         _showAccountBlockedDialog(AppError.getFirebaseError(e));
         return;
       }
-      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+      _showCopyableErrorDialog(AppError.getFirebaseError(e));
     }
+  }
+
+  /// حوار بنص قابل للتحديد والنسخ — تشخيص مؤقّت (راجع تعليق
+  /// AppError.getFirebaseError) لأن رسائل الخطأ التفصيلية أثناء هذا
+  /// التشخيص طويلة وتُقتَطع داخل SnackBar عادي.
+  void _showCopyableErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: const Text('تعذّر تسجيل الدخول', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: SelectableText(message, style: TextStyle(color: AppColors.subText)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('إغلاق', style: TextStyle(color: AppColors.gold)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showAccountBlockedDialog(String message) {
