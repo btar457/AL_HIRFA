@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../core/constants/strings.dart';
@@ -27,28 +26,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  static const _diagnostics = MethodChannel('al_hirfa/diagnostics');
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  String _signingInfo = '…';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSigningInfo();
-  }
-
-  // تشخيص مؤقّت (راجع MainActivity.kt): بصمات شهادة التوقيع الفعلية على الجهاز.
-  Future<void> _loadSigningInfo() async {
-    try {
-      final raw = await _diagnostics.invokeMethod<dynamic>('signingCertificates') as Map?;
-      final lines = (raw ?? {}).entries.map((e) => '${e.key}: ${(e.value as List).join(' | ')}');
-      if (mounted) setState(() => _signingInfo = lines.join('\n'));
-    } catch (e) {
-      if (mounted) setState(() => _signingInfo = 'diag error: $e');
-    }
-  }
 
   Future<void> _signIn() async {
     final auth = context.read<AuthProvider>();
@@ -64,32 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
         _showAccountBlockedDialog(AppError.getFirebaseError(e));
         return;
       }
-      _showCopyableErrorDialog(AppError.getFirebaseError(e));
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
     }
-  }
-
-  /// حوار بنص قابل للتحديد والنسخ — تشخيص مؤقّت (راجع تعليق
-  /// AppError.getFirebaseError) لأن رسائل الخطأ التفصيلية أثناء هذا
-  /// التشخيص طويلة وتُقتَطع داخل SnackBar عادي.
-  void _showCopyableErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          backgroundColor: AppColors.card,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تعذّر تسجيل الدخول', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: SelectableText(message, style: TextStyle(color: AppColors.subText)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('إغلاق', style: TextStyle(color: AppColors.gold)),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   void _showAccountBlockedDialog(String message) {
@@ -255,12 +211,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text('صنع بكل فخر في العراق', style: TextStyle(color: AppColors.subText, fontSize: 11)),
                     const SizedBox(height: 8),
                     const FounderAccessCredit(),
-                    const SizedBox(height: 4),
-                    // تشخيص مؤقّت: يحسم بشكل قاطع أي نسخة فعلياً مثبَّتة على الجهاز
-                    // (اسم الإصدار وحده في "معلومات التطبيق" بنظام أندرويد لا يُظهر
-                    // رقم البناء بعد الـ +، فيصعب التأكد من وصول تحديث Play). يُحذف
-                    // بعد انتهاء التشخيص.
-                    SelectableText('Build 1.0.0+7\n$_signingInfo', textAlign: TextAlign.center, style: TextStyle(color: AppColors.subText.withOpacity(0.7), fontSize: 10)),
                     const SizedBox(height: 12),
                   ],
                 ),
