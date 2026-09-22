@@ -60,6 +60,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _createAccount() async {
     final role = _roleKeys[_selectedRole];
     final auth = context.read<AuthProvider>();
+    if (_passwordController.text != _confirmPasswordController.text) {
+      AppError.showSnackbar(context, 'كلمتا المرور غير متطابقتين');
+      return;
+    }
     try {
       await auth.signUp(
         email: _emailController.text.trim(),
