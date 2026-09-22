@@ -48,16 +48,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   const Text('نسيت كلمة المرور؟', style: TextStyle(color: AppColors.gold, fontSize: 22, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   Text(
-                    'أدخل بريدك الإلكتروني أو رقم هاتفك وسنرسل لك رمزاً',
+                    'أدخل بريدك الإلكتروني المسجَّل وسنرسل لك رابط إعادة التعيين',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: AppColors.subText, fontSize: 14, height: 1.6),
                   ),
                   const SizedBox(height: 32),
                   TextField(
                     controller: _contactController,
+                    keyboardType: TextInputType.emailAddress,
                     style: const TextStyle(color: AppColors.text),
                     decoration: InputDecoration(
-                      hintText: 'رقم الهاتف أو البريد الإلكتروني',
+                      hintText: 'البريد الإلكتروني',
                       hintStyle: TextStyle(color: AppColors.subText, fontSize: 13),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
                       focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
@@ -71,7 +72,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       onPressed: _isLoading ? null : _sendResetEmail,
                       child: _isLoading
                           ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                          : const Text('إرسال رمز التأكيد', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          : const Text('إرسال رابط إعادة التعيين', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                   ),
                   const SizedBox(height: 20),
