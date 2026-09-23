@@ -101,7 +101,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final user = await AuthService.instance.getCurrentUser();
-      if (user != null && AuthService.accessBlockCode(user) != null) {
+      final firebaseUser = AuthService.instance.firebaseUser;
+      final unverified = user != null && firebaseUser != null && AuthService.needsEmailVerification(user, firebaseUser);
+      if (user != null && (unverified || AuthService.accessBlockCode(user) != null)) {
         await AuthService.instance.signOut();
         _currentUser = null;
       } else {

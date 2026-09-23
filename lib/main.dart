@@ -16,20 +16,34 @@ import 'providers/notification_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/reset_password_screen.dart';
 import 'screens/auth/splash_screen.dart';
+import 'services/auth_service.dart';
 import 'widgets/common/connectivity_banner.dart';
 
-/// يستمع لروابط App Links الواردة (فتح التطبيق من رابط إعادة تعيين كلمة
-/// المرور) طوال عمر التطبيق، ويفتح ResetPasswordScreen عند استقبال
-/// oobCode صالح — راجع auth_service.dart: resetPassword.
-void _listenForPasswordResetLinks() {
+/// يستمع لروابط App Links الواردة من رسائل Firebase (إعادة تعيين كلمة
+/// المرور، تأكيد البريد) طوال عمر التطبيق — راجع auth_service.dart.
+void _listenForAuthActionLinks() {
   final appLinks = AppLinks();
-  appLinks.uriLinkStream.listen((uri) {
-    if (uri.queryParameters['mode'] != 'resetPassword') return;
+  appLinks.uriLinkStream.listen((uri) async {
+    final mode = uri.queryParameters['mode'];
     final oobCode = uri.queryParameters['oobCode'];
     if (oobCode == null || oobCode.isEmpty) return;
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(builder: (_) => ResetPasswordScreen(oobCode: oobCode)),
-    );
+    if (mode == 'resetPassword') {
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(builder: (_) => ResetPasswordScreen(oobCode: oobCode)),
+      );
+    } else if (mode == 'verifyEmail') {
+      String message;
+      try {
+        await AuthService.instance.applyEmailVerificationCode(oobCode);
+        message = 'تم تأكيد بريدك الإلكتروني — يمكنك تسجيل الدخول الآن';
+      } catch (_) {
+        message = 'رابط التأكيد غير صالح أو منتهي — سجّل الدخول لإرسال رابط جديد';
+      }
+      final messengerContext = navigatorKey.currentState?.overlay?.context;
+      if (messengerContext != null && messengerContext.mounted) {
+        ScaffoldMessenger.of(messengerContext).showSnackBar(SnackBar(content: Text(message)));
+      }
+    }
   });
 }
 
@@ -63,7 +77,7 @@ Future<void> main() async {
     appleProvider: AppleProvider.appAttest,
   );
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  _listenForPasswordResetLinks();
+  _listenForAuthActionLinks();
   runApp(
     MultiProvider(
       providers: [

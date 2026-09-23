@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/categories.dart';
 import '../../core/constants/colors.dart';
-import '../../core/navigation/role_router.dart';
 import '../../core/utils/error_handler.dart';
 import '../../providers/auth_provider.dart';
 import '../shared/privacy_policy_screen.dart';
@@ -79,23 +78,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.push(context, MaterialPageRoute(builder: (_) => const ShippingRegisterScreen()));
         return;
       }
-      if (role == 'artisan') {
-        // الحرفيون الجدد بانتظار مراجعة الإدارة (ADMIN-4) قبل تفعيل حسابهم.
-        await auth.signOut();
-        if (!mounted) return;
-        _showPendingReviewDialog();
-        return;
-      }
-      final user = auth.currentUser;
-      if (user == null) return;
-      navigateByRole(context, user.role, user: user);
+      // لا دخول قبل تأكيد البريد (AuthService.needsEmailVerification)؛
+      // والحرفيون ينتظرون أيضاً مراجعة الإدارة (ADMIN-4).
+      await auth.signOut();
+      if (!mounted) return;
+      _showVerifyEmailDialog(isArtisan: role == 'artisan');
     } catch (e) {
       if (!mounted) return;
       AppError.showSnackbar(context, AppError.getFirebaseError(e));
     }
   }
 
-  void _showPendingReviewDialog() {
+  void _showVerifyEmailDialog({required bool isArtisan}) {
+    final email = _emailController.text.trim();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -104,8 +99,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تم استلام طلبك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
-          content: Text('سيراجع فريق AL-HIRFA حسابك كحرفي وسنُعلمك عند الموافقة.', style: TextStyle(color: AppColors.subText)),
+          title: const Text('أكّد بريدك الإلكتروني', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          content: Text(
+            'أرسلنا رابط تأكيد إلى $email — افتحه ثم سجّل الدخول (تفقّد أيضاً الرسائل غير المرغوب فيها).'
+            '${isArtisan ? '\n\nبعد التأكيد، سيراجع فريق AL-HIRFA حسابك كحرفي وسنُعلمك عند الموافقة.' : ''}',
+            style: TextStyle(color: AppColors.subText),
+          ),
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),

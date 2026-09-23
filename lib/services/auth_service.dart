@@ -74,9 +74,21 @@ class AuthService {
     await _firestore.collection(_usersCollection).doc(uid).set(user.toMap());
     await _writePrivateContact(uid, phone: phone);
     await saveFCMToken(uid);
+    await credential.user!.sendEmailVerification();
 
     return user;
   }
+
+  /// الحسابات المُنشأة قبل هذا التاريخ معفاة من شرط تأكيد البريد — كي لا
+  /// يُقفَل مختبرو الاختبار المغلق الحاليون الذين سجّلوا قبل إضافة الشرط.
+  static final DateTime emailVerificationRequiredSince = DateTime(2026, 9, 24);
+
+  static bool needsEmailVerification(UserModel user, User firebaseUser) {
+    return !firebaseUser.emailVerified && user.role != 'admin' && !user.createdAt.isBefore(emailVerificationRequiredSince);
+  }
+
+  /// يُكمل تأكيد البريد من رابط الرسالة عند فتحه داخل التطبيق (App Link).
+  Future<void> applyEmailVerificationCode(String oobCode) => _auth.applyActionCode(oobCode);
 
   /// يتحقق مما إذا كانت حالة الحساب (المراجعة/التفعيل) تمنع الدخول، ويعيد
   /// رمز السبب أو null إن كان الحساب سليماً. يُستخدم عند تسجيل الدخول
@@ -106,6 +118,13 @@ class AuthService {
     }
 
     final user = UserModel.fromMap(uid, doc.data()!);
+    if (needsEmailVerification(user, credential.user!)) {
+      try {
+        await credential.user!.sendEmailVerification();
+      } catch (_) {}
+      await _auth.signOut();
+      throw FirebaseAuthException(code: 'email-not-verified', message: 'البريد غير مؤكَّد');
+    }
     final blockCode = accessBlockCode(user);
     if (blockCode != null) {
       await _auth.signOut();
