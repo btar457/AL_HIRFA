@@ -50,7 +50,11 @@ class ProductService {
     );
 
     await docRef.set(newProduct.toMap());
-    await NotificationService.instance.sendBulkNotification(targetRole: 'admin', title: 'منتج جديد بانتظار المراجعة', body: newProduct.name);
+    // إشعار الإدارة إجراء ثانوي — فشله (شبكة، صلاحيات...) لا يجب أن يُظهر
+    // للحرفي رسالة خطأ بعد أن نُشر منتجه فعلاً بنجاح في السطر أعلاه.
+    try {
+      await NotificationService.instance.sendBulkNotification(targetRole: 'admin', title: 'منتج جديد بانتظار المراجعة', body: newProduct.name);
+    } catch (_) {}
     return productId;
   }
 

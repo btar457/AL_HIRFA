@@ -59,7 +59,7 @@ class AdminService {
   Future<int> getPendingShippingCompaniesCount() => _countUsers(role: 'shipping', approvalStatus: 'pending');
 
   Future<int> getTotalProductsCount() async {
-    final snapshot = await _firestore.collection(_productsCollection).count().get();
+    final snapshot = await _firestore.collection(_productsCollection).where('status', isEqualTo: 'active').count().get();
     return snapshot.count ?? 0;
   }
 
