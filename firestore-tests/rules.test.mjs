@@ -895,3 +895,117 @@ test('رفض: الحرفي يعدّل commissionWarningLevel الخاص بنفس
   const db = ctx('artisanA');
   await assertFails(updateDoc(doc(db, 'users/artisanA'), { commissionWarningLevel: 0 }));
 });
+
+// =========================================================================
+// المخزون (stock) — حجز الكمية عند الطلب ومنع البيع الزائد
+// (order_service.dart: createOrders، product_form.dart)
+// =========================================================================
+async function seedStockProducts(products) {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    for (const [id, stock] of Object.entries(products)) {
+      const data = { name: id, artisanUid: 'artisanA', status: 'active', price: 10000, salesCount: 0, reviewCount: 0, rating: 0 };
+      if (stock !== null) data.stock = stock;
+      await setDoc(doc(db, `products/${id}`), data);
+    }
+  });
+}
+
+function newOrder(productId, reservedQuantity) {
+  return {
+    productId, productName: productId, productImage: '', price: 10000 * Math.max(reservedQuantity, 1),
+    deliveryFee: 5000, totalAmount: 15000, platformFee: 500, artisanEarnings: 14500, shippingEarnings: 0,
+    buyerUid: 'customerA', buyerName: 'مشتري أ', buyerPhone: '07700000000',
+    address: { governorate: 'بغداد', district: '', notes: '' },
+    artisanUid: 'artisanA', artisanName: 'حرفي أ', shippingUid: null, shippingCompanyName: null,
+    status: 'pending', isReviewed: false, disputeId: null, createdAt: new Date(), commissionPaid: false,
+    reservedQuantity,
+  };
+}
+
+// نفس شكل الدفعة في createOrders: إنشاء الطلب + خصم المخزون ذرّياً.
+function reserveBatch(db, items) {
+  const batch = writeBatch(db);
+  items.forEach(({ productId, qty, orderId }) => {
+    batch.set(doc(db, `orders/${orderId}`), newOrder(productId, qty));
+    batch.update(doc(db, `products/${productId}`), { stock: increment(-qty), lastReservationOrderId: orderId });
+  });
+  return batch.commit();
+}
+
+test('سماح: مشترٍ يطلب كمية متوفرة ويُخصم المخزون في نفس الدفعة', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 3 });
+  const db = ctx('customerA');
+  await assertSucceeds(reserveBatch(db, [{ productId: 'p1', qty: 2, orderId: 'o1' }]));
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const snap = await getDoc(doc(context.firestore(), 'products/p1'));
+    assert.equal(snap.data().stock, 1);
+  });
+});
+
+test('سماح: سلة بـ4 منتجات بمخزون متتبَّع في دفعة واحدة (ضمن حد get() للدفعة)', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 5, p2: 5, p3: 5, p4: 5 });
+  const db = ctx('customerA');
+  await assertSucceeds(reserveBatch(db, ['p1', 'p2', 'p3', 'p4'].map((p, i) => ({ productId: p, qty: 1, orderId: `o${i}` }))));
+});
+
+test('رفض: طلب كمية أكبر من المتوفر (البيع الزائد)', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 1 });
+  const db = ctx('customerA');
+  await assertFails(reserveBatch(db, [{ productId: 'p1', qty: 2, orderId: 'o1' }]));
+});
+
+test('رفض: طلب على منتج نفدت كميته', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 0 });
+  const db = ctx('customerA');
+  await assertFails(reserveBatch(db, [{ productId: 'p1', qty: 1, orderId: 'o1' }]));
+});
+
+test('رفض: إنشاء طلب على منتج بمخزون متتبَّع دون خصم المخزون', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 3 });
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'orders/o1'), newOrder('p1', 1)));
+  await assertFails(setDoc(doc(db, 'orders/o2'), newOrder('p1', 0)));
+});
+
+test('رفض: مشترٍ يخصم مخزون منتج دون إنشاء طلب (تخريب)', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 3 });
+  const db = ctx('customerA');
+  await assertFails(updateDoc(doc(db, 'products/p1'), { stock: increment(-3), lastReservationOrderId: 'nonexistent' }));
+});
+
+test('رفض: خصم المخزون بإعادة استخدام طلب قديم معلّق', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 5 });
+  const db = ctx('customerA');
+  await assertSucceeds(reserveBatch(db, [{ productId: 'p1', qty: 1, orderId: 'o1' }]));
+  await assertFails(updateDoc(doc(db, 'products/p1'), { stock: increment(-1), lastReservationOrderId: 'o1' }));
+});
+
+test('سماح: طلب على منتج قديم بلا مخزون متتبَّع (بلا خصم)', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ legacy: null });
+  const db = ctx('customerA');
+  await assertSucceeds(setDoc(doc(db, 'orders/o1'), newOrder('legacy', 0)));
+});
+
+test('سماح: الحرفي يعيد الكمية لمنتجه عند رفض طلب، ويعدّلها يدوياً', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 0 });
+  const db = ctx('artisanA');
+  await assertSucceeds(updateDoc(doc(db, 'products/p1'), { stock: increment(2) }));
+  await assertSucceeds(updateDoc(doc(db, 'products/p1'), { stock: 7 }));
+});
+
+test('رفض: الحرفي يضع كمية سالبة أو حرفي آخر يعدّل الكمية', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 2 });
+  await assertFails(updateDoc(doc(ctx('artisanA'), 'products/p1'), { stock: -1 }));
+  await assertFails(updateDoc(doc(ctx('artisanB'), 'products/p1'), { stock: 100 }));
+});

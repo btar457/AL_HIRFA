@@ -174,6 +174,13 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
                     Text(product.category, style: TextStyle(color: AppColors.subText, fontSize: 12)),
                     const SizedBox(height: 4),
                     Text('د.ع ${_formatPrice(product.price)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    if (product.stock == null)
+                      Text('الكمية غير محددة — حدّثها من "تعديل"', style: TextStyle(color: AppColors.subText, fontSize: 12))
+                    else if (product.isOutOfStock)
+                      const Text('نفدت الكمية — اضغط "تعديل" لإضافة كمية', style: TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold))
+                    else
+                      Text('الكمية المتوفرة: ${product.stock}', style: TextStyle(color: product.stock! <= 2 ? Colors.orange : AppColors.subText, fontSize: 12)),
                   ],
                 ),
               ),

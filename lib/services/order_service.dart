@@ -5,6 +5,20 @@ import '../models/transaction_model.dart';
 import 'admin_service.dart';
 import 'notification_service.dart';
 
+/// الكمية المطلوبة أكبر من المتوفر. [productName]/[available] null إن
+/// اكتُشف النفاد لحظة الحفظ فقط (مشترٍ آخر سبق لآخر قطعة).
+class OutOfStockException implements Exception {
+  final String? productName;
+  final int? available;
+  const OutOfStockException(this.productName, this.available);
+
+  String get message {
+    if (productName == null) return 'نفدت كمية أحد المنتجات قبل إتمام طلبك — راجع سلتك وحاول مجدداً';
+    if (available == 0) return 'نفدت كمية "$productName" — احذفه من السلة لإتمام الطلب';
+    return 'المتوفر من "$productName" $available فقط — عدّل الكمية في السلة';
+  }
+}
+
 /// طبقة إدارة الطلبات ودورة حياتها الكاملة عبر Firestore.
 class OrderService {
   OrderService._();
@@ -15,6 +29,11 @@ class OrderService {
   static const _ordersCollection = 'orders';
   static const _transactionsCollection = 'transactions';
   static const _rateLimitsCollection = 'rate_limits';
+
+  /// حد منتجات مختلفة في طلب واحد: كل منتج بمخزون متتبَّع يكلّف قواعد
+  /// Firestore عدة قراءات get()/getAfter() ضمن الدفعة، وحدّها للدفعة الواحدة
+  /// ثابت — مُختبَر في firestore-tests (8 تنجح، 10 تفشل).
+  static const maxItemsPerCheckout = 8;
 
   /// يُشتَق من معرّف الطلب الفريد في Firestore (بدل رقم عشوائي قابل للتكرار)
   /// لضمان عدم تصادم رقمين مختلفين إطلاقاً.
@@ -66,38 +85,93 @@ class OrderService {
       throw Exception('لقد تجاوزت الحد المسموح لعدد الطلبات خلال ساعة واحدة، يرجى المحاولة لاحقاً');
     }
 
+    // [order.reservedQuantity] القادم من السلة = الكمية المطلوبة. المخزون
+    // يُقرأ هنا طازجاً (قد تكون السلة قديمة)؛ الخصم الفعلي داخل الدفعة أدناه
+    // تحرسه firestore.rules (stock >= 0 بعد الخصم) فلا يُباع أكثر من المتوفر
+    // حتى لو تزامن مشتريان — تفشل الدفعة كاملة بدل البيع الزائد.
+    final productDocs = await Future.wait(orders.map((o) => _firestore.collection('products').doc(o.productId).get()));
+    final stocks = <int?>[];
+    for (var i = 0; i < orders.length; i++) {
+      final stock = productDocs[i].data()?['stock'] as int?;
+      if (stock != null && stock < orders[i].reservedQuantity) {
+        throw OutOfStockException(orders[i].productName, stock);
+      }
+      stocks.add(stock);
+    }
+
     final batch = _firestore.batch();
     final newOrders = <OrderModel>[];
-    for (final order in orders) {
+    for (var i = 0; i < orders.length; i++) {
+      final order = orders[i];
       final docRef = _firestore.collection(_ordersCollection).doc();
+      final tracked = stocks[i] != null;
       final newOrder = order.copyWith(
         id: docRef.id,
         orderNumber: _generateOrderNumber(docRef.id),
         status: 'pending',
         sellerApprovalDeadline: DateTime.now().add(Duration(hours: AppRules.sellerApprovalHours)),
+        reservedQuantity: tracked ? order.reservedQuantity : 0,
       );
       batch.set(docRef, newOrder.toMap());
+      if (tracked) {
+        batch.update(_firestore.collection('products').doc(order.productId), {
+          'stock': FieldValue.increment(-order.reservedQuantity),
+          'lastReservationOrderId': docRef.id,
+        });
+      }
       newOrders.add(newOrder);
     }
-    await batch.commit();
+    try {
+      await batch.commit();
+    } on FirebaseException catch (e) {
+      // رفض القواعد هنا يعني غالباً أن مشترياً آخر سبقه لآخر قطعة.
+      if (e.code == 'permission-denied' && stocks.any((s) => s != null)) {
+        throw OutOfStockException(null, null);
+      }
+      rethrow;
+    }
 
     // ما دون هذا السطر غير ذرّي مع الدفعة أعلاه (rate_limits + الإشعارات) —
     // انقطاع هنا يترك عدّاداً ناقصاً أو إشعاراً ضائعاً. مقبول عند الحجم
     // الحالي، مؤجَّل لا محسوم — راجع POST_LAUNCH_DECISIONS.md البند 1.
-    for (var i = 0; i < newOrders.length; i++) {
-      await _incrementRateLimit(buyerUid);
-    }
+    // فشله لا يجب أن يُظهر خطأً للمشتري: طلباته أُنشئت فعلاً، ورسالة خطأ
+    // هنا تُبقي السلة ممتلئة فيعيد الطلب ويُنشئ طلبات مكرَّرة.
+    try {
+      for (var i = 0; i < newOrders.length; i++) {
+        await _incrementRateLimit(buyerUid);
+      }
 
-    for (final newOrder in newOrders) {
-      await NotificationService.instance.sendToUser(
-        userUid: newOrder.artisanUid,
-        title: 'طلب جديد ينتظر موافقتك',
-        body: '${newOrder.productName} — ${newOrder.orderNumber}',
-        type: 'new_order',
-        data: {'orderId': newOrder.id},
-      );
-    }
+      for (var i = 0; i < newOrders.length; i++) {
+        final newOrder = newOrders[i];
+        await NotificationService.instance.sendToUser(
+          userUid: newOrder.artisanUid,
+          title: 'طلب جديد ينتظر موافقتك',
+          body: '${newOrder.productName} — ${newOrder.orderNumber}',
+          type: 'new_order',
+          data: {'orderId': newOrder.id},
+        );
+        if (stocks[i] != null && stocks[i]! - newOrder.reservedQuantity <= 0) {
+          await NotificationService.instance.sendToUser(
+            userUid: newOrder.artisanUid,
+            title: 'نفدت كمية منتجك',
+            body: '${newOrder.productName} — حدّث الكمية من "تعديل المنتج" ليعود متاحاً للشراء',
+            type: 'out_of_stock',
+            data: {'productId': newOrder.productId},
+          );
+        }
+      }
+    } catch (_) {}
     return newOrders.map((o) => o.id).toList();
+  }
+
+  /// يعيد الكمية المحجوزة لطلب أُلغي إلى مخزون منتجه.
+  /// فشله لا يُفشل الإلغاء نفسه (تم فعلاً) — الحرفي يستطيع تصحيح الكمية
+  /// يدوياً من "تعديل المنتج".
+  Future<void> _restoreStock(OrderModel order) async {
+    if (order.reservedQuantity <= 0) return;
+    try {
+      await _firestore.collection('products').doc(order.productId).update({'stock': FieldValue.increment(order.reservedQuantity)});
+    } catch (_) {}
   }
 
   Future<void> _incrementRateLimit(String buyerUid) async {
@@ -142,6 +216,7 @@ class OrderService {
     final order = await _requireOrder(orderId);
 
     await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'cancelled', 'rejectionReason': reason, 'rejectedBy': 'seller'});
+    await _restoreStock(order);
 
     await NotificationService.instance.sendToUser(
       userUid: order.buyerUid,
@@ -342,6 +417,7 @@ class OrderService {
     final order = await _requireOrder(orderId);
 
     await _firestore.collection(_ordersCollection).doc(orderId).update({'status': 'cancelled', 'rejectionReason': reason});
+    await _restoreStock(order);
 
     if (order.disputeId != null) {
       await _firestore.collection('disputes').doc(order.disputeId).update({'status': 'resolved', 'resolution': reason, 'resolvedAt': Timestamp.now()});

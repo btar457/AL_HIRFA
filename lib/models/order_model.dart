@@ -35,6 +35,9 @@ class OrderModel {
   // (تحويل بنكي يدوي خارج التطبيق)؟ لا معنى له قبل status=='delivered' —
   // راجع admin_commissions_owed_screen.dart.
   final bool commissionPaid;
+  // الكمية المخصومة من مخزون المنتج عند إنشاء الطلب — تُعاد للمخزون عند
+  // الإلغاء. 0 للطلبات القديمة أو لمنتج بلا مخزون متتبَّع (لا شيء يُعاد).
+  final int reservedQuantity;
 
   const OrderModel({
     required this.id,
@@ -66,6 +69,7 @@ class OrderModel {
     required this.createdAt,
     this.deliveredAt,
     this.commissionPaid = false,
+    this.reservedQuantity = 0,
   });
 
   OrderModel copyWith({
@@ -79,6 +83,7 @@ class OrderModel {
     bool? isReviewed,
     DateTime? deliveredAt,
     bool? commissionPaid,
+    int? reservedQuantity,
   }) {
     return OrderModel(
       id: id ?? this.id,
@@ -110,6 +115,7 @@ class OrderModel {
       createdAt: createdAt,
       deliveredAt: deliveredAt ?? this.deliveredAt,
       commissionPaid: commissionPaid ?? this.commissionPaid,
+      reservedQuantity: reservedQuantity ?? this.reservedQuantity,
     );
   }
 
@@ -145,6 +151,7 @@ class OrderModel {
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       deliveredAt: (map['deliveredAt'] as Timestamp?)?.toDate(),
       commissionPaid: map['commissionPaid'] as bool? ?? false,
+      reservedQuantity: map['reservedQuantity'] as int? ?? 0,
     );
   }
 
@@ -176,6 +183,7 @@ class OrderModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'deliveredAt': deliveredAt != null ? Timestamp.fromDate(deliveredAt!) : null,
       'commissionPaid': commissionPaid,
+      'reservedQuantity': reservedQuantity,
     };
   }
 }

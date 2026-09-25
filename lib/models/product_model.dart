@@ -22,6 +22,8 @@ class ProductModel {
   final double rating;
   final int reviewCount;
   final int salesCount;
+  // الكمية المتوفرة؛ null = غير متتبَّعة (منتجات قديمة قبل إضافة الحقل).
+  final int? stock;
   final DateTime createdAt;
 
   const ProductModel({
@@ -43,8 +45,11 @@ class ProductModel {
     this.rating = 0,
     this.reviewCount = 0,
     this.salesCount = 0,
+    this.stock,
     required this.createdAt,
   });
+
+  bool get isOutOfStock => stock != null && stock! <= 0;
 
   factory ProductModel.fromMap(String id, Map<String, dynamic> map) {
     return ProductModel(
@@ -66,6 +71,7 @@ class ProductModel {
       rating: (map['rating'] as num?)?.toDouble() ?? 0,
       reviewCount: map['reviewCount'] as int? ?? 0,
       salesCount: map['salesCount'] as int? ?? 0,
+      stock: map['stock'] as int?,
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -109,6 +115,7 @@ class ProductModel {
       'rating': rating,
       'reviewCount': reviewCount,
       'salesCount': salesCount,
+      'stock': stock,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }

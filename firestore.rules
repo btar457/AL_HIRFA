@@ -111,6 +111,17 @@ service cloud.firestore {
     // products/{productId} — product_service.dart
     // -----------------------------------------------------------------
     match /products/{productId} {
+      // الكمية (stock) اختيارية تاريخياً — منتجات ما قبل إضافتها بلا حقل
+      // (غير متتبَّعة). إن وُجدت فهي عدد صحيح غير سالب دائماً.
+      function validStock() {
+        return !('stock' in request.resource.data)
+          || (request.resource.data.stock is int && request.resource.data.stock >= 0);
+      }
+
+      function reservationOrder() {
+        return getAfter(/databases/$(database)/documents/orders/$(request.resource.data.lastReservationOrderId)).data;
+      }
+
       // عام: المنتجات النشطة فقط. صاحبها يرى كل حالاته (pending/rejected/
       // suspended أيضاً). الإدارة ترى كل شيء (مراجعة المنتجات المعلّقة).
       allow read: if isSignedIn() && (
@@ -124,15 +135,35 @@ service cloud.firestore {
       allow create: if isActiveNonBanned() && hasRole('artisan')
         && myData().approvalStatus == 'approved'
         && request.resource.data.artisanUid == request.auth.uid
-        && request.resource.data.status == 'pending';
+        && request.resource.data.status == 'pending'
+        && validStock();
 
       allow update: if isSignedIn() && (
         // الحرفي يعدّل تفاصيل منتجه (product_form.dart) — لا يغيّر الحالة
         // أو الإحصاءات المحسوبة من النظام (rating/reviewCount/salesCount).
+        // stock هنا أيضاً: تعديل الكمية يدوياً، وإعادتها عند رفضه طلباً
+        // (order_service.dart: sellerRejectOrder → _restoreStock).
         (resource.data.artisanUid == request.auth.uid && onlyFieldsChanged([
           'name', 'description', 'price', 'category', 'city',
-          'narrative', 'material', 'originPlace', 'technique', 'images'
-        ]))
+          'narrative', 'material', 'originPlace', 'technique', 'images', 'stock'
+        ]) && validStock())
+        // المشتري يحجز الكمية عند إنشاء طلب (order_service.dart: createOrders)
+        // — في نفس الدفعة الذرّية مع إنشاء الطلب نفسه: getAfter يثبت أن طلباً
+        // *جديداً* (غير موجود قبل الدفعة) لهذا المشتري ولهذا المنتج بالكمية
+        // المخصومة بالضبط يُنشأ معه، فلا خصم بلا طلب حقيقي ولا إعادة استخدام
+        // طلب قديم. stock >= 0 بعد الخصم يمنع البيع الزائد حتى مع مشتريَين
+        // متزامنَين (تفشل دفعة المتأخر كاملة).
+        || (isActiveNonBanned() && onlyFieldsChanged(['stock', 'lastReservationOrderId'])
+            && resource.data.status == 'active'
+            && resource.data.get('stock', null) is int
+            && request.resource.data.stock is int
+            && request.resource.data.stock >= 0
+            && request.resource.data.stock < resource.data.stock
+            && !exists(/databases/$(database)/documents/orders/$(request.resource.data.lastReservationOrderId))
+            && reservationOrder().productId == productId
+            && reservationOrder().buyerUid == request.auth.uid
+            && reservationOrder().status == 'pending'
+            && reservationOrder().reservedQuantity == resource.data.stock - request.resource.data.stock)
         // زيادة عدد المبيعات عند تأكيد التسليم (order_service.dart:
         // confirmDelivery) — تنفّذها شركة الشحن، وليست صاحبة المنتج.
         || (isActiveNonBanned() && onlyFieldsChanged(['salesCount'])
@@ -178,6 +209,17 @@ service cloud.firestore {
         && request.resource.data.status == 'pending'
         && get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.artisanUid == request.resource.data.artisanUid
         && get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.status == 'active'
+        // منتج بمخزون متتبَّع: الطلب يجب أن يحجز كمية فعلية، والمخزون يجب
+        // أن يُخصم بها بالضبط ضمن نفس الدفعة — لا طلب يتجاوز الكمية المتوفرة.
+        && (
+             !(get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.get('stock', null) is int)
+             || (
+                  request.resource.data.reservedQuantity is int
+                  && request.resource.data.reservedQuantity > 0
+                  && getAfter(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.stock
+                       == get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.stock - request.resource.data.reservedQuantity
+                )
+           )
         // حدّ منطقي: لا يتجاوز مشترٍ واحد 10 طلبات ضمن نافذة ساعة واحدة
         // (order_service.dart: createOrder يحدّث rate_limits/{buyerUid} ضمن
         // نفس transaction إنشاء الطلب). الرقم 10 يطابق AppRules.maxOrdersPerHour.
@@ -363,7 +405,7 @@ service cloud.firestore {
              request.resource.data.type in [
                'new_order', 'shipping_assigned', 'order_rejected', 'order_picked_up',
                'order_delivered', 'wallet_credited', 'order_cancelled', 'new_delivery',
-               'delivery_issue'
+               'delivery_issue', 'out_of_stock'
              ]
              || (
                   request.resource.data.type == 'system'

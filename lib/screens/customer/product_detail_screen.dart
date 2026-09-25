@@ -61,8 +61,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 16),
                     _buildArtisanCard(product),
                     const SizedBox(height: 20),
-                    _buildQuantitySelector(),
-                    const SizedBox(height: 16),
+                    if (!product.isOutOfStock) ...[
+                      _buildQuantitySelector(product),
+                      const SizedBox(height: 16),
+                    ],
                     _buildActionButtons(product),
                     const SizedBox(height: 28),
                     _buildNarrative(product),
@@ -184,6 +186,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
         const SizedBox(height: 12),
         Text('د.ع ${_formatPrice(product.price)}', style: const TextStyle(color: AppColors.gold, fontSize: 28, fontWeight: FontWeight.bold)),
+        if (product.stock != null) ...[
+          const SizedBox(height: 6),
+          if (product.isOutOfStock)
+            const Text('نفدت الكمية', style: TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold))
+          else if (product.stock! <= 5)
+            Text('متبقٍّ ${product.stock} فقط', style: const TextStyle(color: Colors.orange, fontSize: 13, fontWeight: FontWeight.bold))
+          else
+            Text('متوفر: ${product.stock} قطعة', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+        ],
       ],
     );
   }
@@ -220,15 +231,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildQuantitySelector() {
+  Widget _buildQuantitySelector(ProductModel product) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _quantityButton(icon: Icons.remove, onTap: () => setState(() => _quantity = _quantity > 1 ? _quantity - 1 : 1)),
         SizedBox(width: 48, child: Text('$_quantity', textAlign: TextAlign.center, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18))),
-        _quantityButton(icon: Icons.add, onTap: () => setState(() => _quantity++)),
+        _quantityButton(icon: Icons.add, onTap: () {
+          if (product.stock != null && _quantity >= product.stock!) return;
+          setState(() => _quantity++);
+        }),
       ],
     );
+  }
+
+  /// يضيف للسلة، أو يُعلم المشتري إن تجاوز المجموع المتوفر.
+  bool _addToCart(ProductModel product) {
+    final added = context.read<CartProvider>().addItem(product, quantity: _quantity);
+    if (!added) {
+      final inCart = context.read<CartProvider>().quantityOf(product.id);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('المتوفر ${product.stock} فقط${inCart > 0 ? ' — لديك $inCart في السلة' : ''}')));
+    }
+    setState(() => _quantity = 1);
+    return added;
   }
 
   Widget _quantityButton({required IconData icon, required VoidCallback onTap}) {
@@ -244,6 +269,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget _buildActionButtons(ProductModel product) {
+    if (product.isOutOfStock) {
+      return SizedBox(
+        height: 56,
+        width: double.infinity,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(disabledBackgroundColor: AppColors.card, disabledForegroundColor: AppColors.subText, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+          onPressed: null,
+          child: const Text('نفدت الكمية', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        ),
+      );
+    }
     return Row(
       children: [
         Expanded(
@@ -252,9 +288,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
               onPressed: () {
-                context.read<CartProvider>().addItem(product, quantity: _quantity);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('أُضيف "${product.name}" إلى السلة')));
-                setState(() => _quantity = 1);
+                if (_addToCart(product)) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('أُضيف "${product.name}" إلى السلة')));
+                }
               },
               child: const Icon(Icons.add_shopping_cart_outlined, color: AppColors.gold),
             ),
@@ -268,9 +304,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
               onPressed: () {
-                context.read<CartProvider>().addItem(product, quantity: _quantity);
-                setState(() => _quantity = 1);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutScreen()));
+                // "اشترِ الآن" تنتقل للدفع حتى لو القطعة موجودة في السلة مسبقاً.
+                final alreadyInCart = context.read<CartProvider>().quantityOf(product.id) > 0;
+                if (_addToCart(product) || alreadyInCart) {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutScreen()));
+                }
               },
               child: const Text('اشترِ الآن', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),

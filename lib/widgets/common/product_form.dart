@@ -66,6 +66,8 @@ class _ProductFormState extends State<ProductForm> {
   final _formKey = GlobalKey<FormState>();
   late final _nameController = TextEditingController(text: widget.initialProduct?.name ?? '');
   late final _priceController = TextEditingController(text: widget.initialProduct != null ? widget.initialProduct!.price.toString() : '');
+  late final String _initialStockText = widget.initialProduct?.stock?.toString() ?? '';
+  late final _stockController = TextEditingController(text: _initialStockText);
   late final _descriptionController = TextEditingController(text: widget.initialProduct?.description ?? '');
   late final _narrativeController = TextEditingController(text: widget.initialProduct?.narrative ?? '');
   late final _materialController = TextEditingController(text: widget.initialProduct?.material ?? '');
@@ -152,6 +154,7 @@ class _ProductFormState extends State<ProductForm> {
           originPlace: _originController.text.trim(),
           technique: _techniqueController.text.trim(),
           status: 'pending',
+          stock: int.parse(_stockController.text.trim()),
           createdAt: DateTime.now(),
         );
         await ProductService.instance.addProduct(product, _images);
@@ -169,6 +172,9 @@ class _ProductFormState extends State<ProductForm> {
           'originPlace': _originController.text.trim(),
           'technique': _techniqueController.text.trim(),
           'images': [..._existingImageUrls, ...newImageUrls],
+          // يُكتب فقط إن غيّره الحرفي فعلاً — كي لا يطمس حفظ النموذج خصماً
+          // حدث من طلب جديد بين فتح النموذج وحفظه.
+          if (_stockController.text.trim() != _initialStockText) 'stock': int.parse(_stockController.text.trim()),
         });
       }
       if (!mounted) return;
@@ -260,6 +266,23 @@ class _ProductFormState extends State<ProductForm> {
                       if (trimmed.isEmpty) return 'السعر مطلوب';
                       final parsed = int.tryParse(trimmed.replaceAll(',', ''));
                       if (parsed == null || parsed <= 0) return 'أدخل سعراً صحيحاً أكبر من صفر';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildLabeledField(
+                  label: 'الكمية المتوفرة',
+                  field: TextFormField(
+                    controller: _stockController,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: AppColors.text),
+                    decoration: _fieldDecoration(hint: 'عدد القطع الجاهزة للبيع'),
+                    validator: (v) {
+                      final parsed = int.tryParse(v?.trim() ?? '');
+                      if (parsed == null) return 'الكمية مطلوبة';
+                      final min = widget.initialProduct == null ? 1 : 0;
+                      if (parsed < min) return min == 1 ? 'أدخل كمية لا تقل عن 1' : 'الكمية لا يمكن أن تكون سالبة';
                       return null;
                     },
                   ),

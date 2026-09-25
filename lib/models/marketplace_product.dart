@@ -5,6 +5,7 @@ class MarketplaceProduct {
   final String city;
   final String cityTag;
   final String imageUrl;
+  final bool outOfStock;
 
   const MarketplaceProduct({
     required this.name,
@@ -12,5 +13,6 @@ class MarketplaceProduct {
     required this.city,
     required this.cityTag,
     this.imageUrl = '',
+    this.outOfStock = false,
   });
 }

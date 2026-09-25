@@ -32,6 +32,7 @@ MarketplaceProduct _toMarketplaceProduct(ProductModel product) {
     city: product.city,
     cityTag: product.city.toUpperCase(),
     imageUrl: product.images.isNotEmpty ? product.images.first : '',
+    outOfStock: product.isOutOfStock,
   );
 }
 

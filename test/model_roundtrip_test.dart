@@ -31,6 +31,7 @@ void main() {
         rating: 4.5,
         reviewCount: 12,
         salesCount: 3,
+        stock: 7,
         createdAt: DateTime(2026, 1, 1, 10, 30),
       );
 
@@ -53,6 +54,7 @@ void main() {
       expect(restored.rating, original.rating);
       expect(restored.reviewCount, original.reviewCount);
       expect(restored.salesCount, original.salesCount);
+      expect(restored.stock, original.stock);
       expect(restored.createdAt, original.createdAt);
     });
 
@@ -61,6 +63,8 @@ void main() {
       expect(restored.artisanPhotoUrl, '');
       expect(restored.status, 'pending');
       expect(restored.images, isEmpty);
+      expect(restored.stock, isNull);
+      expect(restored.isOutOfStock, isFalse);
     });
   });
 
@@ -120,6 +124,7 @@ void main() {
         shippingAcceptDeadline: DateTime(2026, 1, 2),
         isReviewed: true,
         disputeId: 'd1',
+        reservedQuantity: 2,
         createdAt: DateTime(2026, 1, 1),
         deliveredAt: DateTime(2026, 1, 5),
       );
@@ -145,6 +150,7 @@ void main() {
       expect(restored.shippingAcceptDeadline, original.shippingAcceptDeadline);
       expect(restored.isReviewed, original.isReviewed);
       expect(restored.disputeId, original.disputeId);
+      expect(restored.reservedQuantity, original.reservedQuantity);
       expect(restored.createdAt, original.createdAt);
       expect(restored.deliveredAt, original.deliveredAt);
     });

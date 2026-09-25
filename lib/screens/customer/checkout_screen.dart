@@ -119,6 +119,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final cart = context.read<CartProvider>();
     final buyer = context.read<AuthProvider>().currentUser;
     if (buyer == null || cart.items.isEmpty) return;
+    if (cart.items.length > OrderService.maxItemsPerCheckout) {
+      AppError.showSnackbar(context, 'يمكن طلب ${OrderService.maxItemsPerCheckout} منتجات مختلفة كحد أقصى في المرة الواحدة — احذف بعضها وأكمل الباقي في طلب ثانٍ');
+      return;
+    }
 
     setState(() => _isSubmitting = true);
     try {
@@ -154,6 +158,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           artisanName: product.artisanName,
           status: 'pending',
           createdAt: DateTime.now(),
+          reservedQuantity: item.quantity,
         );
       }).toList();
       // دفعة (WriteBatch) ذرّية واحدة لكل طلبات السلة — إما تُنشأ كلها معاً
@@ -164,6 +169,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()), (route) => route.isFirst);
     } catch (e) {
       if (!mounted) return;
+      if (e is OutOfStockException) {
+        AppError.showSnackbar(context, e.message);
+        return;
+      }
       // رسالة عامة لا تحدد السبب الفعلي (تجاوز الحد، منتج لم يعد active...).
       // مؤجَّل لا محسوم — راجع POST_LAUNCH_DECISIONS.md البند 3.
       AppError.showSnackbar(context, AppError.getFirebaseError(e));

@@ -25,14 +25,23 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addItem(ProductModel product, {int quantity = 1}) {
+  int quantityOf(String productId) {
+    final index = _items.indexWhere((item) => item.product.id == productId);
+    return index >= 0 ? _items[index].quantity : 0;
+  }
+
+  /// يُرجع false إن تجاوز المجموع في السلة الكمية المتوفرة (فلا يُضاف شيء).
+  bool addItem(ProductModel product, {int quantity = 1}) {
     final index = _items.indexWhere((item) => item.product.id == product.id);
+    final current = index >= 0 ? _items[index].quantity : 0;
+    if (product.stock != null && current + quantity > product.stock!) return false;
     if (index >= 0) {
       _items[index].quantity += quantity;
     } else {
       _items.add(CartItem(product: product, quantity: quantity));
     }
     notifyListeners();
+    return true;
   }
 
   void removeItem(String productId) {
@@ -43,8 +52,11 @@ class CartProvider extends ChangeNotifier {
   void updateQuantity(String productId, int quantity) {
     final index = _items.indexWhere((item) => item.product.id == productId);
     if (index < 0) return;
+    final stock = _items[index].product.stock;
     if (quantity <= 0) {
       _items.removeAt(index);
+    } else if (stock != null && quantity > stock) {
+      return;
     } else {
       _items[index].quantity = quantity;
     }

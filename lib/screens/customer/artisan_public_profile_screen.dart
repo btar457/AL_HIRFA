@@ -22,7 +22,7 @@ String _formatPrice(int value) {
 }
 
 MarketplaceProduct _toMarketplaceProduct(ProductModel product) {
-  return MarketplaceProduct(name: product.name, price: _formatPrice(product.price), city: product.city, cityTag: product.city.toUpperCase(), imageUrl: product.images.isNotEmpty ? product.images.first : '');
+  return MarketplaceProduct(name: product.name, price: _formatPrice(product.price), city: product.city, cityTag: product.city.toUpperCase(), imageUrl: product.images.isNotEmpty ? product.images.first : '', outOfStock: product.isOutOfStock);
 }
 
 class _ArtisanProfileData {

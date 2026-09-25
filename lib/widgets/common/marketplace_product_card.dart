@@ -51,6 +51,17 @@ class MarketplaceProductCard extends StatelessWidget {
                           ),
                   ),
                 ),
+                if (product.outOfStock)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      decoration: BoxDecoration(color: Colors.black.withOpacity(0.75), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12))),
+                      child: const Text('نفدت الكمية', textAlign: TextAlign.center, style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
                 Positioned(
                   top: 8,
                   left: 8,
