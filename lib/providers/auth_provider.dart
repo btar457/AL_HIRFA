@@ -17,6 +17,7 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _isInitializing = true;
   String? _errorMessage;
+  bool _sessionRestoreFailed = false;
   StreamSubscription<User?>? _authSubscription;
   StreamSubscription<UserModel?>? _userDocSubscription;
 
@@ -28,6 +29,10 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoggedIn => _currentUser != null;
   String get role => _currentUser?.role ?? '';
   String? get errorMessage => _errorMessage;
+  /// الجلسة سليمة في Firebase Auth لكن تعذّرت قراءة بيانات المستخدم عند
+  /// فتح التطبيق (شبكة ضعيفة) — AuthGate يعرض "إعادة المحاولة" بدل شاشة
+  /// الدخول، فلا يظن المستخدم أنه خرج من حسابه.
+  bool get sessionRestoreFailed => _sessionRestoreFailed;
 
   /// true إن كان إصدار الشروط الذي وافق عليه المستخدم مختلفاً عن الإصدار
   /// الحالي (PART 11.5) — يُتحقّق منه عند كل دخول.
@@ -88,6 +93,7 @@ class AuthProvider extends ChangeNotifier {
     await AuthService.instance.signOut();
     _currentUser = null;
     _errorMessage = null;
+    _sessionRestoreFailed = false;
     notifyListeners();
   }
 
@@ -98,9 +104,10 @@ class AuthProvider extends ChangeNotifier {
   /// الحساب مسجَّلاً دخوله فعلياً بعد حظره لاحقاً دون إعادة تشغيل التطبيق.
   Future<void> loadCurrentUser() async {
     _isLoading = true;
+    _sessionRestoreFailed = false;
     notifyListeners();
     try {
-      final user = await AuthService.instance.getCurrentUser();
+      final user = await _getCurrentUserWithRetry();
       final firebaseUser = AuthService.instance.firebaseUser;
       final unverified = user != null && firebaseUser != null && AuthService.needsEmailVerification(user, firebaseUser);
       if (user != null && (unverified || AuthService.accessBlockCode(user) != null)) {
@@ -112,9 +119,22 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = e.toString();
+      // فشل قراءة (شبكة) لا يعني الخروج — الجلسة ما تزال سارية.
+      _sessionRestoreFailed = AuthService.instance.firebaseUser != null;
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<UserModel?> _getCurrentUserWithRetry() async {
+    for (var attempt = 1; ; attempt++) {
+      try {
+        return await AuthService.instance.getCurrentUser();
+      } catch (_) {
+        if (attempt >= 3) rethrow;
+        await Future.delayed(Duration(seconds: attempt * 2));
+      }
     }
   }
 

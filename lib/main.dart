@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
+import 'core/constants/colors.dart';
 import 'core/constants/strings.dart';
 import 'core/navigation/app_navigator.dart';
 import 'core/navigation/role_router.dart';
@@ -129,9 +130,10 @@ class _AuthGateState extends State<AuthGate> {
   void _navigateIfReady(AuthProvider auth) {
     if (_hasNavigated) return;
     if (!_minimumSplashElapsed || auth.isInitializing || auth.isLoading) return;
-    _hasNavigated = true;
 
     final user = auth.currentUser;
+    if (user == null && auth.sessionRestoreFailed) return;
+    _hasNavigated = true;
     if (user == null) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
     } else {
@@ -143,6 +145,54 @@ class _AuthGateState extends State<AuthGate> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     WidgetsBinding.instance.addPostFrameCallback((_) => _navigateIfReady(auth));
+    if (auth.sessionRestoreFailed && auth.currentUser == null && !auth.isLoading) {
+      return _SessionRetryScreen(onRetry: auth.loadCurrentUser, onSignOut: auth.signOut);
+    }
     return const SplashScreen();
+  }
+}
+
+class _SessionRetryScreen extends StatelessWidget {
+  final VoidCallback onRetry;
+  final VoidCallback onSignOut;
+  const _SessionRetryScreen({required this.onRetry, required this.onSignOut});
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.wifi_off_rounded, color: AppColors.gold, size: 64),
+                const SizedBox(height: 20),
+                const Text('تعذّر الاتصال', style: TextStyle(color: AppColors.text, fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
+                Text('ما زلت مسجّل الدخول — تحقّق من اتصالك بالإنترنت ثم أعد المحاولة.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.subText, height: 1.6)),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                    onPressed: onRetry,
+                    child: const Text('إعادة المحاولة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+                TextButton(
+                  onPressed: onSignOut,
+                  child: Text('تسجيل الخروج', style: TextStyle(color: AppColors.subText)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

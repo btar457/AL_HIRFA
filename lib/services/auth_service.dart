@@ -84,7 +84,10 @@ class AuthService {
   static final DateTime emailVerificationRequiredSince = DateTime(2026, 9, 24);
 
   static bool needsEmailVerification(UserModel user, User firebaseUser) {
-    return !firebaseUser.emailVerified && user.role != 'admin' && !user.createdAt.isBefore(emailVerificationRequiredSince);
+    // وقت إنشاء حساب Firebase Auth نفسه هو المرجع — UserModel.createdAt
+    // يرجع لـ"الآن" إن غاب الحقل من مستند قديم، فيُقفل صاحبه خطأً.
+    final createdAt = firebaseUser.metadata.creationTime ?? user.createdAt;
+    return !firebaseUser.emailVerified && user.role != 'admin' && !createdAt.isBefore(emailVerificationRequiredSince);
   }
 
   /// يُكمل تأكيد البريد من رابط الرسالة عند فتحه داخل التطبيق (App Link).
