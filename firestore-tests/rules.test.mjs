@@ -1,0 +1,1011 @@
+// اختبارات آلية لقواعد Firestore (firestore.rules) عبر محاكي Firebase
+// و @firebase/rules-unit-testing. تغطي بالضبط السيناريوهات المطلوبة في
+// مهمة "تحصين قواعد Firestore" — لا تغطي كل قاعدة في الملف، فقط ما طُلب.
+import { test, before, after, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import {
+  initializeTestEnvironment,
+  assertSucceeds,
+  assertFails,
+} from '@firebase/rules-unit-testing';
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  deleteField,
+  writeBatch,
+  increment,
+} from 'firebase/firestore';
+
+const PROJECT_ID = 'demo-al-hirfa';
+let testEnv;
+
+before(async () => {
+  testEnv = await initializeTestEnvironment({
+    projectId: PROJECT_ID,
+    firestore: {
+      rules: readFileSync('../firestore.rules', 'utf8'),
+      host: '127.0.0.1',
+      port: 8080,
+    },
+  });
+});
+
+after(async () => {
+  await testEnv.cleanup();
+});
+
+beforeEach(async () => {
+  await testEnv.clearFirestore();
+});
+
+// -----------------------------------------------------------------------
+// بيانات تأسيسية مشتركة — تُكتب مباشرة بتجاوز القواعد (withSecurityRulesDisabled)
+// -----------------------------------------------------------------------
+async function seedBaseFixtures() {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+
+    await setDoc(doc(db, 'users/customerA'), {
+      role: 'customer', name: 'مشتري أ', city: 'بغداد',
+      isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved',
+    });
+    await setDoc(doc(db, 'users/artisanA'), {
+      role: 'artisan', name: 'حرفي أ', city: 'بغداد',
+      isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved',
+    });
+    await setDoc(doc(db, 'users/artisanB'), {
+      role: 'artisan', name: 'حرفي ب', city: 'بغداد',
+      isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved',
+    });
+    await setDoc(doc(db, 'users/shippingA'), {
+      role: 'shipping', name: 'شركة أ', city: 'بغداد', provinces: ['بغداد'],
+      isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved',
+    });
+    await setDoc(doc(db, 'users/shippingB'), {
+      role: 'shipping', name: 'شركة ب', city: 'البصرة', provinces: ['البصرة'],
+      isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved',
+    });
+    await setDoc(doc(db, 'users/adminA'), {
+      role: 'admin', name: 'المدير', city: '',
+      isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved',
+    });
+    await setDoc(doc(db, 'users/bannedA'), {
+      role: 'customer', name: 'محظور', city: 'بغداد',
+      isActive: false, banned: true, warningCount: 0, approvalStatus: 'approved',
+    });
+
+    await setDoc(doc(db, 'orders/orderX'), {
+      buyerUid: 'customerA', artisanUid: 'artisanA', shippingUid: null,
+      status: 'seller_approved',
+      address: { governorate: 'بغداد', district: '', notes: '' },
+      price: 20000, deliveryFee: 5000, totalAmount: 25000,
+      platformFee: 2500, artisanEarnings: 17500, shippingEarnings: 4500,
+      isReviewed: false, createdAt: new Date(),
+    });
+    await setDoc(doc(db, 'orders/orderPending'), {
+      buyerUid: 'customerA', artisanUid: 'artisanA', shippingUid: null,
+      status: 'pending',
+      address: { governorate: 'بغداد', district: '', notes: '' },
+      price: 20000, deliveryFee: 5000, totalAmount: 25000,
+      platformFee: 2500, artisanEarnings: 17500, shippingEarnings: 4500,
+      isReviewed: false, createdAt: new Date(),
+    });
+
+    await setDoc(doc(db, 'system_config/founder_lock'), {
+      claimedBy: 'adminA', claimedAt: new Date(),
+    });
+  });
+}
+
+function ctx(uid) {
+  return testEnv.authenticatedContext(uid).firestore();
+}
+
+// -----------------------------------------------------------------------
+// بيانات تأسيسية إضافية للجولة الثانية من الاختبارات — لا تُعدَّل
+// seedBaseFixtures أعلاه، فقط بيانات جديدة لسيناريوهات جديدة.
+// -----------------------------------------------------------------------
+async function seedRoundTwoFixtures() {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+
+    await setDoc(doc(db, 'users/artisanPending'), {
+      role: 'artisan', name: 'حرفي معلَّق', city: 'بغداد',
+      isActive: true, banned: false, warningCount: 0, approvalStatus: 'pending',
+    });
+    await setDoc(doc(db, 'users/shippingPending'), {
+      role: 'shipping', name: 'شركة معلَّقة', city: 'بغداد', provinces: ['بغداد'],
+      isActive: true, banned: false, warningCount: 0, approvalStatus: 'pending',
+    });
+
+    await setDoc(doc(db, 'orders/orderDelivered'), {
+      buyerUid: 'customerA', artisanUid: 'artisanA', shippingUid: 'shippingA',
+      status: 'delivered',
+      address: { governorate: 'بغداد', district: '', notes: '' },
+      price: 20000, deliveryFee: 5000, totalAmount: 25000,
+      platformFee: 2500, artisanEarnings: 17500, shippingEarnings: 4500,
+      isReviewed: false, createdAt: new Date(), deliveredAt: new Date(),
+    });
+
+    await setDoc(doc(db, 'settlements/settlementA'), {
+      shippingUid: 'shippingA', weekStart: new Date(), weekEnd: new Date(),
+      deliveriesCount: 1, totalEarnings: 4500, platformDue: 500,
+      status: 'pending', penaltyAmount: 0, createdAt: new Date(),
+    });
+
+    await setDoc(doc(db, 'app_config/rules'), {
+      productCommission: 0.1, shippingCommission: 0.1, fixedDeliveryFee: 5000,
+    });
+
+    await setDoc(doc(db, 'products/productPending'), {
+      artisanUid: 'artisanA', name: 'منتج معلَّق', description: '', price: 10000,
+      category: 'other', city: 'بغداد', images: [], narrative: '', material: '',
+      originPlace: '', technique: '', status: 'pending', rating: 0, reviewCount: 0,
+      salesCount: 0, createdAt: new Date(),
+    });
+
+    await setDoc(doc(db, 'users/artisanA/private/contact'), { phone: '07701234567' });
+  });
+}
+
+// =========================================================================
+// 1) مستخدم يرقّي نفسه إلى admin عبر update
+// =========================================================================
+test('رفض: مستخدم يرقّي نفسه إلى admin عبر update', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertFails(updateDoc(doc(db, 'users/customerA'), { role: 'admin' }));
+});
+
+// =========================================================================
+// 2) حرفي/شركة شحن يسجّل نفسه بحالة معتمَدة مباشرة
+// =========================================================================
+test('رفض: حرفي يسجّل نفسه بحالة approved مباشرة عند الإنشاء', async () => {
+  await seedBaseFixtures();
+  const db = ctx('newArtisan');
+  await assertFails(setDoc(doc(db, 'users/newArtisan'), {
+    role: 'artisan', name: 'حرفي جديد', city: 'بغداد',
+    isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved',
+  }));
+});
+
+test('رفض: شركة شحن تسجّل نفسها بحالة approved مباشرة عند الإنشاء', async () => {
+  await seedBaseFixtures();
+  const db = ctx('newShipping');
+  await assertFails(setDoc(doc(db, 'users/newShipping'), {
+    role: 'shipping', name: 'شركة جديدة', city: 'بغداد', provinces: ['بغداد'],
+    isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved',
+  }));
+});
+
+// =========================================================================
+// 3) حرفي يعدّل طلباً لا يخصه
+// =========================================================================
+test('رفض: حرفي يعدّل طلباً لا يخصه (يخص حرفياً آخر)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanB'); // ليس مالك orderPending (مالكه artisanA)
+  await assertFails(updateDoc(doc(db, 'orders/orderPending'), {
+    status: 'seller_approved',
+    shippingAcceptDeadline: new Date(),
+  }));
+});
+
+// =========================================================================
+// 4) شركة شحن تقرأ خارج محافظات تغطيتها
+// =========================================================================
+test('رفض: شركة شحن تقرأ طلباً خارج محافظات تغطيتها', async () => {
+  await seedBaseFixtures();
+  // orderX في محافظة بغداد، shippingB مغطّاة فقط للبصرة، وليست طرفاً في الطلب.
+  const db = ctx('shippingB');
+  await assertFails(getDoc(doc(db, 'orders/orderX')));
+});
+
+// =========================================================================
+// 5) مستخدم يكتب حقل العمولة أو حالة الطلب مباشرة
+// =========================================================================
+test('رفض: المشتري (مالك الطلب) يكتب حقل platformFee مباشرة', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA'); // مالك الطلب فعلياً كمشترٍ
+  await assertFails(updateDoc(doc(db, 'orders/orderX'), { platformFee: 999999 }));
+});
+
+test('سماح (تغيّر عمداً): الحرفي مالك الطلب يغيّر status مباشرة إلى delivered — قسم الشحن مغلق مؤقتاً، الحرفي يتكفّل بالتوصيل بنفسه الآن', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanA'); // مالك orderX كحرفي
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+});
+
+// =========================================================================
+// 6) حساب موقوف يقرأ
+// =========================================================================
+test('رفض: حساب موقوف/محظور يقرأ وثيقة مستخدم (حتى وثيقته هو)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('bannedA');
+  await assertFails(getDoc(doc(db, 'users/bannedA')));
+});
+
+test('رفض: حساب موقوف/محظور يقرأ وثيقة مستخدم آخر', async () => {
+  await seedBaseFixtures();
+  const db = ctx('bannedA');
+  await assertFails(getDoc(doc(db, 'users/artisanA')));
+});
+
+// =========================================================================
+// 7) حذف founder_lock
+// =========================================================================
+test('رفض: حذف system_config/founder_lock من قبل صاحبه (claimedBy)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('adminA'); // adminA هو claimedBy فعلياً
+  await assertFails(deleteDoc(doc(db, 'system_config/founder_lock')));
+});
+
+test('رفض: حذف system_config/founder_lock من قبل طرف آخر', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertFails(deleteDoc(doc(db, 'system_config/founder_lock')));
+});
+
+// =========================================================================
+// 8) المسارات الشرعية المسموحة لكل دور
+// =========================================================================
+test('سماح: مشترٍ ينشئ حسابه الخاص بدور customer', async () => {
+  await seedBaseFixtures();
+  const db = ctx('newCustomer');
+  await assertSucceeds(setDoc(doc(db, 'users/newCustomer'), {
+    role: 'customer', name: 'مشترٍ جديد', city: 'بغداد',
+    isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved',
+  }));
+});
+
+test('سماح: حرفي ينشئ حسابه الخاص بحالة pending (المسار الشرعي)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('newArtisan');
+  await assertSucceeds(setDoc(doc(db, 'users/newArtisan'), {
+    role: 'artisan', name: 'حرفي جديد', city: 'بغداد',
+    isActive: true, banned: false, warningCount: 0, approvalStatus: 'pending',
+  }));
+});
+
+test('سماح: شركة شحن تنشئ حسابها الخاص بحالة pending (المسار الشرعي)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('newShipping');
+  await assertSucceeds(setDoc(doc(db, 'users/newShipping'), {
+    role: 'shipping', name: 'شركة جديدة', city: 'بغداد', provinces: ['بغداد'],
+    isActive: true, banned: false, warningCount: 0, approvalStatus: 'pending',
+  }));
+});
+
+test('سماح: الإدارة تغيّر دور مستخدم (المسار الشرعي الوحيد لتغيير role)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('adminA');
+  await assertSucceeds(updateDoc(doc(db, 'users/artisanB'), { role: 'admin' }));
+});
+
+test('سماح: مستخدم نشط غير محظور يقرأ وثيقة مستخدم آخر', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertSucceeds(getDoc(doc(db, 'users/artisanA')));
+});
+
+test('سماح: الحرفي مالك الطلب يوافق عليه (pending -> seller_approved)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanA'); // مالك orderPending فعلياً
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderPending'), {
+    status: 'seller_approved',
+    shippingAcceptDeadline: new Date(),
+  }));
+});
+
+test('سماح: شركة شحن ضمن نطاق تغطيتها تقرأ الطلب رغم أن قبوله موقوف', async () => {
+  await seedBaseFixtures();
+  const db = ctx('shippingA'); // مغطّاة لمحافظة بغداد (نفس orderX)
+  await assertSucceeds(getDoc(doc(db, 'orders/orderX')));
+});
+
+// إصلاح: حسابات شركات شحن معتمدة من قبل إغلاق القسم يمكنها تقنياً قبول طلب
+// حرفي جديد (اعتراضه) رغم أن التسجيل الجديد مُخفى من الواجهة فقط — لا حارس
+// فعلي في القاعدة كان يمنع ذلك. أُضيف `&& false` على هذا الفرع في
+// firestore.rules تحديداً لإغلاقه فعلياً، لا شكلياً فقط.
+test('رفض (إصلاح): شركة شحن معتمدة سابقاً تحاول قبول طلب جديد — القسم مغلق فعلياً الآن', async () => {
+  await seedBaseFixtures();
+  const db = ctx('shippingA'); // مغطّاة لمحافظة بغداد (نفس orderX)، حساب approved فعلياً
+  await assertFails(updateDoc(doc(db, 'orders/orderX'), {
+    status: 'shipping_assigned',
+    shippingUid: 'shippingA',
+    shippingCompanyName: 'شركة أ',
+    shippingAssignedAt: new Date(),
+  }));
+});
+
+test('سماح: مستخدم جديد يؤسّس حساب المؤسس عندما لا يوجد قفل بعد', async () => {
+  // بلا seedBaseFixtures هنا عمداً — لا يوجد founder_lock إطلاقاً بعد clearFirestore().
+  const db = ctx('firstFounder');
+  await assertSucceeds(setDoc(doc(db, 'system_config/founder_lock'), {
+    claimedBy: 'firstFounder', claimedAt: new Date(),
+  }));
+  await assertSucceeds(setDoc(doc(db, 'users/firstFounder'), {
+    role: 'admin', name: 'المؤسس', city: '',
+    isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved',
+  }));
+});
+
+// =========================================================================
+// الجولة الثانية — اختبارات إضافية (تكملة لمهمة اختبارات القواعد)
+// =========================================================================
+
+// --- اختبارات تعديل (update) — كلها يجب أن تُرفض ---
+
+test('رفض: حرفي بحالة pending يعدّل وثيقته إلى approved', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanPending');
+  await assertFails(updateDoc(doc(db, 'users/artisanPending'), { approvalStatus: 'approved' }));
+});
+
+test('رفض: شركة شحن بحالة pending تعدّل وثيقتها إلى approved', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('shippingPending');
+  await assertFails(updateDoc(doc(db, 'users/shippingPending'), { approvalStatus: 'approved' }));
+});
+
+test('رفض: مستخدم customer يغيّر role إلى shipping', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertFails(updateDoc(doc(db, 'users/customerA'), { role: 'shipping' }));
+});
+
+test('رفض: مستخدم customer يغيّر role إلى artisan', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertFails(updateDoc(doc(db, 'users/customerA'), { role: 'artisan' }));
+});
+
+test('رفض: حساب موقوف يكتب أي وثيقة (لا يقرأ فقط)', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('bannedA');
+  await assertFails(updateDoc(doc(db, 'users/bannedA'), { photoUrl: 'https://example.com/x.png' }));
+});
+
+test('رفض: حساب موقوف يعدّل حقل حالة الحظر عن نفسه', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('bannedA');
+  await assertFails(updateDoc(doc(db, 'users/bannedA'), { banned: false, isActive: true }));
+});
+
+// --- مجموعات غير مغطّاة — رفض ---
+
+test('رفض: حرفي يكتب رصيد محفظته مباشرة عبر إنشاء transaction وهمية', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA');
+  await assertFails(setDoc(doc(db, 'transactions/txFake'), {
+    orderId: 'orderDelivered', type: 'sale', amount: 999999,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+test('رفض: شركة شحن تغيّر حالة تسويتها إلى paid', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('shippingA');
+  await assertFails(updateDoc(doc(db, 'settlements/settlementA'), { status: 'paid' }));
+});
+
+test('رفض: أي عميل يكتب في transactions', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'transactions/txFake2'), {
+    orderId: 'orderDelivered', type: 'sale', amount: 17500,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+test('رفض: غير-مدير يعدّل نسبة العمولة أو سعر التوصيل في الإعدادات', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertFails(updateDoc(doc(db, 'app_config/rules'), { productCommission: 0.5 }));
+});
+
+test('رفض: حرفي ينقل منتجه من pending إلى active مباشرة', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA');
+  await assertFails(updateDoc(doc(db, 'products/productPending'), { status: 'active' }));
+});
+
+test('رفض: مستخدم يقرأ المجموعة الفرعية للهاتف/IBAN لمستخدم آخر', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanB');
+  await assertFails(getDoc(doc(db, 'users/artisanA/private/contact')));
+});
+
+// --- سماح (تحقّق من عدم الإفراط في التقييد) ---
+
+test('سماح: الحرفي يقرأ مجموعته الفرعية الخاصة به (private/contact)', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA');
+  await assertSucceeds(getDoc(doc(db, 'users/artisanA/private/contact')));
+});
+
+test('سماح: الإدارة تنقل منتجاً من pending إلى active', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('adminA');
+  await assertSucceeds(updateDoc(doc(db, 'products/productPending'), { status: 'active' }));
+});
+
+// =========================================================================
+// إصلاح: مسار حذف الحساب (deleteAccount في auth_service.dart) يحتاج تعديل
+// الحقل email ذاتياً ضمن نفس الحقول الشخصية المسموحة (name/city/...) —
+// أُضيف 'email' لقائمة onlyFieldsChanged في users/update.
+// =========================================================================
+test('سماح: مستخدم يفرّغ حقل email في مستنده الخاص (خطوة إخفاء الهوية عند حذف الحساب)', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertSucceeds(updateDoc(doc(db, 'users/customerA'), { email: '', name: 'مستخدم محذوف' }));
+});
+
+test('رفض: مستخدم يعدّل email مع حقل غير مسموح به (role) في نفس الكتابة', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('customerA');
+  await assertFails(updateDoc(doc(db, 'users/customerA'), { email: '', role: 'admin' }));
+});
+
+// =========================================================================
+// طلب المستخدم: سدّ ثغرة تكرار transactions لنفس orderId+type — المعرّف
+// الحتمي (orderId_type) بدل doc() العشوائي في order_service.dart.
+// =========================================================================
+test('رفض: معاملة sale مكرَّرة لنفس orderId+type عبر معرّف عشوائي ثانٍ', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('shippingA');
+  const validData = {
+    orderId: 'orderDelivered', type: 'sale', amount: 17500,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  };
+  // المعرّف الحتمي الصحيح — ينجح دائماً (قبل الإصلاح وبعده).
+  await assertSucceeds(setDoc(doc(db, 'transactions/orderDelivered_sale'), validData));
+  // محاولة ثانية بمعرّف عشوائي مختلف تماماً لنفس orderId+type — يحاكي
+  // doc() العشوائي قبل الإصلاح. قبل الإصلاح: تنجح أيضاً (لا فحص تكرار) —
+  // هذا بالضبط ما يجعل هذا السطر فاشلاً قبل تطبيق الإصلاح. بعد الإصلاح:
+  // السطر الجديد في create يفرض transactionId == orderId+'_'+type،
+  // و'randomIdTwo' لا يطابقه أبداً → رفض.
+  await assertFails(setDoc(doc(db, 'transactions/randomIdTwo'), validData));
+  // إعادة الكتابة على المعرّف الحتمي نفسه بعد نجاحه = update (وثيقة موجودة)
+  // وهي if false أصلاً — محمية بغضّ النظر عن هذا الإصلاح، مذكورة هنا لتوثيق
+  // الآلية الكاملة كما وصفها المستخدم: "المحاولة الثانية تصبح update".
+  await assertFails(setDoc(doc(db, 'transactions/orderDelivered_sale'), validData));
+});
+
+// =========================================================================
+// طلب المستخدم: اختباران إضافيان لتكامل transactions
+// =========================================================================
+test('توثيق سلوك حالي (لا يُصلَح الآن): شركة الشحن تحدّث الطلب إلى delivered دون كتابة المعاملات', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  // القسم مغلق الآن حتى للحسابات المعتمدة سابقاً (راجع الاختبار أعلاه)، لذا
+  // نصل orderX إلى shipping_assigned عبر بذرة مباشرة (rules معطَّلة) بدل
+  // المرور بقاعدة orders/update — غرض هذا الاختبار توثيق سلوك مرحلة delivered
+  // نفسها لطلب عالق قديماً في هذا المسار، لا اختبار القبول ذاته.
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(doc(context.firestore(), 'orders/orderX'), {
+      status: 'shipping_assigned', shippingUid: 'shippingA',
+      shippingCompanyName: 'شركة أ', shippingAssignedAt: new Date(),
+    });
+  });
+  const db = ctx('shippingA');
+  // ثم picked_up ثم delivered، دون إنشاء أي وثيقة transactions مقابلة، لنثبت
+  // أن قاعدة orders/update لا تفرض إطلاقاً كتابة المعاملات الثلاث كإجراء
+  // ذرّي واحد (order_service.dart: confirmDelivery و_createDeliveryTransactions
+  // كتابتان منفصلتان فعلياً، غير مضمونتين معاً — راجع تقرير التدقيق التكميلي).
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), { status: 'picked_up' }));
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+});
+
+// =========================================================================
+// إصلاح: تأكيد التسليم الذاتي من الحرفي (قسم الشحن مغلق مؤقتاً) كان معطَّلاً
+// بالكامل لأن transactions/create كانت تشترط shippingUid == caller دائماً،
+// حتى لو لم توجد شركة شحن على الطلب أصلاً (shippingUid == null). الإصلاح:
+// السماح أيضاً بمسار الحرفي مالك الطلب عندما shippingUid == null.
+// =========================================================================
+test('سماح: الحرفي (توصيل ذاتي، shippingUid فارغ) ينشئ معاملة sale بعد تسليم طلبه', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const artisanDb = ctx('artisanA');
+  // orderX: shippingUid null, artisanUid=artisanA, seller_approved.
+  await assertSucceeds(updateDoc(doc(artisanDb, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+  await assertSucceeds(setDoc(doc(artisanDb, 'transactions/orderX_sale'), {
+    orderId: 'orderX', type: 'sale', amount: 17500,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+test('سماح: الحرفي (توصيل ذاتي) ينشئ معاملة commission بعد تسليم طلبه', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const artisanDb = ctx('artisanA');
+  await assertSucceeds(updateDoc(doc(artisanDb, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+  await assertSucceeds(setDoc(doc(artisanDb, 'transactions/orderX_commission'), {
+    orderId: 'orderX', type: 'commission', amount: 2500,
+    fromUid: 'customerA', toUid: 'platform', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+test('رفض: حرفي آخر (ليس مالك الطلب) ينشئ معاملة رغم أن shippingUid فارغ', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const ownerDb = ctx('artisanA');
+  await assertSucceeds(updateDoc(doc(ownerDb, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+  const intruderDb = ctx('artisanB');
+  await assertFails(setDoc(doc(intruderDb, 'transactions/orderX_sale'), {
+    orderId: 'orderX', type: 'sale', amount: 17500,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+test('رفض: الحرفي ينشئ معاملة قبل أن يصل الطلب فعلياً لحالة delivered', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  // orderX ما زال seller_approved — لم يُحدَّث إلى delivered بعد.
+  const artisanDb = ctx('artisanA');
+  await assertFails(setDoc(doc(artisanDb, 'transactions/orderX_sale'), {
+    orderId: 'orderX', type: 'sale', amount: 17500,
+    fromUid: 'customerA', toUid: 'artisanA', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+test('رفض: طرف ثالث ليس shippingUid الطلب ينشئ معاملة delivery لنفسه', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  // orderDelivered معيَّن فعلياً لـ shippingA — shippingB ليس طرفاً فيه إطلاقاً.
+  const db = ctx('shippingB');
+  await assertFails(setDoc(doc(db, 'transactions/orderDelivered_delivery_fake'), {
+    orderId: 'orderDelivered', type: 'delivery', amount: 4500,
+    fromUid: 'customerA', toUid: 'shippingB', status: 'completed', createdAt: new Date(),
+  }));
+});
+
+// =========================================================================
+// طلب المستخدم: notifications/create — type محصور بقائمة تستبعد الأنواع
+// الإدارية، مع إبقاء 'system' (قرار المستخدم: توسيع القائمة بدل تعديل كود
+// wallet_service/product_service/dispute_service الثلاثة).
+// =========================================================================
+function notifBase(overrides) {
+  return {
+    userId: 'artisanA', title: 'عنوان', body: 'نص', type: 'new_order',
+    targetAudience: 'all', recipientCount: 0, isRead: false, data: {},
+    createdAt: new Date(), ...overrides,
+  };
+}
+
+test('رفض: مستخدم عادي ينشئ إشعاراً بنوع إداري (account_banned)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'notifications/fakeAdminNotif'), notifBase({
+    userId: 'artisanA', type: 'account_banned', title: 'تم حظر حسابك نهائياً',
+  })));
+});
+
+test('سماح: طلب جديد يُشعر الحرفي (new_order)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertSucceeds(setDoc(doc(db, 'notifications/notifNewOrder'), notifBase({
+    userId: 'artisanA', type: 'new_order', title: 'طلب جديد ينتظر موافقتك',
+  })));
+});
+
+test('سماح: رفض الحرفي للطلب يُشعر المشتري (order_rejected)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanA');
+  await assertSucceeds(setDoc(doc(db, 'notifications/notifOrderRejected'), notifBase({
+    userId: 'customerA', type: 'order_rejected', title: 'تم إلغاء طلبك',
+  })));
+});
+
+test('سماح: طلب سحب الحرفي يُشعر الإدارة (system عبر sendBulkNotification)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanA');
+  await assertSucceeds(setDoc(doc(db, 'notifications/notifWithdrawalToAdmin'), notifBase({
+    userId: 'adminA', type: 'system', title: 'طلب سحب جديد', body: 'حرفي طلب سحب 5000 د.ع',
+  })));
+});
+
+test('رفض: مستخدم عادي ينشئ إشعار system في صندوق مستخدم عادي آخر', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'notifications/fakeSystemNotif'), notifBase({
+    userId: 'artisanA', type: 'system', title: 'إشعار نظام مزيَّف',
+  })));
+});
+
+// =========================================================================
+// طلب المستخدم: تواصل دعم داخل التطبيق يصل مباشرة للإدارة (support_service.dart)
+// =========================================================================
+function supportMessageBase(overrides) {
+  return {
+    uid: 'customerA', name: 'زبون أ', role: 'customer', message: 'لدي مشكلة في طلبي',
+    status: 'open', adminReply: null, createdAt: new Date(), ...overrides,
+  };
+}
+
+test('سماح: مستخدم ينشئ رسالة دعم باسمه هو', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertSucceeds(setDoc(doc(db, 'support_messages/msg1'), supportMessageBase({})));
+});
+
+test('رفض: مستخدم ينشئ رسالة دعم منتحلاً uid مستخدم آخر', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'support_messages/msg2'), supportMessageBase({ uid: 'artisanA' })));
+});
+
+test('رفض: مستخدم ينشئ رسالة دعم بحالة resolved مباشرة (تجاوز المراجعة)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'support_messages/msg3'), supportMessageBase({ status: 'resolved' })));
+});
+
+test('سماح: صاحب الرسالة والإدارة يقرآن رسالة الدعم، ورفض لطرف ثالث', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'support_messages/msg4'), supportMessageBase({}));
+  });
+  await assertSucceeds(getDoc(doc(ctx('customerA'), 'support_messages/msg4')));
+  await assertSucceeds(getDoc(doc(ctx('adminA'), 'support_messages/msg4')));
+  await assertFails(getDoc(doc(ctx('artisanA'), 'support_messages/msg4')));
+});
+
+test('سماح: الإدارة تردّ على رسالة دعم وتعلّمها كمُعالَجة، ورفض لصاحبها نفسه', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'support_messages/msg5'), supportMessageBase({}));
+  });
+  await assertSucceeds(updateDoc(doc(ctx('adminA'), 'support_messages/msg5'), { status: 'resolved', adminReply: 'تم الحل', resolvedAt: new Date() }));
+  await assertFails(updateDoc(doc(ctx('customerA'), 'support_messages/msg5'), { status: 'resolved' }));
+});
+
+// =========================================================================
+// طلب المستخدم: حذف ناعم للمنتجات — يمنع غسل السمعة عبر حذف منتج سيّئ
+// التقييم؛ حساب المتوسط نفسه (بلا تصفية على الحالة) مُنفَّذ في
+// artisan_public_profile_screen.dart، خارج نطاق اختبارات القواعد — ما
+// تختبره هذه المجموعة هو أن الحذف الناعم لا يُفقد حقول rating/reviewCount
+// ولا يفتح ثغرة موافقة ذاتية على status.
+// =========================================================================
+test('رفض: حذف حقيقي لمنتج (delete) — الآن if false للجميع بما فيهم المالك والإدارة', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  await assertFails(deleteDoc(doc(ctx('artisanA'), 'products/productPending')));
+  await assertFails(deleteDoc(doc(ctx('adminA'), 'products/productPending')));
+});
+
+test('سماح: الحرفي يخفي منتجه (حذف ناعم status→deleted) — لا يفقد rating/reviewCount من منظور المالك نفسه فقط', async () => {
+  await seedBaseFixtures();
+  // منتج نشط بتقييم سيّئ فعلي — يخصّ artisanA.
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'products/productBadRating'), {
+      artisanUid: 'artisanA', name: 'منتج سيّئ التقييم', description: '', price: 5000,
+      category: 'other', city: 'بغداد', images: [], narrative: '', material: '',
+      originPlace: '', technique: '', status: 'active', rating: 1.0, reviewCount: 10,
+      salesCount: 2, createdAt: new Date(),
+    });
+  });
+  const db = ctx('artisanA');
+  await assertSucceeds(updateDoc(doc(db, 'products/productBadRating'), { status: 'deleted' }));
+  // rating/reviewCount ما زالا محفوظين فعلياً حين يقرأهما *المالك نفسه*
+  // (products/read يسمح لصاحب المنتج بقراءة أي حالة). هذا يثبت فقط أن
+  // البيانات لا تُفقَد من القاعدة — لا يثبت أن متوسط أي زائر خارجي محمي؛
+  // راجع الاختبار التالي الذي يوثّق أن ذلك غير صحيح فعلياً.
+  const afterDelete = await getDoc(doc(db, 'products/productBadRating'));
+  assert.equal(afterDelete.data().rating, 1.0);
+  assert.equal(afterDelete.data().reviewCount, 10);
+  assert.equal(afterDelete.data().status, 'deleted');
+});
+
+test('[معروف، غير مُصلَح عمداً] زائر خارجي عادي لا يستطيع قراءة منتج محذوف — متوسط الحرفي يبقى "مغسولاً" له فعلياً', async () => {
+  await seedBaseFixtures();
+  // نفس منتج سيّئ التقييم، لكن مباشرة بحالة deleted (كما يكون بعد أي حذف
+  // ناعم حقيقي) — يخصّ artisanA.
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'products/productBadDeleted'), {
+      artisanUid: 'artisanA', name: 'منتج سيّئ محذوف', description: '', price: 5000,
+      category: 'other', city: 'بغداد', images: [], narrative: '', material: '',
+      originPlace: '', technique: '', status: 'deleted', rating: 1.0, reviewCount: 10,
+      salesCount: 2, createdAt: new Date(),
+    });
+  });
+  // زائر خارجي عادي حقيقي — ليس artisanA (المالك) ولا adminA، مجرّد عميل آخر.
+  const db = ctx('customerVisitor');
+  // products/read الحالية: resource.data.status=='active' || artisanUid==caller || isAdmin().
+  // customerVisitor لا يحقق أياً من الشرطين — القراءة تُرفض، أي أن
+  // getArtisanProducts() الحقيقي في التطبيق لن يُعيد هذا المستند إطلاقاً
+  // لهذا الزائر، فلن يدخل rating/reviewCount ضمن متوسطه المعروض إطلاقاً.
+  // إصلاح artisan_public_profile_screen.dart (استخدام allProducts) لا
+  // يغيّر هذه الحقيقة لأن البيانات نفسها غير مقروءة له من الأساس — الثغرة
+  // لا تزال مفتوحة عملياً لأي زائر خارجي حقيقي، بقرار صريح بعدم إصلاحها
+  // الآن (توسيع products/read يكشف تفاصيل غير-active للعامة أيضاً).
+  await assertFails(getDoc(doc(db, 'products/productBadDeleted')));
+});
+
+test('رفض: الحرفي يستخدم فرع الحذف الناعم لتمرير status إلى قيمة أخرى غير deleted (مثلاً active)', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA');
+  await assertFails(updateDoc(doc(db, 'products/productPending'), { status: 'active' }));
+});
+
+// =========================================================================
+// طلب المستخدم: يتحقق من أن دفعة (WriteBatch) واحدة تُنشئ عدّة طلبات (سلة
+// بأكثر من منتج) تمرّ فعلياً عبر firestore.rules الحالية دون أي تعديل.
+//
+// اكتشاف مهم أثبتته أول محاولة (فشلت فعلياً هنا قبل التصحيح): تعدّد
+// الكتابات على *نفس* المستند ضمن دفعة واحدة (rate_limits/{buyerUid} مثلاً)
+// يُقيَّم الكل مقابل حالة المستند *قبل* الدفعة، لا تصاعدياً — فمحاولة
+// كتابتَي +1 منفصلتين على نفس الوثيقة ضمن دفعة واحدة تفشل (`evaluation
+// error`)، ومحاولة كتابة واحدة بقيمة +N تخالف صراحة قيد "زيادة +1 فقط لكل
+// كتابة" في القاعدة. لذا: الدفعة هنا تضم *فقط* وثائق الطلبات (تصلح تماماً
+// لأنها N مستندات *مختلفة*)، وتحديث rate_limits يبقى خارجها، بعمليات +1
+// متسلسلة كما كانت دائماً — لا اختلاف في موثوقية هذا الجزء عمّا كان قبل
+// الإصلاح، لأن دمجه ذرّياً مع الدفعة غير ممكن دون تعديل القاعدة.
+// =========================================================================
+test('سماح: دفعة واحدة تنشئ طلبين معاً (بلا لمس rate_limits داخل الدفعة نفسها)', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'products/productBatchActive'), {
+      artisanUid: 'artisanA', name: 'منتج نشط للدفعة', description: '', price: 10000,
+      category: 'other', city: 'بغداد', images: [], narrative: '', material: '',
+      originPlace: '', technique: '', status: 'active', rating: 0, reviewCount: 0,
+      salesCount: 0, createdAt: new Date(),
+    });
+  });
+  const db = ctx('customerA');
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'orders/batchOrder1'), {
+    buyerUid: 'customerA', artisanUid: 'artisanA', shippingUid: null, status: 'pending',
+    productId: 'productBatchActive',
+    address: { governorate: 'بغداد', district: '', notes: '' },
+    price: 10000, deliveryFee: 5000, totalAmount: 15000,
+    platformFee: 1000, artisanEarnings: 9000, shippingEarnings: 4500,
+    isReviewed: false, createdAt: new Date(),
+  });
+  batch.set(doc(db, 'orders/batchOrder2'), {
+    buyerUid: 'customerA', artisanUid: 'artisanA', shippingUid: null, status: 'pending',
+    productId: 'productBatchActive',
+    address: { governorate: 'بغداد', district: '', notes: '' },
+    price: 12000, deliveryFee: 5000, totalAmount: 17000,
+    platformFee: 1200, artisanEarnings: 10800, shippingEarnings: 4500,
+    isReviewed: false, createdAt: new Date(),
+  });
+  await assertSucceeds(batch.commit());
+
+  const o1 = await getDoc(doc(ctx('customerA'), 'orders/batchOrder1'));
+  const o2 = await getDoc(doc(ctx('customerA'), 'orders/batchOrder2'));
+  assert.equal(o1.exists(), true);
+  assert.equal(o2.exists(), true);
+});
+
+test('رفض: تحديثان +1 على نفس وثيقة rate_limits ضمن دفعة واحدة يفشل (يثبت سبب فصلها عن الدفعة)', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'rate_limits/customerA'), { hourlyCount: 3, windowStart: new Date() });
+  });
+  const db = ctx('customerA');
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'rate_limits/customerA'), { hourlyCount: increment(1) });
+  batch.update(doc(db, 'rate_limits/customerA'), { hourlyCount: increment(1) });
+  await assertFails(batch.commit());
+});
+
+// =========================================================================
+// قسم الشحن مغلق مؤقتاً — الحرفي يؤكّد التسليم بنفسه مباشرة من seller_approved
+// =========================================================================
+test('سماح: الحرفي مالك الطلب يؤكّد التسليم مباشرة (seller_approved -> delivered)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanA'); // orderX بحالة seller_approved، مالكه artisanA
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+});
+
+test('رفض: حرفي آخر (ليس مالك الطلب) يؤكّد التسليم', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanB'); // ليس مالك orderX
+  await assertFails(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+});
+
+test('رفض: المشتري يحاول تأكيد التسليم مباشرة', async () => {
+  await seedBaseFixtures();
+  const db = ctx('customerA'); // مشتري orderX
+  await assertFails(updateDoc(doc(db, 'orders/orderX'), { status: 'delivered', deliveredAt: new Date() }));
+});
+
+test('رفض: الحرفي يقفز من pending إلى delivered مباشرة (يتجاوز seller_approved)', async () => {
+  await seedBaseFixtures();
+  const db = ctx('artisanA'); // orderPending بحالة pending، مالكه artisanA
+  await assertFails(updateDoc(doc(db, 'orders/orderPending'), { status: 'delivered', deliveredAt: new Date() }));
+});
+
+// =========================================================================
+// admin_commissions_owed_screen.dart: commissionPaid — إدارة فقط تكتبه
+// (عبر فرع isAdmin() العام في orders/update، بلا حاجة لقاعدة جديدة).
+// =========================================================================
+test('سماح: الإدارة تعلّم عمولة طلب مُسلَّم بأنها دُفعت', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('adminA');
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderDelivered'), { commissionPaid: true }));
+});
+
+test('رفض: الحرفي (مالك الطلب) يعلّم عمولة طلبه المُسلَّم بأنها دُفعت بنفسه', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA'); // مالك orderDelivered
+  await assertFails(updateDoc(doc(db, 'orders/orderDelivered'), { commissionPaid: true }));
+});
+
+// =========================================================================
+// طلب المستخدم: سلسلة تنبيه-تنبيه-حظر لعدم سداد العمولة
+// (AdminService.checkCommissionCompliance) — تكتب commissionWarningLevel/At
+// على users/{uid}، حقلان جديدان ليسا ضمن قائمة التعديل الذاتي المسموحة.
+// =========================================================================
+test('سماح: الإدارة تحدّث commissionWarningLevel/At على حساب حرفي', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('adminA');
+  await assertSucceeds(updateDoc(doc(db, 'users/artisanA'), { commissionWarningLevel: 1, commissionWarningAt: new Date() }));
+});
+
+// =========================================================================
+// طلب المستخدم: أداة "طلبات عالقة" — AdminService.unstuckLegacyShippingOrder
+// يعيد طلباً بحالة شحن قديمة إلى seller_approved (عبر فرع isAdmin() العام).
+// =========================================================================
+test('سماح: الإدارة تعيد طلباً عالقاً بحالة shipping_assigned إلى seller_approved', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(doc(context.firestore(), 'orders/orderX'), {
+      status: 'shipping_assigned', shippingUid: 'shippingA',
+      shippingCompanyName: 'شركة أ', shippingAssignedAt: new Date(),
+    });
+  });
+  const db = ctx('adminA');
+  await assertSucceeds(updateDoc(doc(db, 'orders/orderX'), {
+    status: 'seller_approved',
+    shippingUid: deleteField(),
+    shippingCompanyName: deleteField(),
+    shippingAssignedAt: deleteField(),
+  }));
+});
+
+test('رفض: الحرفي يعدّل commissionWarningLevel الخاص بنفسه (تجاوز الإنذار)', async () => {
+  await seedBaseFixtures();
+  await seedRoundTwoFixtures();
+  const db = ctx('artisanA');
+  await assertFails(updateDoc(doc(db, 'users/artisanA'), { commissionWarningLevel: 0 }));
+});
+
+// =========================================================================
+// المخزون (stock) — حجز الكمية عند الطلب ومنع البيع الزائد
+// (order_service.dart: createOrders، product_form.dart)
+// =========================================================================
+async function seedStockProducts(products) {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    for (const [id, stock] of Object.entries(products)) {
+      const data = { name: id, artisanUid: 'artisanA', status: 'active', price: 10000, salesCount: 0, reviewCount: 0, rating: 0 };
+      if (stock !== null) data.stock = stock;
+      await setDoc(doc(db, `products/${id}`), data);
+    }
+  });
+}
+
+function newOrder(productId, reservedQuantity) {
+  return {
+    productId, productName: productId, productImage: '', price: 10000 * Math.max(reservedQuantity, 1),
+    deliveryFee: 5000, totalAmount: 15000, platformFee: 500, artisanEarnings: 14500, shippingEarnings: 0,
+    buyerUid: 'customerA', buyerName: 'مشتري أ', buyerPhone: '07700000000',
+    address: { governorate: 'بغداد', district: '', notes: '' },
+    artisanUid: 'artisanA', artisanName: 'حرفي أ', shippingUid: null, shippingCompanyName: null,
+    status: 'pending', isReviewed: false, disputeId: null, createdAt: new Date(), commissionPaid: false,
+    reservedQuantity,
+  };
+}
+
+// نفس شكل الدفعة في createOrders: إنشاء الطلب + خصم المخزون ذرّياً.
+function reserveBatch(db, items) {
+  const batch = writeBatch(db);
+  items.forEach(({ productId, qty, orderId }) => {
+    batch.set(doc(db, `orders/${orderId}`), newOrder(productId, qty));
+    batch.update(doc(db, `products/${productId}`), { stock: increment(-qty), lastReservationOrderId: orderId });
+  });
+  return batch.commit();
+}
+
+test('سماح: مشترٍ يطلب كمية متوفرة ويُخصم المخزون في نفس الدفعة', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 3 });
+  const db = ctx('customerA');
+  await assertSucceeds(reserveBatch(db, [{ productId: 'p1', qty: 2, orderId: 'o1' }]));
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const snap = await getDoc(doc(context.firestore(), 'products/p1'));
+    assert.equal(snap.data().stock, 1);
+  });
+});
+
+test('سماح: سلة بـ4 منتجات بمخزون متتبَّع في دفعة واحدة (ضمن حد get() للدفعة)', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 5, p2: 5, p3: 5, p4: 5 });
+  const db = ctx('customerA');
+  await assertSucceeds(reserveBatch(db, ['p1', 'p2', 'p3', 'p4'].map((p, i) => ({ productId: p, qty: 1, orderId: `o${i}` }))));
+});
+
+test('رفض: طلب كمية أكبر من المتوفر (البيع الزائد)', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 1 });
+  const db = ctx('customerA');
+  await assertFails(reserveBatch(db, [{ productId: 'p1', qty: 2, orderId: 'o1' }]));
+});
+
+test('رفض: طلب على منتج نفدت كميته', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 0 });
+  const db = ctx('customerA');
+  await assertFails(reserveBatch(db, [{ productId: 'p1', qty: 1, orderId: 'o1' }]));
+});
+
+test('رفض: إنشاء طلب على منتج بمخزون متتبَّع دون خصم المخزون', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 3 });
+  const db = ctx('customerA');
+  await assertFails(setDoc(doc(db, 'orders/o1'), newOrder('p1', 1)));
+  await assertFails(setDoc(doc(db, 'orders/o2'), newOrder('p1', 0)));
+});
+
+test('رفض: مشترٍ يخصم مخزون منتج دون إنشاء طلب (تخريب)', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 3 });
+  const db = ctx('customerA');
+  await assertFails(updateDoc(doc(db, 'products/p1'), { stock: increment(-3), lastReservationOrderId: 'nonexistent' }));
+});
+
+test('رفض: خصم المخزون بإعادة استخدام طلب قديم معلّق', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 5 });
+  const db = ctx('customerA');
+  await assertSucceeds(reserveBatch(db, [{ productId: 'p1', qty: 1, orderId: 'o1' }]));
+  await assertFails(updateDoc(doc(db, 'products/p1'), { stock: increment(-1), lastReservationOrderId: 'o1' }));
+});
+
+test('سماح: طلب على منتج قديم بلا مخزون متتبَّع (بلا خصم)', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ legacy: null });
+  const db = ctx('customerA');
+  await assertSucceeds(setDoc(doc(db, 'orders/o1'), newOrder('legacy', 0)));
+});
+
+test('سماح: الحرفي يعيد الكمية لمنتجه عند رفض طلب، ويعدّلها يدوياً', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 0 });
+  const db = ctx('artisanA');
+  await assertSucceeds(updateDoc(doc(db, 'products/p1'), { stock: increment(2) }));
+  await assertSucceeds(updateDoc(doc(db, 'products/p1'), { stock: 7 }));
+});
+
+test('رفض: الحرفي يضع كمية سالبة أو حرفي آخر يعدّل الكمية', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ p1: 2 });
+  await assertFails(updateDoc(doc(ctx('artisanA'), 'products/p1'), { stock: -1 }));
+  await assertFails(updateDoc(doc(ctx('artisanB'), 'products/p1'), { stock: 100 }));
+});
