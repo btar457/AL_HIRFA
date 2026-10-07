@@ -124,8 +124,13 @@ service cloud.firestore {
 
       // عام: المنتجات النشطة فقط. صاحبها يرى كل حالاته (pending/rejected/
       // suspended أيضاً). الإدارة ترى كل شيء (مراجعة المنتجات المعلّقة).
+      // deleted مقروءة أيضاً (محتواها كان عاماً قبل الحذف، ولا تظهر في قوائم
+      // المتجر — استعلاماتها تصفّي status == 'active'): مشترٍ استلم منتجاً ثم
+      // حذفه الحرفي يبقى قادراً على تقييمه (review_service.dart يقرأ المنتج
+      // داخل transaction التقييم)، وتقييمات المنتج المحذوف تبقى محسوبة في
+      // متوسط الحرفي لأي زائر. suspended تبقى مخفية — قد تُوقَف لمحتوى مخالف.
       allow read: if isSignedIn() && (
-        resource.data.status == 'active'
+        resource.data.status in ['active', 'deleted']
         || resource.data.artisanUid == request.auth.uid
         || isAdmin()
       );
@@ -173,7 +178,7 @@ service cloud.firestore {
         // submitReview) — تنفّذه المشتري ضمن معاملة تُحقَّق أيضاً عبر
         // قاعدة reviews أدناه.
         || (isActiveNonBanned() && onlyFieldsChanged(['rating', 'reviewCount'])
-            && request.resource.data.reviewCount == resource.data.reviewCount + 1)
+            && request.resource.data.reviewCount == resource.data.get('reviewCount', 0) + 1)
         // حذف ناعم — صاحب المنتج فقط، اتجاه واحد (أي حالة → deleted فقط، لا
         // رجوع عبر هذه القاعدة ولا تجاوز لبوابة موافقة الإدارة). الحذف
         // الحقيقي مرفوض أدناه كي تبقى rating/reviewCount محسوبة في متوسط
@@ -266,7 +271,7 @@ service cloud.firestore {
           && resource.data.shippingUid == request.auth.uid
           && onlyFieldsChanged(['status', 'deliveredAt']))
         // المشتري يقيّم طلباً مُسلَّماً مرة واحدة فقط (review_service.dart)
-        || (resource.data.status == 'delivered' && resource.data.isReviewed == false
+        || (resource.data.status == 'delivered' && resource.data.get('isReviewed', false) == false
           && resource.data.buyerUid == request.auth.uid
           && request.resource.data.isReviewed == true
           && onlyFieldsChanged(['isReviewed']))
@@ -293,7 +298,7 @@ service cloud.firestore {
         && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
         && orderData(request.resource.data.orderId).buyerUid == request.auth.uid
         && orderData(request.resource.data.orderId).status == 'delivered'
-        && orderData(request.resource.data.orderId).isReviewed == false
+        && orderData(request.resource.data.orderId).get('isReviewed', false) == false
         && orderData(request.resource.data.orderId).productId == request.resource.data.productId;
       allow update, delete: if false;
     }

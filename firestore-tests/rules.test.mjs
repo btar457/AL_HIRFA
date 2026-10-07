@@ -18,6 +18,7 @@ import {
   deleteField,
   writeBatch,
   increment,
+  runTransaction,
 } from 'firebase/firestore';
 
 const PROJECT_ID = 'demo-al-hirfa';
@@ -717,7 +718,7 @@ test('سماح: الحرفي يخفي منتجه (حذف ناعم status→delet
   assert.equal(afterDelete.data().status, 'deleted');
 });
 
-test('[معروف، غير مُصلَح عمداً] زائر خارجي عادي لا يستطيع قراءة منتج محذوف — متوسط الحرفي يبقى "مغسولاً" له فعلياً', async () => {
+test('سماح (أُصلح): زائر خارجي عادي يقرأ منتجاً محذوفاً — تقييماته تبقى ضمن متوسط الحرفي', async () => {
   await seedBaseFixtures();
   // نفس منتج سيّئ التقييم، لكن مباشرة بحالة deleted (كما يكون بعد أي حذف
   // ناعم حقيقي) — يخصّ artisanA.
@@ -737,9 +738,10 @@ test('[معروف، غير مُصلَح عمداً] زائر خارجي عادي
   // لهذا الزائر، فلن يدخل rating/reviewCount ضمن متوسطه المعروض إطلاقاً.
   // إصلاح artisan_public_profile_screen.dart (استخدام allProducts) لا
   // يغيّر هذه الحقيقة لأن البيانات نفسها غير مقروءة له من الأساس — الثغرة
-  // لا تزال مفتوحة عملياً لأي زائر خارجي حقيقي، بقرار صريح بعدم إصلاحها
-  // الآن (توسيع products/read يكشف تفاصيل غير-active للعامة أيضاً).
-  await assertFails(getDoc(doc(db, 'products/productBadDeleted')));
+  // كانت مفتوحة سابقاً بقرار صريح. أُصلحت بتوسيع products/read لحالة
+  // deleted فقط (محتواها كان عاماً قبل الحذف) — احتاجها أيضاً تقييم مشترٍ
+  // لمنتج حذفه الحرفي بعد البيع. suspended تبقى مخفية.
+  await assertSucceeds(getDoc(doc(db, 'products/productBadDeleted')));
 });
 
 test('رفض: الحرفي يستخدم فرع الحذف الناعم لتمرير status إلى قيمة أخرى غير deleted (مثلاً active)', async () => {
@@ -1008,4 +1010,78 @@ test('رفض: الحرفي يضع كمية سالبة أو حرفي آخر يع�
   await seedStockProducts({ p1: 2 });
   await assertFails(updateDoc(doc(ctx('artisanA'), 'products/p1'), { stock: -1 }));
   await assertFails(updateDoc(doc(ctx('artisanB'), 'products/p1'), { stock: 100 }));
+});
+
+// =========================================================================
+// تقييم منتج مُستلَم (review_service.dart: submitReview) — نفس transaction التطبيق
+// =========================================================================
+async function reviewTxn(db, { orderId, productId, rating = 5 }) {
+  const reviewRef = doc(db, 'reviews/r1');
+  const productRef = doc(db, `products/${productId}`);
+  const orderRef = doc(db, `orders/${orderId}`);
+  await runTransaction(db, async (tx) => {
+    const p = await tx.get(productRef);
+    const cr = p.data()?.rating ?? 0;
+    const cc = p.data()?.reviewCount ?? 0;
+    tx.set(reviewRef, { orderId, productId, buyerUid: 'customerA', buyerName: 'مشتري أ', buyerPhotoUrl: '', rating, comment: '', createdAt: new Date() });
+    tx.update(orderRef, { isReviewed: true });
+    tx.update(productRef, { rating: (cr * cc + rating) / (cc + 1), reviewCount: cc + 1 });
+  });
+}
+
+async function seedReviewCase(product, order) {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    const productData = { name: 'rp', artisanUid: 'artisanA', status: 'active', price: 10000, salesCount: 1, reviewCount: 0, rating: 0, ...product };
+    const orderData = { ...newOrder('rp', 0), status: 'delivered', deliveredAt: new Date(), ...order };
+    for (const [k, v] of Object.entries(productData)) if (v === undefined) delete productData[k];
+    for (const [k, v] of Object.entries(orderData)) if (v === undefined) delete orderData[k];
+    await setDoc(doc(db, 'products/rp'), productData);
+    await setDoc(doc(db, 'orders/ro'), orderData);
+  });
+}
+
+test('سماح: المشتري يقيّم طلباً مُسلَّماً', async () => {
+  await seedBaseFixtures();
+  await seedReviewCase({}, {});
+  await assertSucceeds(reviewTxn(ctx('customerA'), { orderId: 'ro', productId: 'rp' }));
+});
+
+test('سماح: المشتري يقيّم منتجاً حذفه الحرفي بعد البيع', async () => {
+  await seedBaseFixtures();
+  await seedReviewCase({ status: 'deleted' }, {});
+  await assertSucceeds(reviewTxn(ctx('customerA'), { orderId: 'ro', productId: 'rp' }));
+});
+
+test('رفض (مقصود): منتج أوقفته الإدارة غير مقروء للعامة — ولا يُقيَّم أثناء الإيقاف', async () => {
+  await seedBaseFixtures();
+  await seedReviewCase({ status: 'suspended' }, {});
+  await assertFails(getDoc(doc(ctx('customerA'), 'products/rp')));
+  await assertFails(reviewTxn(ctx('customerA'), { orderId: 'ro', productId: 'rp' }));
+});
+
+test('سماح: تقييم منتج/طلب قديم بلا حقلي reviewCount/isReviewed', async () => {
+  await seedBaseFixtures();
+  await seedReviewCase({ reviewCount: undefined, rating: undefined }, { isReviewed: undefined });
+  await assertSucceeds(reviewTxn(ctx('customerA'), { orderId: 'ro', productId: 'rp' }));
+});
+
+test('رفض: تقييم طلب لم يُسلَّم بعد، أو تقييمه مرتين، أو من غير مشتريه', async () => {
+  await seedBaseFixtures();
+  await seedReviewCase({}, { status: 'seller_approved' });
+  await assertFails(reviewTxn(ctx('customerA'), { orderId: 'ro', productId: 'rp' }));
+  await seedReviewCase({}, { isReviewed: true });
+  await assertFails(reviewTxn(ctx('customerA'), { orderId: 'ro', productId: 'rp' }));
+  await seedReviewCase({}, {});
+  await assertFails(reviewTxn(ctx('artisanB'), { orderId: 'ro', productId: 'rp' }));
+});
+
+test('رفض: منتج معلّق (pending) أو مرفوض غير مقروء لغير صاحبه', async () => {
+  await seedBaseFixtures();
+  await seedStockProducts({ hidden: 1 });
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(doc(context.firestore(), 'products/hidden'), { status: 'pending' });
+  });
+  await assertFails(getDoc(doc(ctx('customerA'), 'products/hidden')));
+  await assertSucceeds(getDoc(doc(ctx('artisanA'), 'products/hidden')));
 });

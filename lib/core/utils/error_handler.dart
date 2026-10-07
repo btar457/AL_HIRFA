@@ -10,6 +10,20 @@ class AppError {
   /// يحوّل استثناء (FirebaseAuthException أو أي خطأ آخر) إلى رسالة عربية مفهومة.
   static String getFirebaseError(Object error) {
     if (error is! FirebaseAuthException) {
+      // أخطاء Firestore وغيرها — رسالة تدلّ على السبب الفعلي بدل "حدث خطأ"
+      // العامة التي لا تساعد المستخدم ولا تساعد في تشخيص البلاغات.
+      if (error is FirebaseException) {
+        switch (error.code) {
+          case 'permission-denied':
+            return 'لا يمكن إتمام هذا الإجراء — قد تكون حالة الطلب أو المنتج تغيّرت. حدّث الصفحة وحاول مجدداً';
+          case 'unavailable':
+          case 'deadline-exceeded':
+            return 'تحقق من اتصالك بالإنترنت ثم حاول مجدداً';
+          case 'not-found':
+            return 'العنصر المطلوب لم يعد موجوداً';
+        }
+        return 'حدث خطأ (${error.code})، حاول مرة أخرى';
+      }
       return 'حدث خطأ، حاول مرة أخرى';
     }
     switch (error.code) {
