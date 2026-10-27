@@ -1085,3 +1085,44 @@ test('رفض: منتج معلّق (pending) أو مرفوض غير مقروء ل
   await assertFails(getDoc(doc(ctx('customerA'), 'products/hidden')));
   await assertSucceeds(getDoc(doc(ctx('artisanA'), 'products/hidden')));
 });
+
+// =========================================================================
+// مستندات مستخدمين قديمة تنقصها حقول الحالة — تُعامَل كما في UserModel.fromMap
+// =========================================================================
+function newProductDoc(extra = {}) {
+  return { name: 'خاتم', description: 'وصف', price: 50000, category: 'jewelry', city: 'بغداد', images: ['https://x/1.jpg'],
+    artisanUid: 'artisanA', artisanName: 'حرفي أ', artisanPhotoUrl: '', narrative: '', material: '', originPlace: '', technique: '',
+    status: 'pending', rating: 0, reviewCount: 0, salesCount: 0, stock: 3, createdAt: new Date(), ...extra };
+}
+
+test('سماح: حرفي معتمد ينشئ منتجاً بكمية', async () => {
+  await seedBaseFixtures();
+  await assertSucceeds(setDoc(doc(ctx('artisanA'), 'products/n1'), newProductDoc()));
+});
+
+test('سماح: حرفي بمستند قديم ينقصه approvalStatus/isActive/banned ينشئ منتجاً', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (c) => {
+    await updateDoc(doc(c.firestore(), 'users/artisanA'), { approvalStatus: deleteField(), isActive: deleteField(), banned: deleteField() });
+  });
+  await assertSucceeds(setDoc(doc(ctx('artisanA'), 'products/n1'), newProductDoc()));
+});
+
+test('رفض: حرفي معلّق المراجعة أو موقوف أو محظور ينشئ منتجاً', async () => {
+  await seedBaseFixtures();
+  for (const patch of [{ approvalStatus: 'pending' }, { approvalStatus: 'rejected' }, { isActive: false }, { banned: true }]) {
+    await testEnv.withSecurityRulesDisabled(async (c) => {
+      await setDoc(doc(c.firestore(), 'users/artisanA'), { role: 'artisan', name: 'حرفي أ', city: 'بغداد', isActive: true, banned: false, warningCount: 0, approvalStatus: 'approved', ...patch });
+    });
+    await assertFails(setDoc(doc(ctx('artisanA'), 'products/n1'), newProductDoc()));
+  }
+});
+
+test('رفض: مستخدم يحذف حقل approvalStatus من مستنده ليتجاوز المراجعة', async () => {
+  await seedBaseFixtures();
+  await testEnv.withSecurityRulesDisabled(async (c) => {
+    await updateDoc(doc(c.firestore(), 'users/artisanA'), { approvalStatus: 'pending' });
+  });
+  await assertFails(updateDoc(doc(ctx('artisanA'), 'users/artisanA'), { approvalStatus: deleteField() }));
+  await assertFails(updateDoc(doc(ctx('bannedA'), 'users/bannedA'), { banned: deleteField(), isActive: deleteField() }));
+});

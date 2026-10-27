@@ -21,8 +21,12 @@ service cloud.firestore {
 
     // حساب موقوف/محظور يُمنع من أي كتابة فوراً — نفس مبدأ إبطال الجلسة
     // الحية في auth_provider.dart، لكن هنا كضمان على مستوى الخادم أيضاً.
+    // القيم الافتراضية تطابق UserModel.fromMap حرفياً (isActive=true،
+    // banned=false، approvalStatus='approved') — مستند قديم ينقصه حقل كان
+    // يسجّل دخوله في التطبيق لكن تُرفض كل كتاباته هنا. لا تفتح ثغرة: المستخدم
+    // لا يستطيع تعديل/حذف هذه الحقول عن نفسه (users/update onlyFieldsChanged).
     function isActiveNonBanned() {
-      return isSignedIn() && myData().isActive == true && myData().banned == false;
+      return isSignedIn() && myData().get('isActive', true) == true && myData().get('banned', false) == false;
     }
 
     function hasRole(r) {
@@ -30,7 +34,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() && myData().role == 'admin' && myData().isActive == true;
+      return isSignedIn() && myData().role == 'admin' && myData().get('isActive', true) == true;
     }
 
     function onlyFieldsChanged(fields) {
@@ -138,7 +142,7 @@ service cloud.firestore {
       // فقط حرفي موافَق عليه ينشئ منتجاً باسمه، بحالة pending دائماً
       // (لا يمكن نشر منتج active مباشرة متجاوزاً مراجعة الإدارة).
       allow create: if isActiveNonBanned() && hasRole('artisan')
-        && myData().approvalStatus == 'approved'
+        && myData().get('approvalStatus', 'approved') == 'approved'
         && request.resource.data.artisanUid == request.auth.uid
         && request.resource.data.status == 'pending'
         && validStock();
