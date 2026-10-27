@@ -90,7 +90,9 @@ class _ProductFormState extends State<ProductForm> {
 
   Future<void> _pickImage() async {
     if (_totalImageCount >= _kMaxImages) return;
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    // صورة الكاميرا الأصلية قد تبلغ 5-10MB — رفعها عبر 4G بطيء ويفشل كثيراً.
+    // 1600px بجودة 80 كافية تماماً لعرض المنتج (~200-400KB).
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1600, maxHeight: 1600, imageQuality: 80);
     if (picked != null) setState(() => _images.add(picked));
   }
 

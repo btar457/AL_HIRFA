@@ -41,7 +41,7 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
 
   Future<void> _pickEvidence() async {
     if (_evidenceImages.length >= _kMaxEvidenceImages) return;
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1600, maxHeight: 1600, imageQuality: 80);
     if (picked != null) setState(() => _evidenceImages.add(picked));
   }
 

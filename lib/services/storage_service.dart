@@ -46,7 +46,8 @@ class StorageService {
       body: bytes,
     );
     final signedRequest = await _signer.sign(request, credentialScope: _credentialScope);
-    final response = await signedRequest.send().response;
+    // بلا مهلة، اتصال متقطّع يُبقي زر النشر يدور إلى ما لا نهاية.
+    final response = await signedRequest.send().response.timeout(const Duration(seconds: 60));
     if (response.statusCode != 200) {
       throw Exception('فشل رفع الملف إلى التخزين (${response.statusCode})');
     }

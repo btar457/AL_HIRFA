@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
@@ -23,6 +25,17 @@ class AppError {
             return 'العنصر المطلوب لم يعد موجوداً';
         }
         return 'حدث خطأ (${error.code})، حاول مرة أخرى';
+      }
+      if (error is SocketException || error is TimeoutException || error is HttpException) {
+        return 'تحقق من اتصالك بالإنترنت ثم حاول مجدداً';
+      }
+      // استثناءات التطبيق نفسه تحمل رسالة عربية مقصودة (مثل "فشل رفع الملف
+      // إلى التخزين (403)") — كانت تُستبدل بالرسالة العامة فيضيع السبب.
+      if (error is Exception) {
+        final message = error.toString().replaceFirst('Exception: ', '').trim();
+        if (message.isNotEmpty && !message.startsWith('Instance of')) {
+          return message.length > 160 ? '${message.substring(0, 160)}…' : message;
+        }
       }
       return 'حدث خطأ، حاول مرة أخرى';
     }
