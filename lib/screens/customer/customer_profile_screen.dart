@@ -30,13 +30,13 @@ class CustomerProfileScreen extends StatelessWidget {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('تسجيل الخروج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text('هل أنت متأكد من رغبتك في تسجيل الخروج؟', style: TextStyle(color: AppColors.subText)),
+          title: Text(tr('تسجيل الخروج؟', 'Sign out?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('هل أنت متأكد من رغبتك في تسجيل الخروج؟', 'Are you sure you want to sign out?'), style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -45,7 +45,7 @@ class CustomerProfileScreen extends StatelessWidget {
                 if (!context.mounted) return;
                 Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
               },
-              child: const Text('تسجيل الخروج', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تسجيل الخروج', 'Sign out'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -89,19 +89,19 @@ class CustomerProfileScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('تعديل البيانات الشخصية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(tr('تعديل البيانات الشخصية', 'Edit personal details'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 16),
               TextFormField(
                 controller: nameController,
                 style: TextStyle(color: AppColors.text),
-                decoration: InputDecoration(hintText: 'الاسم الكامل', hintStyle: TextStyle(color: AppColors.subText), filled: true, fillColor: AppColors.background, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
+                decoration: InputDecoration(hintText: tr('الاسم الكامل', 'Full name'), hintStyle: TextStyle(color: AppColors.subText), filled: true, fillColor: AppColors.background, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
                 style: TextStyle(color: AppColors.text),
-                decoration: InputDecoration(hintText: 'رقم الهاتف', hintStyle: TextStyle(color: AppColors.subText), filled: true, fillColor: AppColors.background, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
+                decoration: InputDecoration(hintText: tr('رقم الهاتف', 'Phone number'), hintStyle: TextStyle(color: AppColors.subText), filled: true, fillColor: AppColors.background, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
               ),
               const SizedBox(height: 16),
               SizedBox(
@@ -113,9 +113,9 @@ class CustomerProfileScreen extends StatelessWidget {
                     await auth.updateProfile({'name': nameController.text.trim(), 'phone': phoneController.text.trim()});
                     if (!sheetContext.mounted) return;
                     Navigator.pop(sheetContext);
-                    AppError.showSnackbar(context, 'تم حفظ التعديلات', isError: false);
+                    AppError.showSnackbar(context, tr('تم حفظ التعديلات', 'Changes saved'), isError: false);
                   },
-                  child: const Text('حفظ', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(tr('حفظ', 'Save'), style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -146,19 +146,19 @@ class CustomerProfileScreen extends StatelessWidget {
           children: [
             _buildHeader(context, user?.name ?? '', user?.email ?? '', user?.photoUrl ?? ''),
             const SizedBox(height: 12),
-            _buildSettingsTile(context, icon: Icons.person_outline, title: 'تعديل البيانات الشخصية', onTap: () => _editPersonalInfo(context)),
-            _buildSettingsTile(context, icon: Icons.inventory_2_outlined, title: 'سجل طلباتي', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()))),
-            _buildSettingsTile(context, icon: Icons.favorite_border, title: 'المفضلة', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen()))),
-            _buildSettingsTile(context, icon: Icons.payment_outlined, title: 'طرق الدفع', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentMethodsScreen()))),
-            _buildSettingsTile(context, icon: Icons.notifications_outlined, title: 'الإشعارات', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()))),
+            _buildSettingsTile(context, icon: Icons.person_outline, title: tr('تعديل البيانات الشخصية', 'Edit personal details'), onTap: () => _editPersonalInfo(context)),
+            _buildSettingsTile(context, icon: Icons.inventory_2_outlined, title: tr('سجل طلباتي', 'My order history'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()))),
+            _buildSettingsTile(context, icon: Icons.favorite_border, title: tr('المفضلة', 'Favorites'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen()))),
+            _buildSettingsTile(context, icon: Icons.payment_outlined, title: tr('طرق الدفع', 'Payment methods'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentMethodsScreen()))),
+            _buildSettingsTile(context, icon: Icons.notifications_outlined, title: tr('الإشعارات', 'Notifications'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()))),
             _buildSettingsTile(context, icon: Icons.translate, title: tr('اللغة والمظهر', 'Language & appearance'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageAppearanceScreen()))),
-            _buildSettingsTile(context, icon: Icons.lock_outline, title: 'تغيير كلمة المرور', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()))),
-            _buildSettingsTile(context, icon: Icons.description_outlined, title: 'الشروط والأحكام', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen()))),
-            _buildSettingsTile(context, icon: Icons.privacy_tip_outlined, title: 'سياسة الخصوصية', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()))),
-            _buildSettingsTile(context, icon: Icons.info_outline, title: 'عن التطبيق', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()))),
+            _buildSettingsTile(context, icon: Icons.lock_outline, title: tr('تغيير كلمة المرور', 'Change password'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()))),
+            _buildSettingsTile(context, icon: Icons.description_outlined, title: tr('الشروط والأحكام', 'Terms & Conditions'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen()))),
+            _buildSettingsTile(context, icon: Icons.privacy_tip_outlined, title: tr('سياسة الخصوصية', 'Privacy Policy'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()))),
+            _buildSettingsTile(context, icon: Icons.info_outline, title: tr('عن التطبيق', 'About the app'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()))),
             Divider(color: AppColors.subText.withOpacity(0.2)),
-            _buildSettingsTile(context, icon: Icons.logout, title: 'تسجيل الخروج', color: Colors.redAccent, onTap: () => _confirmLogout(context)),
-            _buildSettingsTile(context, icon: Icons.delete_outline, title: 'حذف الحساب', color: Colors.redAccent, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeleteAccountScreen()))),
+            _buildSettingsTile(context, icon: Icons.logout, title: tr('تسجيل الخروج', 'Sign out'), color: Colors.redAccent, onTap: () => _confirmLogout(context)),
+            _buildSettingsTile(context, icon: Icons.delete_outline, title: tr('حذف الحساب', 'Delete account'), color: Colors.redAccent, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeleteAccountScreen()))),
             const SizedBox(height: 24),
           ],
         ),

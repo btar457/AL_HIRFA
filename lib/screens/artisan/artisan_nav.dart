@@ -21,7 +21,7 @@ class ArtisanNav extends StatefulWidget {
 class _ArtisanNavState extends State<ArtisanNav> {
   late int _index = widget.initialIndex;
 
-  final _screens = const [
+  final _screens = [
     ArtisanDashboardScreen(),
     ManageProductsScreen(),
     ArtisanOrdersScreen(),
@@ -54,13 +54,13 @@ class _ArtisanNavState extends State<ArtisanNav> {
             elevation: 0,
             selectedItemColor: AppColors.gold,
             unselectedItemColor: AppColors.subText,
-            selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-            unselectedLabelStyle: const TextStyle(fontSize: 11),
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: 'الرئيسية'),
-              BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'منتجاتي'),
-              BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), activeIcon: Icon(Icons.receipt_long), label: 'الطلبات'),
-              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'حسابي'),
+            selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            unselectedLabelStyle: TextStyle(fontSize: 11),
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: tr('الرئيسية', 'Home')),
+              BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: tr('منتجاتي', 'My products')),
+              BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), activeIcon: Icon(Icons.receipt_long), label: tr('الطلبات', 'Orders')),
+              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: tr('حسابي', 'My account')),
             ],
           ),
         ),

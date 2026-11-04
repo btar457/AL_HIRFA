@@ -22,7 +22,7 @@ class AdminNav extends StatefulWidget {
 class _AdminNavState extends State<AdminNav> {
   late int _index = widget.initialIndex;
 
-  final _screens = const [
+  final _screens = [
     AdminDashboardScreen(),
     AdminAccountsScreen(),
     AdminOrdersScreen(),
@@ -56,14 +56,14 @@ class _AdminNavState extends State<AdminNav> {
             elevation: 0,
             selectedItemColor: AppColors.gold,
             unselectedItemColor: AppColors.subText,
-            selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-            unselectedLabelStyle: const TextStyle(fontSize: 10),
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: 'لوحة التحكم'),
-              BottomNavigationBarItem(icon: Icon(Icons.people_outline), activeIcon: Icon(Icons.people), label: 'المستخدمون'),
-              BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'الطلبات'),
-              BottomNavigationBarItem(icon: Icon(Icons.percent_outlined), activeIcon: Icon(Icons.percent), label: 'العمولات'),
-              BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: 'الإعدادات'),
+            selectedLabelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            unselectedLabelStyle: TextStyle(fontSize: 10),
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: tr('لوحة التحكم', 'Dashboard')),
+              BottomNavigationBarItem(icon: Icon(Icons.people_outline), activeIcon: Icon(Icons.people), label: tr('المستخدمون', 'Users')),
+              BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: tr('الطلبات', 'Orders')),
+              BottomNavigationBarItem(icon: Icon(Icons.percent_outlined), activeIcon: Icon(Icons.percent), label: tr('العمولات', 'Commissions')),
+              BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: tr('الإعدادات', 'Settings')),
             ],
           ),
         ),

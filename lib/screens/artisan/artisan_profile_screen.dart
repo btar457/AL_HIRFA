@@ -77,7 +77,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
         'iban': _ibanController.text.trim(),
       });
       if (!mounted) return;
-      AppError.showSnackbar(context, 'تم حفظ التعديلات بنجاح', isError: false);
+      AppError.showSnackbar(context, tr('تم حفظ التعديلات بنجاح', 'Changes saved successfully'), isError: false);
     } catch (e) {
       if (!mounted) return;
       AppError.showSnackbar(context, AppError.getFirebaseError(e));
@@ -94,13 +94,13 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('تسجيل الخروج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text('هل أنت متأكد من رغبتك في تسجيل الخروج؟', style: TextStyle(color: AppColors.subText)),
+          title: Text(tr('تسجيل الخروج؟', 'Sign out?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('هل أنت متأكد من رغبتك في تسجيل الخروج؟', 'Are you sure you want to sign out?'), style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -109,7 +109,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                 if (!context.mounted) return;
                 Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
               },
-              child: const Text('تسجيل الخروج', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تسجيل الخروج', 'Sign out'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -142,10 +142,10 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildLabeledField(label: 'الاسم الكامل', field: TextFormField(controller: _nameController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+                  _buildLabeledField(label: tr('الاسم الكامل', 'Full name'), field: TextFormField(controller: _nameController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
                   const SizedBox(height: 14),
                   _buildLabeledField(
-                    label: 'المدينة',
+                    label: tr('المدينة', 'City'),
                     field: DropdownButtonFormField<String>(
                       initialValue: _selectedCity,
                       dropdownColor: AppColors.card,
@@ -162,13 +162,13 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
             ),
             const SizedBox(height: 16),
             _buildSettingsTile(icon: Icons.translate, title: tr('اللغة والمظهر', 'Language & appearance'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageAppearanceScreen()))),
-            _buildSettingsTile(icon: Icons.lock_outline, title: 'تغيير كلمة المرور', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()))),
-            _buildSettingsTile(icon: Icons.description_outlined, title: 'الشروط والأحكام', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen()))),
-            _buildSettingsTile(icon: Icons.privacy_tip_outlined, title: 'سياسة الخصوصية', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()))),
-            _buildSettingsTile(icon: Icons.info_outline, title: 'عن AL-HIRFA', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()))),
+            _buildSettingsTile(icon: Icons.lock_outline, title: tr('تغيير كلمة المرور', 'Change password'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()))),
+            _buildSettingsTile(icon: Icons.description_outlined, title: tr('الشروط والأحكام', 'Terms & Conditions'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen()))),
+            _buildSettingsTile(icon: Icons.privacy_tip_outlined, title: tr('سياسة الخصوصية', 'Privacy Policy'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()))),
+            _buildSettingsTile(icon: Icons.info_outline, title: tr('عن AL-HIRFA', 'About AL-HIRFA'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()))),
             Divider(color: AppColors.subText.withOpacity(0.2)),
-            _buildSettingsTile(icon: Icons.logout, title: 'تسجيل الخروج', color: Colors.redAccent, onTap: _confirmLogout),
-            _buildSettingsTile(icon: Icons.delete_outline, title: 'حذف الحساب', color: Colors.redAccent, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeleteAccountScreen()))),
+            _buildSettingsTile(icon: Icons.logout, title: tr('تسجيل الخروج', 'Sign out'), color: Colors.redAccent, onTap: _confirmLogout),
+            _buildSettingsTile(icon: Icons.delete_outline, title: tr('حذف الحساب', 'Delete account'), color: Colors.redAccent, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeleteAccountScreen()))),
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -180,7 +180,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                   onPressed: _isSaving ? null : _save,
                   child: _isSaving
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                      : const Text('حفظ التعديلات', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      : Text(tr('حفظ التعديلات', 'Save changes'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ),
@@ -252,12 +252,12 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.circular(20)),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.verified, color: Colors.black, size: 12),
                         SizedBox(width: 4),
-                        Text('حرفي موثّق', style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
+                        Text(tr('حرفي موثّق', 'Verified artisan'), style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -282,7 +282,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
             children: [
               Icon(Icons.lock_outline, color: AppColors.gold, size: 18),
               SizedBox(width: 8),
-              Text('الحساب المصرفي (IBAN)', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+              Text(tr('الحساب المصرفي (IBAN)', 'Bank account (IBAN)'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
             ],
           ),
           const SizedBox(height: 12),
@@ -298,7 +298,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text('يُستخدم لتحويل أرباحك عند طلب السحب', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+          Text(tr('يُستخدم لتحويل أرباحك عند طلب السحب', 'Used to transfer your earnings when you request a payout'), style: TextStyle(color: AppColors.subText, fontSize: 11)),
         ],
       ),
     );

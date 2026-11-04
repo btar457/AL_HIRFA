@@ -24,13 +24,13 @@ class AdminSettingsScreen extends StatelessWidget {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('تسجيل الخروج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text('هل أنت متأكد من رغبتك في تسجيل الخروج؟', style: TextStyle(color: AppColors.subText)),
+          title: Text(tr('تسجيل الخروج؟', 'Sign out?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('هل أنت متأكد من رغبتك في تسجيل الخروج؟', 'Are you sure you want to sign out?'), style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -39,7 +39,7 @@ class AdminSettingsScreen extends StatelessWidget {
                 if (!context.mounted) return;
                 Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
               },
-              child: const Text('تسجيل الخروج', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تسجيل الخروج', 'Sign out'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -65,19 +65,19 @@ class AdminSettingsScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: Text('الإعدادات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('الإعدادات', 'Settings'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
         body: ListView(
           children: [
-            _buildTile(context, icon: Icons.percent, title: 'إدارة العمولات', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminCommissionsScreen()))),
-            _buildTile(context, icon: Icons.account_balance_outlined, title: 'التسويات المالية', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminFinancialsScreen()))),
-            _buildTile(context, icon: Icons.notifications_outlined, title: 'إدارة الإشعارات', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminNotificationsScreen()))),
-            _buildTile(context, icon: Icons.inventory_2_outlined, title: 'إدارة المنتجات', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminProductsScreen()))),
-            _buildTile(context, icon: Icons.category_outlined, title: 'إدارة الفئات', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminCategoriesScreen()))),
-            _buildTile(context, icon: Icons.build_circle_outlined, title: 'طلبات عالقة (شحن قديم)', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminStuckOrdersScreen()))),
+            _buildTile(context, icon: Icons.percent, title: tr('إدارة العمولات', 'Manage commissions'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminCommissionsScreen()))),
+            _buildTile(context, icon: Icons.account_balance_outlined, title: tr('التسويات المالية', 'Financial settlements'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminFinancialsScreen()))),
+            _buildTile(context, icon: Icons.notifications_outlined, title: tr('إدارة الإشعارات', 'Manage notifications'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminNotificationsScreen()))),
+            _buildTile(context, icon: Icons.inventory_2_outlined, title: tr('إدارة المنتجات', 'Manage products'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminProductsScreen()))),
+            _buildTile(context, icon: Icons.category_outlined, title: tr('إدارة الفئات', 'Manage categories'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminCategoriesScreen()))),
+            _buildTile(context, icon: Icons.build_circle_outlined, title: tr('طلبات عالقة (شحن قديم)', 'Stuck orders (legacy shipping)'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminStuckOrdersScreen()))),
             Divider(color: AppColors.subText.withOpacity(0.2)),
             _buildTile(context, icon: Icons.translate, title: tr('اللغة والمظهر', 'Language & appearance'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageAppearanceScreen()))),
-            _buildTile(context, icon: Icons.logout, title: 'تسجيل الخروج', color: Colors.redAccent, onTap: () => _confirmLogout(context)),
+            _buildTile(context, icon: Icons.logout, title: tr('تسجيل الخروج', 'Sign out'), color: Colors.redAccent, onTap: () => _confirmLogout(context)),
             const SizedBox(height: 24),
           ],
         ),

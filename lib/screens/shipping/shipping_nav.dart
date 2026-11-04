@@ -21,7 +21,7 @@ class ShippingNav extends StatefulWidget {
 class _ShippingNavState extends State<ShippingNav> {
   late int _index = widget.initialIndex;
 
-  final _screens = const [
+  final _screens = [
     AvailableDeliveriesScreen(),
     ActiveDeliveriesScreen(),
     DeliveryHistoryScreen(),
@@ -54,13 +54,13 @@ class _ShippingNavState extends State<ShippingNav> {
             elevation: 0,
             selectedItemColor: AppColors.gold,
             unselectedItemColor: AppColors.subText,
-            selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-            unselectedLabelStyle: const TextStyle(fontSize: 11),
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), activeIcon: Icon(Icons.local_shipping), label: 'المتاحة'),
-              BottomNavigationBarItem(icon: Icon(Icons.pin_drop_outlined), activeIcon: Icon(Icons.pin_drop), label: 'النشطة'),
-              BottomNavigationBarItem(icon: Icon(Icons.history), activeIcon: Icon(Icons.history), label: 'السجل'),
-              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'حسابي'),
+            selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            unselectedLabelStyle: TextStyle(fontSize: 11),
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), activeIcon: Icon(Icons.local_shipping), label: tr('المتاحة', 'Available')),
+              BottomNavigationBarItem(icon: Icon(Icons.pin_drop_outlined), activeIcon: Icon(Icons.pin_drop), label: tr('النشطة', 'Active')),
+              BottomNavigationBarItem(icon: Icon(Icons.history), activeIcon: Icon(Icons.history), label: tr('السجل', 'History')),
+              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: tr('حسابي', 'My account')),
             ],
           ),
         ),

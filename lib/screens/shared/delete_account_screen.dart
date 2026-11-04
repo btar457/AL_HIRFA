@@ -30,7 +30,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         (route) => false,
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم حذف حسابك نهائياً')),
+        SnackBar(content: Text(tr('تم حذف حسابك نهائياً', 'Your account has been permanently deleted'))),
       );
     } catch (e) {
       if (!mounted) return;
@@ -48,21 +48,21 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('حذف الحساب نهائياً؟', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          title: Text(tr('حذف الحساب نهائياً؟', 'Permanently delete account?'), style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
           content: Text(
-            'لا يمكن التراجع عن هذا الإجراء. سيُحذف حسابك ولن تتمكّن من الدخول مجدداً بهذا البريد.',
+            tr('لا يمكن التراجع عن هذا الإجراء. سيُحذف حسابك ولن تتمكّن من الدخول مجدداً بهذا البريد.', 'This can\'t be undone. Your account will be deleted and you won\'t be able to sign in with this email again.'),
             style: TextStyle(color: AppColors.subText),
           ),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('حذف نهائياً', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('حذف نهائياً', 'Delete permanently'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -80,7 +80,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: Text('حذف الحساب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('حذف الحساب', 'Delete account'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: SingleChildScrollView(
@@ -98,18 +98,18 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('ماذا يحدث عند حذف حسابك:', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text(tr('ماذا يحدث عند حذف حسابك:', 'What happens when you delete your account:'), style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 14)),
                     SizedBox(height: 10),
-                    Text('• تُحذف بياناتك الشخصية (الاسم، الصورة، رقم الهاتف، IBAN) نهائياً.', style: TextStyle(color: AppColors.text, fontSize: 13, height: 22 / 13)),
+                    Text(tr('• تُحذف بياناتك الشخصية (الاسم، الصورة، رقم الهاتف، IBAN) نهائياً.', '• Your personal data (name, photo, phone number, IBAN) is permanently deleted.'), style: TextStyle(color: AppColors.text, fontSize: 13, height: 22 / 13)),
                     SizedBox(height: 6),
-                    Text('• لن تتمكّن من تسجيل الدخول بهذا الحساب مرة أخرى.', style: TextStyle(color: AppColors.text, fontSize: 13, height: 22 / 13)),
+                    Text(tr('• لن تتمكّن من تسجيل الدخول بهذا الحساب مرة أخرى.', '• You won\'t be able to sign in to this account again.'), style: TextStyle(color: AppColors.text, fontSize: 13, height: 22 / 13)),
                     SizedBox(height: 6),
-                    Text('• سجلات الطلبات والمعاملات المالية تبقى محفوظة كما هي للامتثال القانوني، دون ربطها باسمك الظاهر.', style: TextStyle(color: AppColors.text, fontSize: 13, height: 22 / 13)),
+                    Text(tr('• سجلات الطلبات والمعاملات المالية تبقى محفوظة كما هي للامتثال القانوني، دون ربطها باسمك الظاهر.', '• Order and financial records are kept for legal compliance, without being linked to your displayed name.'), style: TextStyle(color: AppColors.text, fontSize: 13, height: 22 / 13)),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              Text('أدخل كلمة المرور لتأكيد هويتك', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+              Text(tr('أدخل كلمة المرور لتأكيد هويتك', 'Enter your password to confirm it\'s you'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
               const SizedBox(height: 10),
               TextFormField(
                 controller: _passwordController,
@@ -117,7 +117,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 onChanged: (_) => setState(() {}),
                 style: TextStyle(color: AppColors.text),
                 decoration: InputDecoration(
-                  hintText: 'كلمة المرور الحالية',
+                  hintText: tr('كلمة المرور الحالية', 'Current password'),
                   suffixIcon: IconButton(
                     icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.gold),
                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
@@ -143,7 +143,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                     Expanded(
                       child: Padding(
                         padding: EdgeInsets.only(top: 12),
-                        child: Text('أفهم أن هذا الإجراء نهائي ولا يمكن التراجع عنه', style: TextStyle(color: AppColors.text, fontSize: 13)),
+                        child: Text(tr('أفهم أن هذا الإجراء نهائي ولا يمكن التراجع عنه', 'I understand this is permanent and can\'t be undone'), style: TextStyle(color: AppColors.text, fontSize: 13)),
                       ),
                     ),
                   ],
@@ -162,7 +162,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                   onPressed: (isValid && !_isDeleting) ? _confirmAndDelete : null,
                   child: _isDeleting
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('حذف حسابي نهائياً', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      : Text(tr('حذف حسابي نهائياً', 'Delete my account permanently'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],

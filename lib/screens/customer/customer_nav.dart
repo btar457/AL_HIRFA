@@ -21,7 +21,7 @@ class CustomerNav extends StatefulWidget {
 class _CustomerNavState extends State<CustomerNav> {
   late int _index = widget.initialIndex;
 
-  final _screens = const [
+  final _screens = [
     CustomerHomeScreen(),
     MarketplaceScreen(),
     OrdersHistoryScreen(),
@@ -54,13 +54,13 @@ class _CustomerNavState extends State<CustomerNav> {
             elevation: 0,
             selectedItemColor: AppColors.gold,
             unselectedItemColor: AppColors.subText,
-            selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-            unselectedLabelStyle: const TextStyle(fontSize: 11),
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'الرئيسية'),
-              BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), activeIcon: Icon(Icons.storefront), label: 'المتجر'),
-              BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'طلباتي'),
-              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'الحساب'),
+            selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            unselectedLabelStyle: TextStyle(fontSize: 11),
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: tr('الرئيسية', 'Home')),
+              BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), activeIcon: Icon(Icons.storefront), label: tr('المتجر', 'Shop')),
+              BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: tr('طلباتي', 'My orders')),
+              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: tr('الحساب', 'Account')),
             ],
           ),
         ),

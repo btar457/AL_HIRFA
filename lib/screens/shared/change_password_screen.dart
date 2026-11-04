@@ -77,7 +77,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('تم تغيير كلمة المرور', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          title: Text(tr('تم تغيير كلمة المرور', 'Password changed'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -85,7 +85,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
-              child: const Text('حسناً', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('حسناً', 'OK'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -101,7 +101,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: Text('تغيير كلمة المرور', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('تغيير كلمة المرور', 'Change password'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: SingleChildScrollView(
@@ -119,7 +119,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     icon: Icon(_obscureCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.gold),
                     onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
                   ),
-                ).copyWith(hintText: 'كلمة المرور الحالية'),
+                ).copyWith(hintText: tr('كلمة المرور الحالية', 'Current password')),
               ),
               const SizedBox(height: 14),
               TextFormField(
@@ -132,7 +132,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     icon: Icon(_obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.gold),
                     onPressed: () => setState(() => _obscureNew = !_obscureNew),
                   ),
-                ).copyWith(hintText: 'كلمة المرور الجديدة'),
+                ).copyWith(hintText: tr('كلمة المرور الجديدة', 'New password')),
               ),
               const SizedBox(height: 14),
               TextFormField(
@@ -145,12 +145,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     icon: Icon(_obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.gold),
                     onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
-                ).copyWith(hintText: 'تأكيد كلمة المرور الجديدة'),
+                ).copyWith(hintText: tr('تأكيد كلمة المرور الجديدة', 'Confirm new password')),
               ),
               const SizedBox(height: 16),
-              _buildRequirement('٨ أحرف على الأقل', _hasMinLength),
-              _buildRequirement('حرف كبير واحد على الأقل', _hasUppercase),
-              _buildRequirement('رقم واحد على الأقل', _hasDigit),
+              _buildRequirement(tr('٨ أحرف على الأقل', 'At least 8 characters'), _hasMinLength),
+              _buildRequirement(tr('حرف كبير واحد على الأقل', 'At least one uppercase letter'), _hasUppercase),
+              _buildRequirement(tr('رقم واحد على الأقل', 'At least one number'), _hasDigit),
               const SizedBox(height: 24),
               SizedBox(
                 height: 56,
@@ -159,7 +159,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   onPressed: (_isValid && !_isSaving) ? _save : null,
                   child: _isSaving
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                      : const Text('حفظ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      : Text(tr('حفظ', 'Save'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],
