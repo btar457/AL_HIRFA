@@ -8,6 +8,7 @@ import '../../widgets/common/product_thumbnail.dart';
 import '../../services/order_service.dart';
 import '../../widgets/common/loading_shimmer.dart';
 import 'artisan_order_detail_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 // حالتا شركة الشحن (shipping_assigned/picked_up) تبقيان هنا فقط لعرض طلبات
 // قديمة قد تكون عالقة فيهما من قبل إغلاق القسم مؤقتاً — لا مسار جديد يصل
@@ -45,17 +46,17 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('قبول الطلب؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('قبول الطلب؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text('بعد قبولك، أنت المسؤول عن توصيل الطلب للزبون وتحصيل المبلغ كاشاً.', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -81,27 +82,27 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('رفض الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('رفض الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: TextFormField(
             controller: reasonController,
             maxLines: 3,
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             decoration: InputDecoration(
               hintText: 'سبب الرفض',
               hintStyle: TextStyle(color: AppColors.subText),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-              focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
             ),
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+              child: Text('تراجع', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -126,17 +127,17 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تأكيد التسليم؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('تأكيد التسليم؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text('أكِّد فقط بعد تسليم المنتج فعلياً واستلام كامل المبلغ من الزبون.', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -162,13 +163,13 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
     final artisanUid = context.watch<AuthProvider>().currentUser?.uid;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: const Text('الطلبات الواردة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('الطلبات الواردة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: AppColors.gold,
@@ -219,9 +220,9 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
       decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
       child: Row(
         children: [
-          const Icon(Icons.notifications_active_outlined, color: AppColors.gold),
+          Icon(Icons.notifications_active_outlined, color: AppColors.gold),
           const SizedBox(width: 10),
-          Expanded(child: Text('لديك $count طلبات جديدة بانتظار المراجعة', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13))),
+          Expanded(child: Text('لديك $count طلبات جديدة بانتظار المراجعة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13))),
         ],
       ),
     );
@@ -251,10 +252,10 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(order.orderNumber, style: const TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                Text(order.orderNumber, style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
               ],
             ),
-            const Divider(color: AppColors.divider),
+            Divider(color: AppColors.divider),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -264,15 +265,15 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 2),
-                      Text('د.ع ${_formatPrice(order.price)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text('د.ع ${_formatPrice(order.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                       const SizedBox(height: 4),
                       Text(order.buyerName, style: TextStyle(color: AppColors.subText, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
-                      Row(children: [const Icon(Icons.location_on_outlined, color: AppColors.subText, size: 13), const SizedBox(width: 4), Expanded(child: Text('${order.governorate} - ${order.district}', style: TextStyle(color: AppColors.subText, fontSize: 11)))]),
+                      Row(children: [Icon(Icons.location_on_outlined, color: AppColors.subText, size: 13), const SizedBox(width: 4), Expanded(child: Text('${order.governorate} - ${order.district}', style: TextStyle(color: AppColors.subText, fontSize: 11)))]),
                       const SizedBox(height: 2),
-                      Row(children: [const Icon(Icons.call_outlined, color: AppColors.subText, size: 13), const SizedBox(width: 4), Text(order.buyerPhone, style: TextStyle(color: AppColors.subText, fontSize: 11))]),
+                      Row(children: [Icon(Icons.call_outlined, color: AppColors.subText, size: 13), const SizedBox(width: 4), Text(order.buyerPhone, style: TextStyle(color: AppColors.subText, fontSize: 11))]),
                     ],
                   ),
                 ),
@@ -316,7 +317,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                 decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
                 child: Text(
                   order.shippingCompanyName != null ? 'جاري الشحن' : 'بانتظار الشحن',
-                  style: const TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ),
               if (order.shippingCompanyName != null) ...[

@@ -3,6 +3,7 @@ import '../../core/constants/colors.dart';
 import '../../models/order_model.dart';
 import '../../services/admin_service.dart';
 import '../../services/order_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -55,20 +56,20 @@ class AdminCommissionsOwedScreen extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تأكيد التحصيل؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('تأكيد التحصيل؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text(
             'أكِّد فقط بعد استلام ${_formatPrice(due.confirmedOwed)} د.ع فعلياً من ${due.artisanName} (تحويل بنكي أو نقداً خارج التطبيق).',
             style: TextStyle(color: AppColors.subText),
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -90,7 +91,7 @@ class AdminCommissionsOwedScreen extends StatelessWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator(color: AppColors.gold)),
+      builder: (_) => Center(child: CircularProgressIndicator(color: AppColors.gold)),
     );
     try {
       await AdminService.instance.checkCommissionCompliance();
@@ -107,17 +108,17 @@ class AdminCommissionsOwedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: const Text('عمولات الحرفيين', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('عمولات الحرفيين', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           actions: [
             IconButton(
-              icon: const Icon(Icons.fact_check_outlined, color: AppColors.gold),
+              icon: Icon(Icons.fact_check_outlined, color: AppColors.gold),
               tooltip: 'فحص الالتزام بالسداد (تنبيه/حظر)',
               onPressed: () => _runComplianceCheck(context),
             ),
@@ -130,7 +131,7 @@ class AdminCommissionsOwedScreen extends StatelessWidget {
               return Center(child: Text('تعذّر تحميل العمولات', style: TextStyle(color: AppColors.subText)));
             }
             if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+              return Center(child: CircularProgressIndicator(color: AppColors.gold));
             }
             final dues = _groupByArtisan(snapshot.data!).values.toList();
             if (dues.isEmpty) {
@@ -148,7 +149,7 @@ class AdminCommissionsOwedScreen extends StatelessWidget {
                     children: [
                       Text('إجمالي العمولات المستحقة المؤكَّدة (طلبات مُسلَّمة لم تُحصَّل)', style: TextStyle(color: AppColors.subText, fontSize: 12)),
                       const SizedBox(height: 6),
-                      Text('${_formatPrice(totalConfirmed)} د.ع', style: const TextStyle(color: AppColors.gold, fontSize: 22, fontWeight: FontWeight.bold)),
+                      Text('${_formatPrice(totalConfirmed)} د.ع', style: TextStyle(color: AppColors.gold, fontSize: 22, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -160,13 +161,13 @@ class AdminCommissionsOwedScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(due.artisanName.isEmpty ? 'حرفي غير معروف' : due.artisanName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text(due.artisanName.isEmpty ? 'حرفي غير معروف' : due.artisanName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
                       const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('مستحق مؤكَّد (تسليم فعلي)', style: TextStyle(color: AppColors.subText, fontSize: 12)),
-                          Text('${_formatPrice(due.confirmedOwed)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                          Text('${_formatPrice(due.confirmedOwed)} د.ع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                         ],
                       ),
                       const SizedBox(height: 4),

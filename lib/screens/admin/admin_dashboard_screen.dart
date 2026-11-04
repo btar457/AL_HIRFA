@@ -14,6 +14,7 @@ import 'admin_products_screen.dart';
 import 'admin_stuck_orders_screen.dart';
 import 'admin_support_messages_screen.dart';
 import 'review_artisans_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -105,7 +106,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -116,7 +117,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 return Center(child: Text('تعذّر تحميل الإحصائيات', style: TextStyle(color: AppColors.subText)));
               }
               if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                return Center(child: CircularProgressIndicator(color: AppColors.gold));
               }
               final data = snapshot.data!;
               return ListView(
@@ -148,7 +149,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('بوابة المؤسس', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
+            Text('بوابة المؤسس', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
             const SizedBox(height: 4),
             Text(_formatDate(DateTime.now()), style: TextStyle(color: AppColors.subText, fontSize: 12)),
           ],
@@ -158,7 +159,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             clipBehavior: Clip.none,
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: AppColors.gold),
+                icon: Icon(Icons.notifications_outlined, color: AppColors.gold),
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
               ),
               if (notifications.unreadCount > 0)
@@ -220,7 +221,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('المبيعات — آخر 7 أيام', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+          Text('المبيعات — آخر 7 أيام', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 16),
           SizedBox(
             height: 140,
@@ -243,7 +244,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('تنبيهات عاجلة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+        Text('تنبيهات عاجلة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 10),
         _buildAlertTile(
           icon: Icons.person_outline,
@@ -317,8 +318,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         children: [
           Icon(icon, color: AppColors.gold, size: 20),
           const SizedBox(width: 10),
-          Expanded(child: Text(label, style: const TextStyle(color: AppColors.text, fontSize: 13))),
-          Text(count, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+          Expanded(child: Text(label, style: TextStyle(color: AppColors.text, fontSize: 13))),
+          Text(count, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
           const SizedBox(width: 10),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: buttonColor, foregroundColor: buttonColor == AppColors.gold ? Colors.black : Colors.white, minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -355,7 +356,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: AppColors.subText, fontSize: 13)),
-          Text(value, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
+          Text(value, style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
         ],
       ),
     );

@@ -9,6 +9,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/product_service.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'product_detail_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -61,7 +62,7 @@ class _SearchScreenState extends State<SearchScreen> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (sheetContext) {
         return Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: AppPrefs.dir,
           child: StatefulBuilder(
             builder: (sheetContext, setSheetState) => SafeArea(
               child: Padding(
@@ -70,12 +71,12 @@ class _SearchScreenState extends State<SearchScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('الفئة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('الفئة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 8),
                     ...kAppCategories.map((cat) => CheckboxListTile(
                       value: _selectedCategoryId == cat.id,
                       activeColor: AppColors.gold,
-                      title: Text(cat.nameAr, style: const TextStyle(color: AppColors.text)),
+                      title: Text(cat.nameAr, style: TextStyle(color: AppColors.text)),
                       secondary: Text(cat.icon, style: const TextStyle(fontSize: 20)),
                       onChanged: (val) {
                         setSheetState(() {});
@@ -99,7 +100,7 @@ class _SearchScreenState extends State<SearchScreen> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (sheetContext) {
         return Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: AppPrefs.dir,
           child: StatefulBuilder(
             builder: (sheetContext, setSheetState) => SafeArea(
               child: Padding(
@@ -108,7 +109,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('السعر', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('السعر', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
                     Text('${_priceRange.start.toInt()} - ${_priceRange.end.toInt()} د.ع', style: TextStyle(color: AppColors.subText, fontSize: 12)),
                     RangeSlider(
                       values: _priceRange,
@@ -136,7 +137,7 @@ class _SearchScreenState extends State<SearchScreen> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (sheetContext) {
         return Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: AppPrefs.dir,
           child: StatefulBuilder(
             builder: (sheetContext, setSheetState) => SafeArea(
               child: Padding(
@@ -145,12 +146,12 @@ class _SearchScreenState extends State<SearchScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('المدينة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('المدينة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
                     ...kCities.map((city) => RadioListTile<String>(
                       value: city,
                       groupValue: _selectedCity,
                       activeColor: AppColors.gold,
-                      title: Text(city, style: const TextStyle(color: AppColors.text)),
+                      title: Text(city, style: TextStyle(color: AppColors.text)),
                       onChanged: (val) {
                         setSheetState(() {});
                         setState(() => _selectedCity = val);
@@ -173,7 +174,7 @@ class _SearchScreenState extends State<SearchScreen> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (sheetContext) {
         return Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: AppPrefs.dir,
           child: StatefulBuilder(
             builder: (sheetContext, setSheetState) => SafeArea(
               child: Padding(
@@ -182,12 +183,12 @@ class _SearchScreenState extends State<SearchScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('التقييم', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('التقييم', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
                     ...[4.5, 4.0, 3.5, 3.0].map((r) => RadioListTile<double>(
                       value: r,
                       groupValue: _minRating,
                       activeColor: AppColors.gold,
-                      title: Text('$r فأعلى ⭐', style: const TextStyle(color: AppColors.text)),
+                      title: Text('$r فأعلى ⭐', style: TextStyle(color: AppColors.text)),
                       onChanged: (val) {
                         setSheetState(() {});
                         setState(() => _minRating = val);
@@ -224,7 +225,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final userId = context.watch<AuthProvider>().currentUser?.uid;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -241,13 +242,13 @@ class _SearchScreenState extends State<SearchScreen> {
                         decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.gold.withOpacity(0.5))),
                         child: Row(
                           children: [
-                            const Icon(Icons.search, color: AppColors.gold, size: 20),
+                            Icon(Icons.search, color: AppColors.gold, size: 20),
                             const SizedBox(width: 8),
                             Expanded(
                               child: TextField(
                                 controller: _searchController,
                                 focusNode: _searchFocusNode,
-                                style: const TextStyle(color: AppColors.text, fontSize: 13),
+                                style: TextStyle(color: AppColors.text, fontSize: 13),
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
                                   hintText: 'ابحث عن التحف والأعمال اليدوية...',
@@ -262,7 +263,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('إلغاء', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                      child: Text('إلغاء', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -293,7 +294,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       return Center(child: Text('تعذّر تحميل النتائج', style: TextStyle(color: AppColors.subText)));
                     }
                     if (!snapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                      return Center(child: CircularProgressIndicator(color: AppColors.gold));
                     }
                     final results = _minRating == null ? snapshot.data! : snapshot.data!.where((p) => p.rating >= _minRating!).toList();
                     return Column(
@@ -301,7 +302,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Align(
-                            alignment: Alignment.centerRight,
+                            alignment: AlignmentDirectional.centerStart,
                             child: Text('${results.length} نتيجة', style: TextStyle(color: AppColors.subText, fontSize: 12)),
                           ),
                         ),

@@ -6,6 +6,7 @@ import '../../core/navigation/role_router.dart';
 import '../../core/utils/error_handler.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/founder_access_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// نص اعتماد صغير في واجهة تسجيل الدخول — الضغط المطوَّل عليه (وليس ضغطاً
 /// عادياً) يفتح نموذج "دخول المؤسس" المخفي، وهو المسار الوحيد داخل
@@ -67,7 +68,7 @@ class _FounderAccessCreditState extends State<FounderAccessCredit> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('المؤسس Mustafa Alshlany', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+          Text(tr('المؤسس Mustafa Alshlany', 'Founder Mustafa Alshlany'), style: TextStyle(color: AppColors.subText, fontSize: 11)),
           if (_progress > 0) ...[
             const SizedBox(height: 6),
             SizedBox(
@@ -105,7 +106,7 @@ class _FounderAccessDialogState extends State<_FounderAccessDialog> {
     final phone = _phoneController.text.trim();
     final password = _passwordController.text;
     if (name.isEmpty || email.isEmpty || phone.isEmpty || password.isEmpty) {
-      setState(() => _error = 'أكمل كل الحقول');
+      setState(() => _error = tr('أكمل كل الحقول', 'Fill in all fields'));
       return;
     }
 
@@ -124,7 +125,7 @@ class _FounderAccessDialogState extends State<_FounderAccessDialog> {
         await auth.signIn(email, password);
         if (auth.currentUser?.role != 'admin') {
           await auth.signOut();
-          throw Exception('بيانات الدخول غير صحيحة');
+          throw Exception(tr('بيانات الدخول غير صحيحة', 'Incorrect sign-in details'));
         }
       }
 
@@ -164,29 +165,29 @@ class _FounderAccessDialogState extends State<_FounderAccessDialog> {
       filled: true,
       fillColor: AppColors.background,
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: AlertDialog(
         backgroundColor: AppColors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: const Text('دخول المؤسس', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+        title: Text(tr('دخول المؤسس', 'Founder sign-in'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: _nameController, style: const TextStyle(color: AppColors.text), decoration: _decoration('الاسم')),
+              TextField(controller: _nameController, style: TextStyle(color: AppColors.text), decoration: _decoration(tr('الاسم', 'Name'))),
               const SizedBox(height: 10),
-              TextField(controller: _emailController, keyboardType: TextInputType.emailAddress, style: const TextStyle(color: AppColors.text), decoration: _decoration('البريد الإلكتروني')),
+              TextField(controller: _emailController, keyboardType: TextInputType.emailAddress, style: TextStyle(color: AppColors.text), decoration: _decoration(tr('البريد الإلكتروني', 'Email'))),
               const SizedBox(height: 10),
-              TextField(controller: _phoneController, keyboardType: TextInputType.phone, style: const TextStyle(color: AppColors.text), decoration: _decoration('رقم الهاتف')),
+              TextField(controller: _phoneController, keyboardType: TextInputType.phone, style: TextStyle(color: AppColors.text), decoration: _decoration(tr('رقم الهاتف', 'Phone number'))),
               const SizedBox(height: 10),
-              TextField(controller: _passwordController, obscureText: true, style: const TextStyle(color: AppColors.text), decoration: _decoration('كلمة المرور')),
+              TextField(controller: _passwordController, obscureText: true, style: TextStyle(color: AppColors.text), decoration: _decoration(tr('كلمة المرور', 'Password'))),
               if (_error != null) ...[
                 const SizedBox(height: 10),
                 Text(_error!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
@@ -195,13 +196,13 @@ class _FounderAccessDialogState extends State<_FounderAccessDialog> {
           ),
         ),
         actions: [
-          TextButton(onPressed: _isSubmitting ? null : () => Navigator.pop(context), child: const Text('إلغاء', style: TextStyle(color: AppColors.subText))),
+          TextButton(onPressed: _isSubmitting ? null : () => Navigator.pop(context), child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.subText))),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: _isSubmitting ? null : _submit,
             child: _isSubmitting
                 ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                : const Text('دخول', style: TextStyle(fontWeight: FontWeight.bold)),
+                : Text(tr('دخول', 'Sign in'), style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

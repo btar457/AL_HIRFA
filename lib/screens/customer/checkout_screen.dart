@@ -12,6 +12,7 @@ import '../../services/app_settings_service.dart';
 import '../../services/order_service.dart';
 import '../shared/terms_screen.dart';
 import 'orders_history_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 const _kProvinces = [
   'بغداد', 'البصرة', 'النجف', 'أربيل', 'الموصل', 'كربلاء', 'الديوانية',
@@ -62,7 +63,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         field,
       ],
@@ -76,7 +77,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       filled: true,
       fillColor: AppColors.card,
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
@@ -89,17 +90,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تأكيد الطلب؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('تأكيد الطلب؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text('سيتم إرسال طلبك للبائع للمراجعة', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -186,13 +187,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final cart = context.watch<CartProvider>();
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: const Text('تأكيد الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('تأكيد الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: cart.items.isEmpty
             ? Center(child: Text('السلة فارغة', style: TextStyle(color: AppColors.subText)))
@@ -208,7 +209,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       field: TextFormField(
                         controller: _nameController,
                         textInputAction: TextInputAction.next,
-                        style: const TextStyle(color: AppColors.text),
+                        style: TextStyle(color: AppColors.text),
                         decoration: _fieldDecoration(),
                       ),
                     ),
@@ -219,7 +220,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
                         maxLength: 11,
-                        style: const TextStyle(color: AppColors.text),
+                        style: TextStyle(color: AppColors.text),
                         decoration: _fieldDecoration(hint: '07xxxxxxxxx'),
                       ),
                     ),
@@ -228,7 +229,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       field: DropdownButtonFormField<String>(
                         initialValue: _selectedProvince,
                         dropdownColor: AppColors.card,
-                        style: const TextStyle(color: AppColors.text),
+                        style: TextStyle(color: AppColors.text),
                         decoration: _fieldDecoration(),
                         items: _kProvinces.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
                         onChanged: (value) => setState(() => _selectedProvince = value!),
@@ -239,7 +240,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       label: 'المنطقة/الحي',
                       field: TextFormField(
                         controller: _neighborhoodController,
-                        style: const TextStyle(color: AppColors.text),
+                        style: TextStyle(color: AppColors.text),
                         decoration: _fieldDecoration(),
                       ),
                     ),
@@ -249,7 +250,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       field: TextFormField(
                         controller: _notesController,
                         maxLines: 3,
-                        style: const TextStyle(color: AppColors.text),
+                        style: TextStyle(color: AppColors.text),
                         decoration: _fieldDecoration(),
                       ),
                     ),
@@ -295,12 +296,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.product.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(item.product.name, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
                       Text(item.product.artisanName, style: TextStyle(color: AppColors.subText, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),
-                Text('${item.quantity} × ${_formatPrice(item.product.price)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12)),
+                Text('${item.quantity} × ${_formatPrice(item.product.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12)),
               ],
             ),
           );
@@ -324,8 +325,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('المجموع', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
-              Text('${_formatPrice(cart.total)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
+              Text('المجموع', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('${_formatPrice(cart.total)} د.ع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
             ],
           ),
         ],
@@ -338,7 +339,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: TextStyle(color: AppColors.subText, fontSize: 14)),
-        Text('$value د.ع', style: const TextStyle(color: AppColors.text, fontSize: 14)),
+        Text('$value د.ع', style: TextStyle(color: AppColors.text, fontSize: 14)),
       ],
     );
   }
@@ -352,7 +353,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             value: _cashAccepted,
             activeColor: AppColors.gold,
             controlAffinity: ListTileControlAffinity.leading,
-            title: const Text('أفهم أن الدفع كاشاً عند الاستلام فقط', style: TextStyle(color: AppColors.text, fontSize: 13)),
+            title: Text('أفهم أن الدفع كاشاً عند الاستلام فقط', style: TextStyle(color: AppColors.text, fontSize: 13)),
             onChanged: (val) => setState(() => _cashAccepted = val ?? false),
           ),
           CheckboxListTile(
@@ -361,12 +362,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             controlAffinity: ListTileControlAffinity.leading,
             title: RichText(
               text: TextSpan(
-                style: const TextStyle(color: AppColors.text, fontSize: 13),
+                style: TextStyle(color: AppColors.text, fontSize: 13),
                 children: [
                   const TextSpan(text: 'أوافق على '),
                   TextSpan(
                     text: 'سياسة الإرجاع',
-                    style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                    style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen())),
                   ),
@@ -390,13 +391,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.delivery_dining_outlined, color: AppColors.gold, size: 26),
+          Icon(Icons.delivery_dining_outlined, color: AppColors.gold, size: 26),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('معلومات التوصيل', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+                Text('معلومات التوصيل', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
                 const SizedBox(height: 4),
                 Text(
                   'الحرفي نفسه سيتولّى توصيل طلبك ويتواصل معك على رقم هاتفك لتنسيق موعد التسليم — لا وسيط شحن حالياً.',
@@ -416,10 +417,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
-          const Icon(Icons.account_balance_wallet_outlined, color: AppColors.gold),
+          Icon(Icons.account_balance_wallet_outlined, color: AppColors.gold),
           const SizedBox(width: 12),
-          const Expanded(child: Text('الدفع عند الاستلام', style: TextStyle(color: AppColors.text))),
-          const Icon(Icons.check_circle, color: AppColors.gold),
+          Expanded(child: Text('الدفع عند الاستلام', style: TextStyle(color: AppColors.text))),
+          Icon(Icons.check_circle, color: AppColors.gold),
         ],
       ),
     );

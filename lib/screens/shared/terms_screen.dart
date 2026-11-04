@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// الشروط والأحكام الكاملة (راجع AL-HIRFA-Legal-Rules.md — "ملخص القوانين للمستخدمين").
 class TermsScreen extends StatelessWidget {
@@ -35,14 +36,14 @@ class TermsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
-          title: const Text('الشروط والأحكام', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('الشروط والأحكام', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: ListView(
           padding: const EdgeInsets.all(20),
@@ -77,15 +78,15 @@ class TermsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(title, style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 12),
           ...rules.map((rule) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('•  ', style: TextStyle(color: AppColors.gold, fontSize: 14, fontWeight: FontWeight.bold)),
-                Expanded(child: Text(rule, style: const TextStyle(color: AppColors.text, fontSize: 14, height: 24 / 14))),
+                Text('•  ', style: TextStyle(color: AppColors.gold, fontSize: 14, fontWeight: FontWeight.bold)),
+                Expanded(child: Text(rule, style: TextStyle(color: AppColors.text, fontSize: 14, height: 24 / 14))),
               ],
             ),
           )),

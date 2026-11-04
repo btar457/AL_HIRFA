@@ -14,6 +14,7 @@ import 'cart_screen.dart';
 import 'product_detail_screen.dart';
 import 'search_screen.dart';
 import '../shared/notifications_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -54,7 +55,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     final userId = context.watch<AuthProvider>().currentUser?.uid;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -119,7 +120,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               clipBehavior: Clip.none,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.gold),
+                  icon: Icon(Icons.shopping_cart_outlined, color: AppColors.gold),
                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
                 ),
                 if (cart.itemCount > 0)
@@ -136,13 +137,13 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               ],
             ),
           ),
-          const Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)),
+          Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)),
           Consumer<NotificationProvider>(
             builder: (context, notifications, _) => Stack(
               clipBehavior: Clip.none,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.notifications_outlined, color: AppColors.gold),
+                  icon: Icon(Icons.notifications_outlined, color: AppColors.gold),
                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
                 ),
                 if (notifications.unreadCount > 0)
@@ -170,7 +171,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
           decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.gold.withOpacity(0.5))),
           child: Row(
             children: [
-              const Icon(Icons.search, color: AppColors.gold, size: 20),
+              Icon(Icons.search, color: AppColors.gold, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text('ابحث عن التحف والأعمال اليدوية...', style: TextStyle(color: AppColors.subText, fontSize: 13)),
@@ -192,7 +193,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
           children: kAppCategories.map((category) {
             final selected = _selectedCategory == category.id;
             return Padding(
-              padding: const EdgeInsets.only(left: 10),
+              padding: const EdgeInsetsDirectional.only(end: 10),
               child: GestureDetector(
                 onTap: () => setState(() => _selectedCategory = category.id),
                 child: Container(

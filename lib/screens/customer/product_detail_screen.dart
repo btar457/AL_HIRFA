@@ -11,6 +11,7 @@ import '../../services/product_service.dart';
 import '../../services/qr_service.dart';
 import 'artisan_public_profile_screen.dart';
 import 'checkout_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -39,7 +40,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final userId = context.watch<AuthProvider>().currentUser?.uid;
     final canPersistFavorite = product.id.isNotEmpty && userId != null;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SingleChildScrollView(
@@ -98,7 +99,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
                 decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF3A2A10), Color(0xFF1A1208)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
-                child: const Center(child: CircularProgressIndicator(color: AppColors.gold)),
+                child: Center(child: CircularProgressIndicator(color: AppColors.gold)),
               ),
               errorWidget: (context, url, error) => _heroPlaceholder(),
             )
@@ -139,7 +140,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       decoration: const BoxDecoration(
         gradient: LinearGradient(colors: [Color(0xFF3A2A10), Color(0xFF1A1208)], begin: Alignment.topLeft, end: Alignment.bottomRight),
       ),
-      child: const Center(child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 72)),
+      child: Center(child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 72)),
     );
   }
 
@@ -175,7 +176,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: Text(product.city.toUpperCase(), style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
         ),
         const SizedBox(height: 12),
-        Text(product.name, style: const TextStyle(color: AppColors.text, fontSize: 24, fontWeight: FontWeight.bold), maxLines: 3, overflow: TextOverflow.ellipsis),
+        Text(product.name, style: TextStyle(color: AppColors.text, fontSize: 24, fontWeight: FontWeight.bold), maxLines: 3, overflow: TextOverflow.ellipsis),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -185,7 +186,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        Text('د.ع ${_formatPrice(product.price)}', style: const TextStyle(color: AppColors.gold, fontSize: 28, fontWeight: FontWeight.bold)),
+        Text('د.ع ${_formatPrice(product.price)}', style: TextStyle(color: AppColors.gold, fontSize: 28, fontWeight: FontWeight.bold)),
         if (product.stock != null) ...[
           const SizedBox(height: 6),
           if (product.isOutOfStock)
@@ -209,22 +210,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             radius: 24,
             backgroundColor: AppColors.background,
             backgroundImage: product.artisanPhotoUrl.isEmpty ? null : CachedNetworkImageProvider(product.artisanPhotoUrl),
-            child: product.artisanPhotoUrl.isEmpty ? const Icon(Icons.person, color: AppColors.gold) : null,
+            child: product.artisanPhotoUrl.isEmpty ? Icon(Icons.person, color: AppColors.gold) : null,
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(product.artisanName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+                Text(product.artisanName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
                 Text('صنع بيدي في ${product.city}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
               ],
             ),
           ),
           OutlinedButton(
-            style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ArtisanPublicProfileScreen(artisanUid: product.artisanUid))),
-            child: const Text('زيارة الملف', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+            child: Text('زيارة الملف', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -236,7 +237,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _quantityButton(icon: Icons.remove, onTap: () => setState(() => _quantity = _quantity > 1 ? _quantity - 1 : 1)),
-        SizedBox(width: 48, child: Text('$_quantity', textAlign: TextAlign.center, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18))),
+        SizedBox(width: 48, child: Text('$_quantity', textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18))),
         _quantityButton(icon: Icons.add, onTap: () {
           if (product.stock != null && _quantity >= product.stock!) return;
           setState(() => _quantity++);
@@ -286,13 +287,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: SizedBox(
             height: 56,
             child: OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
               onPressed: () {
                 if (_addToCart(product)) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('أُضيف "${product.name}" إلى السلة')));
                 }
               },
-              child: const Icon(Icons.add_shopping_cart_outlined, color: AppColors.gold),
+              child: Icon(Icons.add_shopping_cart_outlined, color: AppColors.gold),
             ),
           ),
         ),
@@ -324,7 +325,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       children: [
         Text('THE NARRATIVE', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 3)),
         const SizedBox(height: 6),
-        const Text('حكاية القطعة', style: TextStyle(color: AppColors.text, fontSize: 20, fontWeight: FontWeight.bold)),
+        Text('حكاية القطعة', style: TextStyle(color: AppColors.text, fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Divider(color: AppColors.gold.withOpacity(0.3)),
         const SizedBox(height: 12),
@@ -342,11 +343,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('شهادة موثوقية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          title: Text('شهادة موثوقية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -356,12 +357,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: QrImageView(data: QrService.instance.buildCertificatePayload(product), version: QrVersions.auto, size: 200),
               ),
               const SizedBox(height: 14),
-              Text(product.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+              Text(product.name, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
               Text('صنع يد الحرفي: ${product.artisanName}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('إغلاق', style: TextStyle(color: AppColors.gold))),
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text('إغلاق', style: TextStyle(color: AppColors.gold))),
           ],
         ),
       ),
@@ -375,16 +376,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.3))),
       child: Column(
         children: [
-          const Icon(Icons.qr_code_2, color: AppColors.gold, size: 64),
+          Icon(Icons.qr_code_2, color: AppColors.gold, size: 64),
           const SizedBox(height: 12),
-          const Text('شهادة موثوقية', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+          Text('شهادة موثوقية', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 6),
           Text('امسح رمز QR للتحقق من الأصالة', textAlign: TextAlign.center, style: TextStyle(color: AppColors.subText, fontSize: 12)),
           const SizedBox(height: 14),
           OutlinedButton(
-            style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: () => _showAuthenticityDialog(product),
-            child: const Text('عرض الوثيقة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+            child: Text('عرض الوثيقة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -397,7 +398,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         Expanded(
           child: Column(
             children: [
-              const Icon(Icons.category_outlined, color: AppColors.gold),
+              Icon(Icons.category_outlined, color: AppColors.gold),
               const SizedBox(height: 6),
               Text(product.material.isNotEmpty ? product.material : 'غير محدد', style: TextStyle(color: AppColors.text, fontSize: 13), textAlign: TextAlign.center),
             ],
@@ -407,7 +408,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         Expanded(
           child: Column(
             children: [
-              const Icon(Icons.location_on_outlined, color: AppColors.gold),
+              Icon(Icons.location_on_outlined, color: AppColors.gold),
               const SizedBox(height: 6),
               Text(product.originPlace.isNotEmpty ? product.originPlace : product.city, style: TextStyle(color: AppColors.text, fontSize: 13), textAlign: TextAlign.center),
             ],
@@ -422,7 +423,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('صور إضافية', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+        Text('صور إضافية', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 12),
         SizedBox(
           height: 70,
@@ -438,7 +439,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 height: 70,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(width: 70, height: 70, color: AppColors.card),
-                errorWidget: (context, url, error) => Container(width: 70, height: 70, color: AppColors.card, child: const Icon(Icons.broken_image_outlined, color: AppColors.subText)),
+                errorWidget: (context, url, error) => Container(width: 70, height: 70, color: AppColors.card, child: Icon(Icons.broken_image_outlined, color: AppColors.subText)),
               ),
             ),
           ),

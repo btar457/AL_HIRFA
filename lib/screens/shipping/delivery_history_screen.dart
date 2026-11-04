@@ -5,6 +5,7 @@ import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import '../../widgets/common/loading_shimmer.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -54,13 +55,13 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> with Sing
     final shippingUid = context.watch<AuthProvider>().currentUser?.uid;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: const Text('سجل التوصيلات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('سجل التوصيلات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: AppColors.gold,
@@ -128,7 +129,7 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> with Sing
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(10)),
       child: Column(
         children: [
-          Text(value, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
+          Text(value, style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
           const SizedBox(height: 4),
           Text(label, style: TextStyle(color: AppColors.subText, fontSize: 10), textAlign: TextAlign.center),
         ],
@@ -155,9 +156,9 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> with Sing
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(children: [Text(d.orderNumber, style: const TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)), const SizedBox(width: 8), Text(_formatDate(_completionDate(d)), style: TextStyle(color: AppColors.subText, fontSize: 11))]),
+                    Row(children: [Text(d.orderNumber, style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)), const SizedBox(width: 8), Text(_formatDate(_completionDate(d)), style: TextStyle(color: AppColors.subText, fontSize: 11))]),
                     const SizedBox(height: 4),
-                    Text(d.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+                    Text(d.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
                     const SizedBox(height: 2),
                     Text(d.governorate, style: TextStyle(color: AppColors.subText, fontSize: 11)),
                   ],
@@ -166,7 +167,7 @@ class _DeliveryHistoryScreenState extends State<DeliveryHistoryScreen> with Sing
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('${_formatPrice(d.shippingEarnings)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text('${_formatPrice(d.shippingEarnings)} د.ع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

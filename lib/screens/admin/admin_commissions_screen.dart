@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/app_settings_model.dart';
 import '../../services/app_settings_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// إدارة العمولات وسعر التوصيل الثابت (ADMIN-8).
 class AdminCommissionsScreen extends StatefulWidget {
@@ -16,22 +17,22 @@ class _AdminCommissionsScreenState extends State<AdminCommissionsScreen> {
     await showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text(title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(title, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             decoration: InputDecoration(enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -68,11 +69,11 @@ class _AdminCommissionsScreenState extends State<AdminCommissionsScreen> {
               children: [
                 Text(label, style: TextStyle(color: AppColors.subText, fontSize: 13)),
                 const SizedBox(height: 6),
-                Text(value, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
+                Text(value, style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
               ],
             ),
           ),
-          TextButton(onPressed: onEdit, child: const Text('تعديل', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold))),
+          TextButton(onPressed: onEdit, child: Text('تعديل', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold))),
         ],
       ),
     );
@@ -81,13 +82,13 @@ class _AdminCommissionsScreenState extends State<AdminCommissionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: const Text('إدارة العمولات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('إدارة العمولات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: StreamBuilder<AppSettingsModel>(
           stream: AppSettingsService.instance.watchSettings(),
@@ -96,7 +97,7 @@ class _AdminCommissionsScreenState extends State<AdminCommissionsScreen> {
               return Center(child: Text('تعذّر تحميل الإعدادات', style: TextStyle(color: AppColors.subText)));
             }
             if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+              return Center(child: CircularProgressIndicator(color: AppColors.gold));
             }
             final settings = snapshot.data!;
             final productCommissionPct = settings.productCommission * 100;

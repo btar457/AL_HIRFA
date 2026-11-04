@@ -12,6 +12,7 @@ import '../../services/wallet_service.dart';
 import '../shared/notifications_screen.dart';
 import 'artisan_orders_screen.dart';
 import 'artisan_wallet_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -31,7 +32,7 @@ class ArtisanDashboardScreen extends StatelessWidget {
     final user = context.watch<AuthProvider>().currentUser;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -77,13 +78,13 @@ class ArtisanDashboardScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const SizedBox(width: 48),
-        const Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)),
+        Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)),
         Consumer<NotificationProvider>(
           builder: (context, notifications, _) => Stack(
             clipBehavior: Clip.none,
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: AppColors.gold),
+                icon: Icon(Icons.notifications_outlined, color: AppColors.gold),
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
               ),
               if (notifications.unreadCount > 0)
@@ -103,7 +104,7 @@ class ArtisanDashboardScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('مرحباً، $name', style: const TextStyle(color: AppColors.text, fontSize: 22, fontWeight: FontWeight.bold)),
+        Text('مرحباً، $name', style: TextStyle(color: AppColors.text, fontSize: 22, fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
         Row(
           children: [
@@ -111,7 +112,7 @@ class ArtisanDashboardScreen extends StatelessWidget {
             const SizedBox(width: 6),
             Container(
               padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(color: AppColors.gold, shape: BoxShape.circle),
+              decoration: BoxDecoration(color: AppColors.gold, shape: BoxShape.circle),
               child: const Icon(Icons.check, color: Colors.black, size: 10),
             ),
           ],
@@ -188,10 +189,10 @@ class ArtisanDashboardScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('طلبات تنتظر موافقتك', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('طلبات تنتظر موافقتك', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
             TextButton(
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanOrdersScreen())),
-              child: const Text('عرض الكل', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+              child: Text('عرض الكل', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
             ),
           ],
         ),
@@ -211,16 +212,16 @@ class ArtisanDashboardScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     gradient: const LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)]),
                   ),
-                  child: const Icon(Icons.auto_awesome, color: AppColors.gold, size: 20),
+                  child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 20),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
                       Text(order.buyerName, style: TextStyle(color: AppColors.subText, fontSize: 11)),
-                      Text('د.ع ${_formatPrice(order.totalAmount)}', style: const TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text('د.ع ${_formatPrice(order.totalAmount)}', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -246,7 +247,7 @@ class ArtisanDashboardScreen extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('الأكثر مبيعاً', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('الأكثر مبيعاً', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
             if (bestSellers.isEmpty)
               Text('لا توجد مبيعات مكتملة بعد', style: TextStyle(color: AppColors.subText, fontSize: 13))
@@ -273,10 +274,10 @@ class ArtisanDashboardScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                               gradient: const LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)]),
                             ),
-                            child: const Icon(Icons.auto_awesome, color: AppColors.gold, size: 22),
+                            child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 22),
                           ),
                           const SizedBox(height: 6),
-                          Text(product.name, style: const TextStyle(color: AppColors.text, fontSize: 11, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text(product.name, style: TextStyle(color: AppColors.text, fontSize: 11, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                           Text('${product.salesCount} عملية بيع', style: TextStyle(color: AppColors.subText, fontSize: 10)),
                         ],
                       ),

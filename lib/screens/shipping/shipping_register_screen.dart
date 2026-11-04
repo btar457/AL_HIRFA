@@ -5,6 +5,7 @@ import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// تسجيل شركة شحن جديدة (SHIPPING-2).
 class ShippingRegisterScreen extends StatefulWidget {
@@ -31,7 +32,7 @@ class _ShippingRegisterScreenState extends State<ShippingRegisterScreen> {
       filled: true,
       fillColor: AppColors.card,
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
@@ -40,7 +41,7 @@ class _ShippingRegisterScreenState extends State<ShippingRegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         field,
         const SizedBox(height: 14),
@@ -79,11 +80,11 @@ class _ShippingRegisterScreenState extends State<ShippingRegisterScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تم استلام طلبك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          title: Text('تم استلام طلبك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           content: Text('سيراجع فريق AL-HIRFA طلبك وسنُعلمك بالنتيجة.', style: TextStyle(color: AppColors.subText)),
           actions: [
             ElevatedButton(
@@ -100,7 +101,7 @@ class _ShippingRegisterScreenState extends State<ShippingRegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -109,15 +110,15 @@ class _ShippingRegisterScreenState extends State<ShippingRegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('AL-HIRFA', textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 3)),
+                Text('AL-HIRFA', textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 3)),
                 const SizedBox(height: 8),
-                const Text('تسجيل شركة شحن', textAlign: TextAlign.center, style: TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('تسجيل شركة شحن', textAlign: TextAlign.center, style: TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 28),
-                const Text('معلومات الشركة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
+                Text('معلومات الشركة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
                 const SizedBox(height: 14),
-                _buildLabeledField(label: 'اسم الشركة', field: TextFormField(controller: _companyNameController, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
-                _buildLabeledField(label: 'رقم السجل التجاري', field: TextFormField(controller: _registrationController, keyboardType: TextInputType.number, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
-                Text('المحافظات التي تعمل بها', style: const TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
+                _buildLabeledField(label: 'اسم الشركة', field: TextFormField(controller: _companyNameController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+                _buildLabeledField(label: 'رقم السجل التجاري', field: TextFormField(controller: _registrationController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+                Text('المحافظات التي تعمل بها', style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -136,20 +137,20 @@ class _ShippingRegisterScreenState extends State<ShippingRegisterScreen> {
                   }).toList(),
                 ),
                 const SizedBox(height: 14),
-                _buildLabeledField(label: 'رقم هاتف الشركة', field: TextFormField(controller: _companyPhoneController, keyboardType: TextInputType.phone, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
-                _buildLabeledField(label: 'البريد الإلكتروني', field: TextFormField(controller: _companyEmailController, keyboardType: TextInputType.emailAddress, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+                _buildLabeledField(label: 'رقم هاتف الشركة', field: TextFormField(controller: _companyPhoneController, keyboardType: TextInputType.phone, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+                _buildLabeledField(label: 'البريد الإلكتروني', field: TextFormField(controller: _companyEmailController, keyboardType: TextInputType.emailAddress, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
                 const SizedBox(height: 8),
-                const Text('مسؤول الشركة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
+                Text('مسؤول الشركة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
                 const SizedBox(height: 14),
-                _buildLabeledField(label: 'اسم المسؤول', field: TextFormField(controller: _managerNameController, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
-                _buildLabeledField(label: 'رقم هاتفه الشخصي', field: TextFormField(controller: _managerPhoneController, keyboardType: TextInputType.phone, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+                _buildLabeledField(label: 'اسم المسؤول', field: TextFormField(controller: _managerNameController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+                _buildLabeledField(label: 'رقم هاتفه الشخصي', field: TextFormField(controller: _managerPhoneController, keyboardType: TextInputType.phone, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: EdgeInsets.all(14),
                   decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.3))),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(children: const [
+                      Row(children: [
                         Icon(Icons.info_outline, color: AppColors.gold, size: 18),
                         SizedBox(width: 8),
                         Text('مبلغ التأمين المطلوب: 500,000 د.ع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
@@ -161,7 +162,7 @@ class _ShippingRegisterScreenState extends State<ShippingRegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildLabeledField(label: 'الحساب المصرفي (IBAN) لاستلام المستحقات', field: TextFormField(controller: _ibanController, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+                _buildLabeledField(label: 'الحساب المصرفي (IBAN) لاستلام المستحقات', field: TextFormField(controller: _ibanController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 56,

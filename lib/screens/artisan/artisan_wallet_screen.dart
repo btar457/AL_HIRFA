@@ -6,6 +6,7 @@ import '../../models/wallet_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import '../../services/wallet_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -37,13 +38,13 @@ class ArtisanWalletScreen extends StatelessWidget {
     final artisanUid = context.watch<AuthProvider>().currentUser?.uid;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: const Text('محفظتي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('محفظتي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
         body: artisanUid == null
             ? Center(child: Text('سجّل الدخول لعرض محفظتك', style: TextStyle(color: AppColors.subText)))
@@ -56,7 +57,7 @@ class ArtisanWalletScreen extends StatelessWidget {
                     children: [
                       _buildBalanceCard(wallet),
                       const SizedBox(height: 24),
-                      const Text('سجل المعاملات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text('سجل المعاملات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
                       const SizedBox(height: 12),
                       StreamBuilder<List<OrderModel>>(
                         stream: OrderService.instance.getArtisanOrders(artisanUid),
@@ -83,7 +84,7 @@ class ArtisanWalletScreen extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(colors: [AppColors.gold, Color(0xFF8B6B1F)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        gradient: LinearGradient(colors: [AppColors.gold, Color(0xFF8B6B1F)], begin: Alignment.topLeft, end: Alignment.bottomRight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +115,7 @@ class ArtisanWalletScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
                 Text(_formatDate(order.deliveredAt ?? order.createdAt), style: TextStyle(color: AppColors.subText, fontSize: 11)),
               ],
             ),

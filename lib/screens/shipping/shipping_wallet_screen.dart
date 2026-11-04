@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import '../../services/wallet_service.dart';
 import '../../widgets/common/loading_shimmer.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -33,7 +34,7 @@ class ShippingWalletScreen extends StatelessWidget {
   void _showSettlementDialog(BuildContext context, String shippingUid) async {
     showDialog(
       context: context,
-      builder: (dialogContext) => const Center(child: CircularProgressIndicator(color: AppColors.gold)),
+      builder: (dialogContext) => Center(child: CircularProgressIndicator(color: AppColors.gold)),
     );
     try {
       final settlement = await WalletService.instance.previewCurrentWeekSettlement(shippingUid);
@@ -42,10 +43,10 @@ class ShippingWalletScreen extends StatelessWidget {
       showDialog(
         context: context,
         builder: (dialogContext) => Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: AppPrefs.dir,
           child: AlertDialog(
             backgroundColor: AppColors.card,
-            title: const Text('تفاصيل التسوية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+            title: Text('تفاصيل التسوية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +59,7 @@ class ShippingWalletScreen extends StatelessWidget {
               ],
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('إغلاق', style: TextStyle(color: AppColors.gold))),
+              TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text('إغلاق', style: TextStyle(color: AppColors.gold))),
             ],
           ),
         ),
@@ -74,13 +75,13 @@ class ShippingWalletScreen extends StatelessWidget {
     final shippingUid = context.watch<AuthProvider>().currentUser?.uid;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: const Text('محفظة الشركة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('محفظة الشركة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
         body: shippingUid == null
             ? Center(child: Text('سجّل الدخول لعرض المحفظة', style: TextStyle(color: AppColors.subText)))
@@ -112,7 +113,7 @@ class ShippingWalletScreen extends StatelessWidget {
                         builder: (context, settlementSnapshot) => _buildSettlementCard(context, shippingUid, settlementSnapshot.data),
                       ),
                       const SizedBox(height: 20),
-                      const Text('سجل المعاملات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text('سجل المعاملات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
                       const SizedBox(height: 10),
                       if (delivered.isEmpty)
                         Padding(padding: const EdgeInsets.symmetric(vertical: 20), child: Center(child: Text('لا توجد معاملات بعد', style: TextStyle(color: AppColors.subText))))
@@ -132,7 +133,7 @@ class ShippingWalletScreen extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(colors: [Color(0xFF8B6B1F), AppColors.gold], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        gradient: LinearGradient(colors: [Color(0xFF8B6B1F), AppColors.gold], begin: Alignment.topLeft, end: Alignment.bottomRight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,9 +179,9 @@ class ShippingWalletScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => _showSettlementDialog(context, shippingUid),
-              child: const Text('تفاصيل التسوية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+              child: Text('تفاصيل التسوية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -209,7 +210,7 @@ class ShippingWalletScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(order.orderNumber, style: const TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                Text(order.orderNumber, style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Text(_formatDate(_completionDate(order)), style: TextStyle(color: AppColors.subText, fontSize: 11)),
               ],

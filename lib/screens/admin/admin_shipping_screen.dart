@@ -7,6 +7,7 @@ import '../../models/user_model.dart';
 import '../../services/admin_service.dart';
 import '../../services/order_service.dart';
 import '../../services/wallet_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -39,22 +40,22 @@ class _AdminShippingScreenState extends State<AdminShippingScreen> with SingleTi
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('رفض الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('رفض الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: TextFormField(
             controller: reasonController,
             maxLines: 3,
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             decoration: InputDecoration(hintText: 'سبب الرفض', hintStyle: TextStyle(color: AppColors.subText), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+              child: Text('تراجع', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -78,22 +79,22 @@ class _AdminShippingScreenState extends State<AdminShippingScreen> with SingleTi
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تعليق الشركة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('تعليق الشركة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: TextFormField(
             controller: reasonController,
             maxLines: 3,
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             decoration: InputDecoration(hintText: 'السبب', hintStyle: TextStyle(color: AppColors.subText), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+              child: Text('تراجع', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -115,13 +116,13 @@ class _AdminShippingScreenState extends State<AdminShippingScreen> with SingleTi
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: const Text('إدارة شركات الشحن', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('إدارة شركات الشحن', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: AppColors.gold,
@@ -150,7 +151,7 @@ class _AdminShippingScreenState extends State<AdminShippingScreen> with SingleTi
           return Center(child: Text('تعذّر تحميل الشركات', style: TextStyle(color: AppColors.subText)));
         }
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+          return Center(child: CircularProgressIndicator(color: AppColors.gold));
         }
         final companies = snapshot.data!.where((c) {
           return switch (tab) {
@@ -184,7 +185,7 @@ class _AdminShippingScreenState extends State<AdminShippingScreen> with SingleTi
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: Text(company.companyName.isNotEmpty ? company.companyName : company.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14))),
+              Expanded(child: Text(company.companyName.isNotEmpty ? company.companyName : company.name, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14))),
               _buildStatusChip(company),
             ],
           ),

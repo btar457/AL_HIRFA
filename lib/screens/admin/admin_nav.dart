@@ -9,6 +9,7 @@ import 'admin_commissions_owed_screen.dart';
 import 'admin_dashboard_screen.dart';
 import 'admin_orders_screen.dart';
 import 'admin_settings_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// الحاوية الرئيسية لبوابة المؤسس (الأدمن) عبر شريط تنقل سفلي بخمس تبويبات (ADMIN-1).
 class AdminNav extends StatefulWidget {
@@ -42,11 +43,11 @@ class _AdminNavState extends State<AdminNav> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         body: _screens[_index],
         bottomNavigationBar: Container(
-          decoration: const BoxDecoration(color: AppColors.navBackground),
+          decoration: BoxDecoration(color: AppColors.navBackground),
           child: BottomNavigationBar(
             currentIndex: _index,
             onTap: (i) => setState(() => _index = i),

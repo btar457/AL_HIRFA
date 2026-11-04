@@ -9,6 +9,7 @@ import '../shared/privacy_policy_screen.dart';
 import '../shared/terms_screen.dart';
 import '../shipping/shipping_register_screen.dart';
 import 'login_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 class RegisterScreen extends StatefulWidget {
   final int? initialRoleIndex;
@@ -31,7 +32,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // "شركة شحن" مخفاة مؤقتاً — قسم الشحن مغلق (راجع onboarding_screen.dart
   // لنفس القرار). ShippingRegisterScreen نفسها لم تُحذف، فقط لا مدخل إليها.
-  final _roles = const ['مشتري', 'حرفي'];
+  final _roles = [tr('مشتري', 'Buyer'), tr('حرفي', 'Artisan')];
   static const _roleKeys = ['customer', 'artisan'];
 
   @override
@@ -45,13 +46,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
-      style: const TextStyle(color: AppColors.text),
+      style: TextStyle(color: AppColors.text),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: AppColors.subText, fontSize: 13),
         suffixIcon: suffix,
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-        focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
       ),
     );
   }
@@ -60,7 +61,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final role = _roleKeys[_selectedRole];
     final auth = context.read<AuthProvider>();
     if (_passwordController.text != _confirmPasswordController.text) {
-      AppError.showSnackbar(context, 'كلمتا المرور غير متطابقتين');
+      AppError.showSnackbar(context, tr('كلمتا المرور غير متطابقتين', 'Passwords do not match'));
       return;
     }
     try {
@@ -95,21 +96,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('أكّد بريدك الإلكتروني', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          title: Text(tr('أكّد بريدك الإلكتروني', 'Confirm your email'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           content: Text(
-            'أرسلنا رابط تأكيد إلى $email — افتحه ثم سجّل الدخول (تفقّد أيضاً الرسائل غير المرغوب فيها).'
-            '${isArtisan ? '\n\nبعد التأكيد، سيراجع فريق AL-HIRFA حسابك كحرفي وسنُعلمك عند الموافقة.' : ''}',
+            tr('أرسلنا رابط تأكيد إلى $email — افتحه ثم سجّل الدخول (تفقّد أيضاً الرسائل غير المرغوب فيها).', 'We sent a confirmation link to $email — open it, then sign in (also check your spam folder).') +
+            (isArtisan ? tr('\n\nبعد التأكيد، سيراجع فريق AL-HIRFA حسابك كحرفي وسنُعلمك عند الموافقة.', '\n\nAfter confirming, the AL-HIRFA team will review your artisan account and notify you once approved.') : ''),
             style: TextStyle(color: AppColors.subText),
           ),
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false),
-              child: const Text('حسناً', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('حسناً', 'OK'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -120,7 +121,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -129,30 +130,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('انضم إلى AL-HIRFA', textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontSize: 24, fontWeight: FontWeight.bold)),
+                Text(tr('انضم إلى AL-HIRFA', 'Join AL-HIRFA'), textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 32),
-                _buildField(hint: 'الاسم الكامل', controller: _nameController),
+                _buildField(hint: tr('الاسم الكامل', 'Full name'), controller: _nameController),
                 const SizedBox(height: 14),
-                _buildField(hint: 'البريد الإلكتروني', controller: _emailController, keyboardType: TextInputType.emailAddress),
+                _buildField(hint: tr('البريد الإلكتروني', 'Email'), controller: _emailController, keyboardType: TextInputType.emailAddress),
                 const SizedBox(height: 14),
-                _buildField(hint: 'رقم الهاتف', controller: _phoneController, keyboardType: TextInputType.phone),
+                _buildField(hint: tr('رقم الهاتف', 'Phone number'), controller: _phoneController, keyboardType: TextInputType.phone),
                 const SizedBox(height: 14),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedCity,
                   dropdownColor: AppColors.card,
-                  style: const TextStyle(color: AppColors.text),
+                  style: TextStyle(color: AppColors.text),
                   decoration: InputDecoration(
-                    hintText: 'المدينة',
+                    hintText: tr('المدينة', 'City'),
                     hintStyle: TextStyle(color: AppColors.subText, fontSize: 13),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-                    focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
                   ),
                   items: kCities.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                   onChanged: (value) => setState(() => _selectedCity = value!),
                 ),
                 const SizedBox(height: 14),
                 _buildField(
-                  hint: 'كلمة المرور',
+                  hint: tr('كلمة المرور', 'Password'),
                   controller: _passwordController,
                   obscure: _obscurePassword,
                   suffix: IconButton(
@@ -162,7 +163,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 14),
                 _buildField(
-                  hint: 'تأكيد كلمة المرور',
+                  hint: tr('تأكيد كلمة المرور', 'Confirm password'),
                   controller: _confirmPasswordController,
                   obscure: _obscureConfirmPassword,
                   suffix: IconButton(
@@ -171,7 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 22),
-                const Text('اختر دورك', style: TextStyle(color: AppColors.subText, fontSize: 13, fontWeight: FontWeight.bold)),
+                Text(tr('اختر دورك', 'Choose your role'), style: TextStyle(color: AppColors.subText, fontSize: 13, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 10,
@@ -204,17 +205,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         text: TextSpan(
                           style: TextStyle(color: AppColors.subText, fontSize: 12),
                           children: [
-                            const TextSpan(text: 'أوافق على '),
+                            TextSpan(text: tr('أوافق على ', 'I agree to the ')),
                             TextSpan(
-                              text: 'الشروط والأحكام',
-                              style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                              text: tr('الشروط والأحكام', 'Terms & Conditions'),
+                              style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen())),
                             ),
-                            const TextSpan(text: ' و'),
+                            TextSpan(text: tr(' و', ' and ')),
                             TextSpan(
-                              text: 'سياسة الخصوصية',
-                              style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                              text: tr('سياسة الخصوصية', 'Privacy Policy'),
+                              style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen())),
                             ),
@@ -231,17 +232,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onPressed: (_termsAccepted && !auth.isLoading) ? _createAccount : null,
                     child: auth.isLoading
                         ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                        : const Text('إنشاء الحساب', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        : Text(tr('إنشاء الحساب', 'Create account'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                 ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('لديك حساب؟', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+                    Text(tr('لديك حساب؟', 'Already have an account?'), style: TextStyle(color: AppColors.subText, fontSize: 13)),
                     TextButton(
                       onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
-                      child: const Text('سجّل الدخول', style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
+                      child: Text(tr('سجّل الدخول', 'Sign in'), style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),

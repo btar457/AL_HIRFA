@@ -8,6 +8,7 @@ import 'customer_home_screen.dart';
 import 'customer_profile_screen.dart';
 import 'marketplace_screen.dart';
 import 'orders_history_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// الحاوية الرئيسية لتجربة المشتري عبر شريط تنقل سفلي بأربع تبويبات.
 class CustomerNav extends StatefulWidget {
@@ -40,11 +41,11 @@ class _CustomerNavState extends State<CustomerNav> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         body: _screens[_index],
         bottomNavigationBar: Container(
-          decoration: const BoxDecoration(color: AppColors.navBackground),
+          decoration: BoxDecoration(color: AppColors.navBackground),
           child: BottomNavigationBar(
             currentIndex: _index,
             onTap: (i) => setState(() => _index = i),

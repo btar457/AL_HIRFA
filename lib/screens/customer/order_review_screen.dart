@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../widgets/common/product_thumbnail.dart';
 import '../../services/review_service.dart';
 import 'orders_history_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// شاشة تقييم المشتري لطلب مكتمل (CUSTOMER-11).
 class OrderReviewScreen extends StatefulWidget {
@@ -59,11 +60,11 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('شكراً لتقييمك!', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          title: Text('شكراً لتقييمك!', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           content: Text('تم إرسال تقييمك بنجاح.', style: TextStyle(color: AppColors.subText)),
           actions: [
             ElevatedButton(
@@ -80,13 +81,13 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: const Text('تقييم طلبك', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('تقييم طلبك', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -98,25 +99,25 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
               const SizedBox(height: 10),
               Text(
                 _rating == 0 ? 'اختر تقييمك' : _ratingLabels[_rating]!,
-                style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16),
+                style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 28),
               Align(
-                alignment: Alignment.centerRight,
-                child: Text('ملاحظاتك حول المنتج', style: const TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
+                alignment: AlignmentDirectional.centerStart,
+                child: Text('ملاحظاتك حول المنتج', style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _commentController,
                 maxLines: 5,
-                style: const TextStyle(color: AppColors.text),
+                style: TextStyle(color: AppColors.text),
                 decoration: InputDecoration(
                   hintText: 'اكتب تقييمك هنا...',
                   hintStyle: TextStyle(color: AppColors.subText, fontSize: 13),
                   filled: true,
                   fillColor: AppColors.card,
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-                  focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
@@ -149,7 +150,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
         children: [
           ProductThumbnail(imageUrl: widget.order.productImage, size: 100, borderRadius: 12, iconSize: 32),
           const SizedBox(height: 12),
-          Text(widget.order.productName, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+          Text(widget.order.productName, textAlign: TextAlign.center, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
           const SizedBox(height: 4),
           Text(widget.order.artisanName, style: TextStyle(color: AppColors.subText, fontSize: 12)),
         ],

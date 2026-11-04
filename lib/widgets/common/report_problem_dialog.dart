@@ -5,6 +5,7 @@ import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../services/dispute_service.dart';
 import '../../services/storage_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 const int _kMaxEvidenceImages = 3;
 
@@ -92,11 +93,11 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: AlertDialog(
         backgroundColor: AppColors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: const Text('الإبلاغ عن مشكلة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+        title: Text('الإبلاغ عن مشكلة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -105,14 +106,14 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
               TextField(
                 controller: _descriptionController,
                 maxLines: 3,
-                style: const TextStyle(color: AppColors.text),
+                style: TextStyle(color: AppColors.text),
                 decoration: InputDecoration(
                   hintText: 'اشرح المشكلة بالتفصيل',
                   hintStyle: TextStyle(color: AppColors.subText),
                   filled: true,
                   fillColor: AppColors.background,
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-                  focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
                 ),
               ),
               const SizedBox(height: 14),
@@ -124,7 +125,7 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
                   scrollDirection: Axis.horizontal,
                   children: [
                     ..._evidenceImages.asMap().entries.map((entry) => Padding(
-                          padding: const EdgeInsets.only(left: 8),
+                          padding: const EdgeInsetsDirectional.only(end: 8),
                           child: Stack(
                             children: [
                               ClipRRect(
@@ -157,7 +158,7 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: AppColors.gold.withOpacity(0.4)),
                           ),
-                          child: const Icon(Icons.add_a_photo_outlined, color: AppColors.gold, size: 20),
+                          child: Icon(Icons.add_a_photo_outlined, color: AppColors.gold, size: 20),
                         ),
                       ),
                   ],
@@ -167,7 +168,7 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
           ),
         ),
         actions: [
-          TextButton(onPressed: _isSubmitting ? null : () => Navigator.pop(context), child: const Text('إلغاء', style: TextStyle(color: AppColors.subText))),
+          TextButton(onPressed: _isSubmitting ? null : () => Navigator.pop(context), child: Text('إلغاء', style: TextStyle(color: AppColors.subText))),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: _isSubmitting ? null : _submit,

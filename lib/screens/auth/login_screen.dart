@@ -10,6 +10,7 @@ import '../../widgets/common/founder_access_gate.dart';
 import '../shared/about_screen.dart';
 import 'forgot_password_screen.dart';
 import 'onboarding_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 // رموز حظر/تعليق/رفض الحساب — signIn يسجّل خروج الحساب فوراً في هذه الحالات
 // (AuthService.accessBlockCode)، فلا يستطيع صاحبه أبداً الوصول لشاشة "تواصل
@@ -52,16 +53,16 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تعذّر تسجيل الدخول', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('تعذّر تسجيل الدخول', 'Sign-in failed'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text(message, style: TextStyle(color: AppColors.subText)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('إغلاق', style: TextStyle(color: AppColors.subText)),
+              child: Text(tr('إغلاق', 'Close'), style: TextStyle(color: AppColors.subText)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -69,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Navigator.pop(dialogContext);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()));
               },
-              child: const Text('تواصل مع الدعم', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تواصل مع الدعم', 'Contact support'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -89,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             width: 52,
             height: 52,
-            decoration: const BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.horizontal(right: Radius.circular(9))),
+            decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.horizontal(right: Radius.circular(9))),
             child: Icon(icon, color: Colors.black),
           ),
           Expanded(
@@ -97,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: controller,
               obscureText: obscure,
               keyboardType: keyboardType,
-              style: const TextStyle(color: AppColors.text),
+              style: TextStyle(color: AppColors.text),
               decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: hint,
@@ -114,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildLabel(String text) {
     return Align(
-      alignment: Alignment.centerRight,
+      alignment: AlignmentDirectional.centerStart,
       child: Padding(
         padding: const EdgeInsets.only(bottom: 8, right: 4),
         child: Text(text, style: TextStyle(color: AppColors.subText, fontSize: 12, fontWeight: FontWeight.w600)),
@@ -125,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Stack(
@@ -135,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Image.asset('assets/images/login_bg.jpg', fit: BoxFit.cover),
             ),
             Positioned.fill(
-              child: Container(color: Colors.black.withOpacity(0.75)),
+              child: Container(color: AppColors.imageOverlay),
             ),
             SafeArea(
               child: SingleChildScrollView(
@@ -143,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 32),
-                    const Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontSize: 40, fontWeight: FontWeight.bold, letterSpacing: 4)),
+                    Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontSize: 40, fontWeight: FontWeight.bold, letterSpacing: 4)),
                     const SizedBox(height: 8),
                     Text(AppStrings.heritageTagline, style: TextStyle(color: AppColors.subText, fontSize: 11, letterSpacing: 2, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 20),
@@ -159,12 +160,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Text('تسجيل الدخول', textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontSize: 20, fontWeight: FontWeight.bold)),
+                          Text(tr('تسجيل الدخول', 'Sign in'), textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontSize: 20, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 24),
-                          _buildLabel('البريد الإلكتروني'),
+                          _buildLabel(tr('البريد الإلكتروني', 'Email')),
                           _buildField(icon: Icons.mail_outline, hint: 'name@example.com', controller: _emailController, keyboardType: TextInputType.emailAddress),
                           const SizedBox(height: 18),
-                          _buildLabel('كلمة المرور'),
+                          _buildLabel(tr('كلمة المرور', 'Password')),
                           _buildField(
                             icon: Icons.lock_outline,
                             hint: '••••••••',
@@ -177,10 +178,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 4),
                           Align(
-                            alignment: Alignment.centerRight,
+                            alignment: AlignmentDirectional.centerStart,
                             child: TextButton(
                               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordScreen())),
-                              child: const Text('نسيت كلمة المرور؟', style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.w600)),
+                              child: Text(tr('نسيت كلمة المرور؟', 'Forgot password?'), style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.w600)),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -190,17 +191,17 @@ class _LoginScreenState extends State<LoginScreen> {
                               onPressed: auth.isLoading ? null : _signIn,
                               child: auth.isLoading
                                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                                  : const Text('تسجيل الدخول', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  : Text(tr('تسجيل الدخول', 'Sign in'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                             ),
                           ),
                           const SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('ليس لديك حساب؟', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+                              Text(tr('ليس لديك حساب؟', 'Don\'t have an account?'), style: TextStyle(color: AppColors.subText, fontSize: 13)),
                               TextButton(
                                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OnboardingScreen())),
-                                child: const Text('انضم إلينا', style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
+                                child: Text(tr('انضم إلينا', 'Join us'), style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
                               ),
                             ],
                           ),
@@ -208,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Text('صنع بكل فخر في العراق', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+                    Text(tr('صنع بكل فخر في العراق', 'Proudly made in Iraq'), style: TextStyle(color: AppColors.subText, fontSize: 11)),
                     const SizedBox(height: 8),
                     const FounderAccessCredit(),
                     const SizedBox(height: 12),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/colors.dart';
 import 'contact_support_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// شاشة "عن AL-HIRFA" (SHARED-6).
 class AboutScreen extends StatelessWidget {
@@ -22,7 +23,7 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(width: 12),
             Text(label, style: TextStyle(color: AppColors.subText, fontSize: 13)),
             const Spacer(),
-            if (value.isNotEmpty) Text(value, style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.bold)),
+            if (value.isNotEmpty) Text(value, style: TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.bold)),
             if (value.isEmpty && onTap != null) Icon(Icons.arrow_back_ios, color: AppColors.subText, size: 12),
           ],
         ),
@@ -33,20 +34,20 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
-          title: const Text('عن AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('عن AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: ListView(
           padding: const EdgeInsets.all(24),
           children: [
             const SizedBox(height: 12),
-            const Center(
+            Center(
               child: Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontSize: 36, fontWeight: FontWeight.bold, letterSpacing: 4)),
             ),
             const SizedBox(height: 8),
@@ -63,10 +64,10 @@ class AboutScreen extends StatelessWidget {
             Text(
               'تأسست AL-HIRFA لتكون جسراً بين الحرفي العراقي الأصيل والمشتري الباحث عن قطعة تحمل روح العراق. نؤمن بأن كل قطعة يدوية تحكي قصة، ونعمل على حماية هذه الحرف من الاندثار عبر منصة عادلة تحفظ حقوق الحرفي والمشتري وشركاء الشحن على حدٍّ سواء.',
               style: TextStyle(color: AppColors.text, fontSize: 14, height: 24 / 14),
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.start,
             ),
             const SizedBox(height: 28),
-            const Text('تواصل معنا', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
+            Text('تواصل معنا', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -104,7 +105,7 @@ class AboutScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
-            const Text('الجهة المسؤولة قانونياً عن المنصة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
+            Text('الجهة المسؤولة قانونياً عن المنصة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -125,7 +126,7 @@ class AboutScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            const Center(
+            Center(
               child: Text('صنع بكل فخر في العراق 🇮🇶', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
             ),
             const SizedBox(height: 16),

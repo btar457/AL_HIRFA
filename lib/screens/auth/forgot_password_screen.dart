@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../services/auth_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -20,7 +21,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     try {
       await AuthService.instance.resetPassword(email);
       if (!mounted) return;
-      AppError.showSnackbar(context, 'تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني', isError: false);
+      AppError.showSnackbar(context, tr('تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني', 'A reset link was sent to your email'), isError: false);
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
@@ -33,7 +34,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -43,12 +44,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.lock_reset, color: AppColors.gold, size: 72),
+                  Icon(Icons.lock_reset, color: AppColors.gold, size: 72),
                   const SizedBox(height: 24),
-                  const Text('نسيت كلمة المرور؟', style: TextStyle(color: AppColors.gold, fontSize: 22, fontWeight: FontWeight.bold)),
+                  Text(tr('نسيت كلمة المرور؟', 'Forgot password?'), style: TextStyle(color: AppColors.gold, fontSize: 22, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   Text(
-                    'أدخل بريدك الإلكتروني المسجَّل وسنرسل لك رابط إعادة التعيين',
+                    tr('أدخل بريدك الإلكتروني المسجَّل وسنرسل لك رابط إعادة التعيين', 'Enter your registered email and we\'ll send you a reset link'),
                     textAlign: TextAlign.center,
                     style: TextStyle(color: AppColors.subText, fontSize: 14, height: 1.6),
                   ),
@@ -56,12 +57,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   TextField(
                     controller: _contactController,
                     keyboardType: TextInputType.emailAddress,
-                    style: const TextStyle(color: AppColors.text),
+                    style: TextStyle(color: AppColors.text),
                     decoration: InputDecoration(
-                      hintText: 'البريد الإلكتروني',
+                      hintText: tr('البريد الإلكتروني', 'Email'),
                       hintStyle: TextStyle(color: AppColors.subText, fontSize: 13),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-                      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -72,13 +73,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       onPressed: _isLoading ? null : _sendResetEmail,
                       child: _isLoading
                           ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                          : const Text('إرسال رابط إعادة التعيين', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          : Text(tr('إرسال رابط إعادة التعيين', 'Send reset link'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                   ),
                   const SizedBox(height: 20),
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('العودة لتسجيل الدخول', style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.w600)),
+                    child: Text(tr('العودة لتسجيل الدخول', 'Back to sign in'), style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),

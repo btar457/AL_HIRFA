@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// شاشة طرق الدفع (CUSTOMER-13).
 class PaymentMethodsScreen extends StatelessWidget {
@@ -8,13 +9,13 @@ class PaymentMethodsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: const Text('طرق الدفع', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('طرق الدفع', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: ListView(
           padding: const EdgeInsets.all(16),
@@ -23,7 +24,7 @@ class PaymentMethodsScreen extends StatelessWidget {
               icon: Icons.account_balance_wallet_outlined,
               title: 'الدفع عند الاستلام',
               subtitle: 'ادفع كاشاً عند استلام طلبك',
-              trailing: const Icon(Icons.check_circle, color: AppColors.gold),
+              trailing: Icon(Icons.check_circle, color: AppColors.gold),
               enabled: true,
             ),
             _buildMethodCard(
@@ -94,7 +95,7 @@ class PaymentMethodsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text(title, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
                   const SizedBox(height: 2),
                   Text(subtitle, style: TextStyle(color: AppColors.subText, fontSize: 12)),
                 ],

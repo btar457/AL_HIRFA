@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import 'register_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -14,9 +15,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // "شركة شحن" مخفاة مؤقتاً من الاختيار — قسم الشحن مغلق (الحرفي يتكفّل
   // بالتوصيل بنفسه حالياً). لم تُحذف شاشة تسجيل شركات الشحن نفسها، فقط هذا
   // المدخل إليها — راجع register_screen.dart لنفس القرار.
-  final _roles = const [
-    {'emoji': '🛒', 'name': 'مشتري'},
-    {'emoji': '🎨', 'name': 'حرفي'},
+  final _roles = [
+    {'emoji': '🛒', 'name': tr('مشتري', 'Buyer')},
+    {'emoji': '🎨', 'name': tr('حرفي', 'Artisan')},
   ];
 
   void _continueToRegister() {
@@ -30,18 +31,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: Stack(
         children: [
           Positioned.fill(child: Image.asset('assets/images/onboarding_bg.jpg', fit: BoxFit.cover)),
-          Positioned.fill(child: Container(color: Colors.black.withOpacity(0.75))),
+          Positioned.fill(child: Container(color: AppColors.imageOverlay)),
           SafeArea(
             child: Directionality(
-              textDirection: TextDirection.rtl,
+              textDirection: AppPrefs.dir,
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('مرحباً في عالم الحرفة العراقية', textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontSize: 24, fontWeight: FontWeight.bold)),
+                    Text(tr('مرحباً في عالم الحرفة العراقية', 'Welcome to the world of Iraqi crafts'), textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontSize: 24, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    Text('اختر نوع حسابك للبدء', style: TextStyle(color: AppColors.subText, fontSize: 14)),
+                    Text(tr('اختر نوع حسابك للبدء', 'Choose your account type to start'), style: TextStyle(color: AppColors.subText, fontSize: 14)),
                     const SizedBox(height: 40),
                     GridView.builder(
                       shrinkWrap: true,
@@ -63,7 +64,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               children: [
                                 Text(_roles[i]['emoji']!, style: const TextStyle(fontSize: 32)),
                                 const SizedBox(height: 8),
-                                Text(_roles[i]['name']!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.bold)),
+                                Text(_roles[i]['name']!, textAlign: TextAlign.center, style: TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -76,7 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                         onPressed: _selectedRole == null ? null : _continueToRegister,
-                        child: const Text('ابدأ رحلتك', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        child: Text(tr('ابدأ رحلتك', 'Start your journey'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
                     ),
                   ],

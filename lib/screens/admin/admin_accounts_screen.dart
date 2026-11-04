@@ -5,6 +5,7 @@ import '../../models/user_model.dart';
 import '../../models/violation_model.dart';
 import '../../services/admin_service.dart';
 import '../customer/artisan_public_profile_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatDate(DateTime date) {
   const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -55,7 +56,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
       backgroundColor: AppColors.card,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (sheetContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -63,7 +64,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
               if (user.approvalStatus == 'pending') ...[
                 ListTile(
                   leading: const Icon(Icons.check_circle_outline, color: Colors.green),
-                  title: const Text('موافقة على الحساب', style: TextStyle(color: AppColors.text)),
+                  title: Text('موافقة على الحساب', style: TextStyle(color: AppColors.text)),
                   onTap: () async {
                     Navigator.pop(sheetContext);
                     await AdminService.instance.approveArtisan(user.uid);
@@ -73,7 +74,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
                 ),
                 ListTile(
                   leading: const Icon(Icons.cancel_outlined, color: Colors.redAccent),
-                  title: const Text('رفض الحساب', style: TextStyle(color: AppColors.text)),
+                  title: Text('رفض الحساب', style: TextStyle(color: AppColors.text)),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     _promptReason(user, 'رفض الحساب', (reason) => AdminService.instance.rejectArtisan(user.uid, reason));
@@ -81,8 +82,8 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
                 ),
               ],
               ListTile(
-                leading: const Icon(Icons.history, color: AppColors.gold),
-                title: const Text('سجل المخالفات', style: TextStyle(color: AppColors.text)),
+                leading: Icon(Icons.history, color: AppColors.gold),
+                title: Text('سجل المخالفات', style: TextStyle(color: AppColors.text)),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _showViolations(user);
@@ -90,7 +91,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
               ),
               ListTile(
                 leading: const Icon(Icons.warning_amber_outlined, color: Colors.amber),
-                title: const Text('تحذير', style: TextStyle(color: AppColors.text)),
+                title: Text('تحذير', style: TextStyle(color: AppColors.text)),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _promptReason(user, 'إرسال تحذير', (reason) => AdminService.instance.warnUser(user.uid, reason));
@@ -99,7 +100,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
               if (user.isActive)
                 ListTile(
                   leading: const Icon(Icons.pause_circle_outline, color: Colors.orange),
-                  title: const Text('تعليق الحساب', style: TextStyle(color: AppColors.text)),
+                  title: Text('تعليق الحساب', style: TextStyle(color: AppColors.text)),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     _promptReason(user, 'تعليق الحساب', (reason) => AdminService.instance.suspendUser(user.uid, reason));
@@ -108,7 +109,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
               if (!user.banned)
                 ListTile(
                   leading: const Icon(Icons.block, color: Colors.redAccent),
-                  title: const Text('حظر نهائي', style: TextStyle(color: AppColors.text)),
+                  title: Text('حظر نهائي', style: TextStyle(color: AppColors.text)),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     _promptReason(user, 'حظر نهائي', (reason) => AdminService.instance.banUser(user.uid, reason));
@@ -117,7 +118,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
               if (!user.isActive && !user.banned)
                 ListTile(
                   leading: const Icon(Icons.check_circle_outline, color: Colors.green),
-                  title: const Text('رفع التعليق', style: TextStyle(color: AppColors.text)),
+                  title: Text('رفع التعليق', style: TextStyle(color: AppColors.text)),
                   onTap: () async {
                     Navigator.pop(sheetContext);
                     await AdminService.instance.liftSuspension(user.uid);
@@ -146,22 +147,22 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text(title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(title, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: TextFormField(
             controller: reasonController,
             maxLines: 3,
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             decoration: InputDecoration(hintText: 'السبب', hintStyle: TextStyle(color: AppColors.subText), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+              child: Text('تراجع', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -185,7 +186,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -202,16 +203,16 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
               TextFormField(
                 controller: reasonController,
                 maxLines: 3,
-                style: const TextStyle(color: AppColors.text),
+                style: TextStyle(color: AppColors.text),
                 decoration: InputDecoration(hintText: 'سبب الحذف', hintStyle: TextStyle(color: AppColors.subText), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
               ),
             ],
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+              child: Text('تراجع', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -234,18 +235,18 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('سجل مخالفات ${user.name}', style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+          title: Text('سجل مخالفات ${user.name}', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
           content: SizedBox(
             width: double.maxFinite,
             child: StreamBuilder<List<ViolationModel>>(
               stream: AdminService.instance.getUserViolations(user.uid),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                  return Center(child: CircularProgressIndicator(color: AppColors.gold));
                 }
                 final violations = snapshot.data!;
                 if (violations.isEmpty) {
@@ -260,7 +261,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('إغلاق', style: TextStyle(color: AppColors.gold))),
+            TextButton(onPressed: () => Navigator.pop(context), child: Text('إغلاق', style: TextStyle(color: AppColors.gold))),
           ],
         ),
       ),
@@ -270,13 +271,13 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: const Text('إدارة الحسابات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('إدارة الحسابات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: AppColors.gold,
@@ -308,7 +309,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
           return Center(child: Text('تعذّر تحميل المستخدمين', style: TextStyle(color: AppColors.subText)));
         }
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+          return Center(child: CircularProgressIndicator(color: AppColors.gold));
         }
         final users = _filter(snapshot.data!);
         if (users.isEmpty) return Center(child: Text('لا يوجد مستخدمون', style: TextStyle(color: AppColors.subText)));
@@ -330,11 +331,11 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
             child: TextField(
               controller: _searchController,
               onChanged: (_) => setState(() {}),
-              style: const TextStyle(color: AppColors.text, fontSize: 13),
+              style: TextStyle(color: AppColors.text, fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'بحث بالاسم أو البريد',
                 hintStyle: TextStyle(color: AppColors.subText, fontSize: 13),
-                prefixIcon: const Icon(Icons.search, color: AppColors.gold, size: 18),
+                prefixIcon: Icon(Icons.search, color: AppColors.gold, size: 18),
                 filled: true,
                 fillColor: AppColors.card,
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
@@ -346,7 +347,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
           DropdownButton<String>(
             value: _statusFilter,
             dropdownColor: AppColors.card,
-            style: const TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold),
             underline: const SizedBox.shrink(),
             items: ['الكل', 'قيد المراجعة', 'نشط', 'معلق', 'محظور'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
             onChanged: (value) => setState(() => _statusFilter = value!),
@@ -371,14 +372,14 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
               radius: 25,
               backgroundColor: AppColors.gold.withOpacity(0.2),
               backgroundImage: user.photoUrl.isEmpty ? null : CachedNetworkImageProvider(user.photoUrl),
-              child: user.photoUrl.isEmpty ? const Icon(Icons.person, color: AppColors.gold) : null,
+              child: user.photoUrl.isEmpty ? Icon(Icons.person, color: AppColors.gold) : null,
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(user.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(user.name, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 2),
                   Text(user.email, style: TextStyle(color: AppColors.subText, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                   if (user.warningCount > 0) Text('${user.warningCount} إنذار', style: TextStyle(color: Colors.amber, fontSize: 11)),
@@ -386,7 +387,7 @@ class _AdminAccountsScreenState extends State<AdminAccountsScreen> with SingleTi
               ),
             ),
             _buildStatusChip(user),
-            IconButton(icon: const Icon(Icons.more_vert, color: AppColors.subText), onPressed: () => _showActionSheet(user)),
+            IconButton(icon: Icon(Icons.more_vert, color: AppColors.subText), onPressed: () => _showActionSheet(user)),
           ],
         ),
       ),

@@ -9,6 +9,8 @@ import 'admin_financials_screen.dart';
 import 'admin_notifications_screen.dart';
 import 'admin_products_screen.dart';
 import 'admin_stuck_orders_screen.dart';
+import '../../core/settings/app_prefs.dart';
+import '../shared/language_appearance_screen.dart';
 
 /// قائمة إعدادات بوابة المؤسس (تبويب "الإعدادات" ضمن AdminNav).
 class AdminSettingsScreen extends StatelessWidget {
@@ -18,17 +20,17 @@ class AdminSettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تسجيل الخروج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('تسجيل الخروج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text('هل أنت متأكد من رغبتك في تسجيل الخروج؟', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -57,13 +59,13 @@ class AdminSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: const Text('الإعدادات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('الإعدادات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
         body: ListView(
           children: [
@@ -74,6 +76,7 @@ class AdminSettingsScreen extends StatelessWidget {
             _buildTile(context, icon: Icons.category_outlined, title: 'إدارة الفئات', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminCategoriesScreen()))),
             _buildTile(context, icon: Icons.build_circle_outlined, title: 'طلبات عالقة (شحن قديم)', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminStuckOrdersScreen()))),
             Divider(color: AppColors.subText.withOpacity(0.2)),
+            _buildTile(context, icon: Icons.translate, title: tr('اللغة والمظهر', 'Language & appearance'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageAppearanceScreen()))),
             _buildTile(context, icon: Icons.logout, title: 'تسجيل الخروج', color: Colors.redAccent, onTap: () => _confirmLogout(context)),
             const SizedBox(height: 24),
           ],

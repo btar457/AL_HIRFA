@@ -10,6 +10,7 @@ import '../../services/product_service.dart';
 import '../../services/review_service.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'product_detail_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -76,14 +77,14 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: FutureBuilder<_ArtisanProfileData?>(
           future: _dataFuture,
           builder: (context, snapshot) {
             if (!snapshot.hasData && !snapshot.hasError) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+              return Center(child: CircularProgressIndicator(color: AppColors.gold));
             }
             final data = snapshot.data;
             if (snapshot.hasError || data == null) {
@@ -148,7 +149,7 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(color: AppColors.card, shape: BoxShape.circle),
-                child: const Icon(Icons.arrow_back, color: AppColors.gold, size: 20),
+                child: Icon(Icons.arrow_back, color: AppColors.gold, size: 20),
               ),
             ),
           ),
@@ -213,8 +214,8 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.card, border: Border.all(color: AppColors.background, width: 3)),
                 child: artisan.photoUrl.isEmpty
-                    ? const Icon(Icons.person, color: AppColors.gold, size: 38)
-                    : CachedNetworkImage(imageUrl: artisan.photoUrl, fit: BoxFit.cover, errorWidget: (_, __, ___) => const Icon(Icons.person, color: AppColors.gold, size: 38)),
+                    ? Icon(Icons.person, color: AppColors.gold, size: 38)
+                    : CachedNetworkImage(imageUrl: artisan.photoUrl, fit: BoxFit.cover, errorWidget: (_, __, ___) => Icon(Icons.person, color: AppColors.gold, size: 38)),
               ),
             ),
           ),
@@ -245,7 +246,7 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
   Widget _buildInfo(_ArtisanProfileData data) {
     return Column(
       children: [
-        Text(data.artisan.name, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.text, fontSize: 22, fontWeight: FontWeight.bold)),
+        Text(data.artisan.name, textAlign: TextAlign.center, style: TextStyle(color: AppColors.text, fontSize: 22, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
         Text(data.artisan.city, textAlign: TextAlign.center, style: TextStyle(color: AppColors.subText, fontSize: 13)),
         const SizedBox(height: 14),
@@ -270,7 +271,7 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
       children: [
         Icon(icon, color: AppColors.gold, size: 18),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+        Text(value, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
         Text(label, style: TextStyle(color: AppColors.subText, fontSize: 11)),
       ],
     );
@@ -316,10 +317,10 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
                     radius: 20,
                     backgroundColor: AppColors.background,
                     backgroundImage: review.buyerPhotoUrl.isEmpty ? null : CachedNetworkImageProvider(review.buyerPhotoUrl),
-                    child: review.buyerPhotoUrl.isEmpty ? const Icon(Icons.person, color: AppColors.gold, size: 20) : null,
+                    child: review.buyerPhotoUrl.isEmpty ? Icon(Icons.person, color: AppColors.gold, size: 20) : null,
                   ),
                   const SizedBox(width: 10),
-                  Expanded(child: Text(review.buyerName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold))),
+                  Expanded(child: Text(review.buyerName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold))),
                 ],
               ),
               const SizedBox(height: 10),

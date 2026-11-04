@@ -5,6 +5,7 @@ import '../../models/user_model.dart';
 import '../../models/withdrawal_request_model.dart';
 import '../../services/admin_service.dart';
 import '../../services/wallet_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -49,22 +50,22 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('رفض طلب السحب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('رفض طلب السحب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: TextFormField(
             controller: reasonController,
             maxLines: 3,
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             decoration: InputDecoration(hintText: 'السبب (مثلاً: IBAN غير صحيح)', hintStyle: TextStyle(color: AppColors.subText), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+              child: Text('تراجع', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -86,13 +87,13 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: const Text('التسويات المالية', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('التسويات المالية', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: Column(
           children: [
@@ -105,7 +106,7 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
                   return Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: const LinearGradient(colors: [Color(0xFF8B6B1F), AppColors.gold])),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: LinearGradient(colors: [Color(0xFF8B6B1F), AppColors.gold])),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -159,7 +160,7 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
     return StreamBuilder<List<UserModel>>(
       stream: AdminService.instance.getUsersByRole('shipping'),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+        if (!snapshot.hasData) return Center(child: CircularProgressIndicator(color: AppColors.gold));
         final companies = snapshot.data!.where((c) => c.approvalStatus == 'approved' && c.isActive).toList();
         if (companies.isEmpty) return Center(child: Text('لا توجد شركات شحن نشطة', style: TextStyle(color: AppColors.subText)));
         return ListView.builder(
@@ -182,7 +183,7 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(company.companyName.isNotEmpty ? company.companyName : company.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+                            Text(company.companyName.isNotEmpty ? company.companyName : company.name, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
                             const SizedBox(height: 4),
                             Text('${settlement?.deliveriesCount ?? 0} توصيلة هذا الأسبوع', style: TextStyle(color: AppColors.subText, fontSize: 12)),
                           ],
@@ -191,7 +192,7 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('${_formatPrice(due)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text('${_formatPrice(due)} د.ع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                           const SizedBox(height: 6),
                           if (due > 0)
                             Wrap(
@@ -200,9 +201,9 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
                               alignment: WrapAlignment.end,
                               children: [
                                 OutlinedButton(
-                                  style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
+                                  style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
                                   onPressed: () => _confirmShippingSettlement(company.uid),
-                                  child: const Text('تأكيد الاستلام', style: TextStyle(color: AppColors.gold, fontSize: 11)),
+                                  child: Text('تأكيد الاستلام', style: TextStyle(color: AppColors.gold, fontSize: 11)),
                                 ),
                                 OutlinedButton(
                                   style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
@@ -230,7 +231,7 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
     return StreamBuilder<List<WithdrawalRequestModel>>(
       stream: WalletService.instance.getWithdrawalRequests(status: 'pending'),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+        if (!snapshot.hasData) return Center(child: CircularProgressIndicator(color: AppColors.gold));
         final withdrawals = snapshot.data!;
         if (withdrawals.isEmpty) return Center(child: Text('لا توجد طلبات سحب معلَّقة', style: TextStyle(color: AppColors.subText)));
         return ListView.builder(
@@ -252,7 +253,7 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(artisan?.name ?? '...', style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+                            Text(artisan?.name ?? '...', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
                             const SizedBox(height: 4),
                             Text('IBAN: ${withdrawal.iban}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
                           ],
@@ -261,7 +262,7 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('${_formatPrice(withdrawal.amount)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text('${_formatPrice(withdrawal.amount)} د.ع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                           const SizedBox(height: 6),
                           Row(
                             children: [
@@ -272,9 +273,9 @@ class _AdminFinancialsScreenState extends State<AdminFinancialsScreen> with Sing
                               ),
                               const SizedBox(width: 6),
                               OutlinedButton(
-                                style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
+                                style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
                                 onPressed: () => WalletService.instance.confirmWithdrawal(withdrawal.id),
-                                child: const Text('تأكيد الصرف', style: TextStyle(color: AppColors.gold, fontSize: 11)),
+                                child: Text('تأكيد الصرف', style: TextStyle(color: AppColors.gold, fontSize: 11)),
                               ),
                             ],
                           ),

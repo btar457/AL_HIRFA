@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/categories.dart';
 import '../../services/product_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// إدارة التصنيفات (ADMIN-11).
 ///
@@ -17,13 +18,13 @@ class AdminCategoriesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final categories = kAppCategories.where((c) => c.id != 'all').toList();
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: const Text('إدارة الفئات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('إدارة الفئات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: ListView.separated(
           padding: const EdgeInsets.all(16),
@@ -45,7 +46,7 @@ class AdminCategoriesScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(category.nameAr, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text(category.nameAr, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
                         FutureBuilder<int>(
                           future: ProductService.instance.getActiveProductCountByCategory(category.id),
                           builder: (context, snapshot) => Text('${snapshot.data ?? 0} منتج', style: TextStyle(color: AppColors.subText, fontSize: 12)),

@@ -8,6 +8,7 @@ import '../../services/product_service.dart';
 import '../../widgets/common/marketplace_product_card.dart';
 import 'customer_nav.dart';
 import 'product_detail_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -27,13 +28,13 @@ class FavoritesScreen extends StatelessWidget {
     final userId = context.watch<AuthProvider>().currentUser?.uid;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          iconTheme: const IconThemeData(color: AppColors.gold),
-          title: const Text('المفضلة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
+          title: Text('المفضلة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
         body: userId == null
             ? _buildEmptyState(context, 'سجّل الدخول لعرض المفضلة')
@@ -44,7 +45,7 @@ class FavoritesScreen extends StatelessWidget {
                     return Center(child: Text('تعذّر تحميل المفضلة', style: TextStyle(color: AppColors.subText)));
                   }
                   if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                    return Center(child: CircularProgressIndicator(color: AppColors.gold));
                   }
                   final favorites = snapshot.data!;
                   if (favorites.isEmpty) {
@@ -66,7 +67,7 @@ class FavoritesScreen extends StatelessWidget {
           children: [
             const Icon(Icons.favorite_border, color: Color(0xFF555555), size: 80),
             const SizedBox(height: 20),
-            Text(message, style: const TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(message, style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text('أضف منتجات تعجبك لمتابعتها لاحقاً', style: TextStyle(color: AppColors.subText, fontSize: 13), textAlign: TextAlign.center),
             const SizedBox(height: 24),
@@ -93,7 +94,7 @@ class FavoritesScreen extends StatelessWidget {
           direction: DismissDirection.endToStart,
           onDismissed: (_) => ProductService.instance.toggleFavorite(product.id, userId),
           background: Container(
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerEnd,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(12)),
             child: const Icon(Icons.delete_outline, color: Colors.white),

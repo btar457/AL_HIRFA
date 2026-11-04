@@ -5,6 +5,7 @@ import '../../models/order_model.dart';
 import '../../services/admin_service.dart';
 import '../../services/dispute_service.dart';
 import '../../services/order_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -48,22 +49,22 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text(title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(title, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(name, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+              Text(name, style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
               const SizedBox(height: 6),
               Text(phone?.isNotEmpty == true ? phone! : 'لا يوجد رقم هاتف مسجّل', style: TextStyle(color: AppColors.subText)),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('إغلاق', style: TextStyle(color: AppColors.gold))),
+            TextButton(onPressed: () => Navigator.pop(context), child: Text('إغلاق', style: TextStyle(color: AppColors.gold))),
           ],
         ),
       ),
@@ -75,22 +76,22 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('إلغاء الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('إلغاء الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: TextFormField(
             controller: reasonController,
             maxLines: 3,
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             decoration: InputDecoration(hintText: 'سبب الإلغاء', hintStyle: TextStyle(color: AppColors.subText), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+              child: Text('تراجع', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -114,22 +115,22 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('إنهاء البلاغ', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('إنهاء البلاغ', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: TextFormField(
             controller: resolutionController,
             maxLines: 3,
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             decoration: InputDecoration(hintText: 'وصف الحل النهائي', hintStyle: TextStyle(color: AppColors.subText), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('تراجع', style: TextStyle(color: AppColors.gold)),
+              child: Text('تراجع', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -151,13 +152,13 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: const Text('إدارة الطلبات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('إدارة الطلبات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
         body: Column(
           children: [
@@ -191,7 +192,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
                   }
                   if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                    return Center(child: CircularProgressIndicator(color: AppColors.gold));
                   }
                   final orders = _filtered(snapshot.data!);
                   if (orders.isEmpty) return Center(child: Text('لا توجد طلبات', style: TextStyle(color: AppColors.subText)));
@@ -220,14 +221,14 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(order.orderNumber, style: const TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+              Text(order.orderNumber, style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
               _buildStatusChip(order.status),
             ],
           ),
           Text(_formatDate(order.createdAt), style: TextStyle(color: AppColors.subText, fontSize: 11)),
-          const Divider(color: AppColors.divider),
-          Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
-          Text('د.ع ${_formatPrice(order.totalAmount)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12)),
+          Divider(color: AppColors.divider),
+          Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+          Text('د.ع ${_formatPrice(order.totalAmount)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12)),
           const SizedBox(height: 6),
           Text('المشتري: ${order.buyerName}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
           Text('البائع: ${order.artisanName}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
@@ -272,19 +273,19 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       runSpacing: 8,
       children: [
         OutlinedButton(
-          style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+          style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
           onPressed: () => _showContactDialog('بيانات المشتري', order.buyerName, order.buyerPhone),
-          child: const Text('تواصل مع المشتري', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
+          child: Text('تواصل مع المشتري', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
         ),
         if (order.shippingUid != null)
           OutlinedButton(
-            style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: () async {
               final shippingUser = await AdminService.instance.getUserById(order.shippingUid!);
               if (!mounted) return;
               _showContactDialog('بيانات شركة الشحن', shippingUser?.name ?? order.shippingCompanyName ?? '', shippingUser?.phone);
             },
-            child: const Text('تواصل مع الشركة', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
+            child: Text('تواصل مع الشركة', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
           ),
         OutlinedButton(
           style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -293,9 +294,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         ),
         if (dispute != null && dispute.status == 'open')
           OutlinedButton(
-            style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: () => DisputeService.instance.markReviewing(dispute.id),
-            child: const Text('بدء المراجعة', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
+            child: Text('بدء المراجعة', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
           ),
         if (order.disputeId != null)
           OutlinedButton(
@@ -311,7 +312,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     final isReviewing = status == 'reviewing';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      margin: const EdgeInsets.only(right: 8),
+      margin: const EdgeInsetsDirectional.only(start: 8),
       decoration: BoxDecoration(color: (isReviewing ? AppColors.gold : Colors.redAccent).withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
       child: Text(isReviewing ? 'قيد المراجعة' : 'جديد', style: TextStyle(color: isReviewing ? AppColors.gold : Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold)),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// سياسة الخصوصية الكاملة (راجع AL-HIRFA-Legal-Rules.md — PART 8).
 class PrivacyPolicyScreen extends StatelessWidget {
@@ -42,14 +43,14 @@ class PrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
-          title: const Text('سياسة الخصوصية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('سياسة الخصوصية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: ListView(
           padding: const EdgeInsets.all(20),
@@ -59,7 +60,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               style: TextStyle(color: AppColors.subText, fontSize: 13, height: 24 / 14),
             ),
             const SizedBox(height: 24),
-            const Text('البيانات المجمّعة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('البيانات المجمّعة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
             _buildSection(title: 'من المشتري', points: _buyerData),
             const SizedBox(height: 16),
@@ -69,25 +70,25 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildSection(title: 'بيانات تقنية', points: _technicalData),
             const SizedBox(height: 24),
-            const Text('مزوّدو الخدمة (الأطراف الثالثة)', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('مزوّدو الخدمة (الأطراف الثالثة)', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
             _buildSection(title: 'نستعين بهم لتشغيل المنصة فقط', points: _thirdParties),
             const SizedBox(height: 16),
             _buildNotice('لا نبيع بياناتك ولا نشاركها لأغراض تسويقية مع أي جهة. مزوّدو الخدمة أعلاه يعالجون بياناتك تقنياً بصفتهم البنية التحتية للتطبيق فقط، ولا نفصح عنها لأي طرف آخر إلا بأمر قانوني صادر من الجهات المختصة.'),
             const SizedBox(height: 24),
-            const Text('أمان البيانات', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('أمان البيانات', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
             _buildSection(title: 'الإجراءات المتّبعة', points: _securityMeasures),
             const SizedBox(height: 24),
-            const Text('الحد الأدنى للعمر', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('الحد الأدنى للعمر', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
             Text('يجب أن يكون عمرك 18 عاماً فأكثر لإنشاء حساب وإجراء معاملات مالية عبر AL-HIRFA.', style: TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 13)),
             const SizedBox(height: 24),
-            const Text('حذف الحساب وبياناتك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('حذف الحساب وبياناتك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
             _buildNotice('يمكنك طلب حذف حسابك وجميع بياناتك الشخصية في أي وقت من "الملف الشخصي ← حذف الحساب"، أو بمراسلتنا على support@alhirfa.iq. تُحذف بياناتك خلال 30 يوماً كحد أقصى، عدا سجلات المعاملات المالية التي نحتفظ بها للامتثال القانوني.'),
             const SizedBox(height: 24),
-            const Text('الجهة المسؤولة عن معالجة بياناتك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('الجهة المسؤولة عن معالجة بياناتك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
             Text('يُدار تطبيق AL-HIRFA من قِبل Mustafa Alshlany (بغداد، العراق). للتواصل بخصوص بياناتك الشخصية: mustafaalshlany@gmail.com', style: TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 13)),
             const SizedBox(height: 24),
@@ -109,15 +110,15 @@ class PrivacyPolicyScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
+          Text(title, style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 10),
           ...points.map((point) => Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('•  ', style: TextStyle(color: AppColors.gold, fontSize: 14, fontWeight: FontWeight.bold)),
-                Expanded(child: Text(point, style: const TextStyle(color: AppColors.text, fontSize: 14, height: 24 / 14))),
+                Text('•  ', style: TextStyle(color: AppColors.gold, fontSize: 14, fontWeight: FontWeight.bold)),
+                Expanded(child: Text(point, style: TextStyle(color: AppColors.text, fontSize: 14, height: 24 / 14))),
               ],
             ),
           )),
@@ -134,9 +135,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.shield_outlined, color: AppColors.gold, size: 18),
+          Icon(Icons.shield_outlined, color: AppColors.gold, size: 18),
           const SizedBox(width: 10),
-          Expanded(child: Text(text, style: const TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 14))),
+          Expanded(child: Text(text, style: TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 14))),
         ],
       ),
     );

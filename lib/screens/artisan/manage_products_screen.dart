@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/product_service.dart';
 import 'add_product_screen.dart';
 import 'edit_product_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -45,17 +46,17 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('حذف المنتج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('حذف المنتج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text('لا يمكن التراجع عن حذف "${product.name}".', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -77,13 +78,13 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
     final artisanUid = context.watch<AuthProvider>().currentUser?.uid;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: const Text('منتجاتي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('منتجاتي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: AppColors.gold,
@@ -101,7 +102,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
                     return Center(child: Text('تعذّر تحميل المنتجات', style: TextStyle(color: AppColors.subText)));
                   }
                   if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                    return Center(child: CircularProgressIndicator(color: AppColors.gold));
                   }
                   final products = snapshot.data!..sort((a, b) => b.createdAt.compareTo(a.createdAt));
                   return TabBarView(
@@ -156,7 +157,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
                 ),
                 child: product.images.isNotEmpty
                     ? CachedNetworkImage(imageUrl: product.images.first, fit: BoxFit.cover)
-                    : const Icon(Icons.auto_awesome, color: AppColors.gold, size: 30),
+                    : Icon(Icons.auto_awesome, color: AppColors.gold, size: 30),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -166,14 +167,14 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(child: Text(product.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                        Expanded(child: Text(product.name, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis)),
                         _buildStatusChip(product.status),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(product.category, style: TextStyle(color: AppColors.subText, fontSize: 12)),
                     const SizedBox(height: 4),
-                    Text('د.ع ${_formatPrice(product.price)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                    Text('د.ع ${_formatPrice(product.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
                     if (product.stock == null)
                       Text('الكمية غير محددة — حدّثها من "تعديل"', style: TextStyle(color: AppColors.subText, fontSize: 12))
@@ -191,9 +192,9 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
             children: [
               Expanded(
                 child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                  style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditProductScreen(product: product))),
-                  child: const Text('تعديل', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                  child: Text('تعديل', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
               ),
               const SizedBox(width: 10),

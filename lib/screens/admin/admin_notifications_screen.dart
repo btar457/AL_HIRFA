@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/notification_model.dart';
 import '../../services/notification_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// إرسال إشعارات جماعية وسجلها (ADMIN-9).
 class AdminNotificationsScreen extends StatefulWidget {
@@ -28,17 +29,17 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('إرسال الإشعار؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('إرسال الإشعار؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text('سيُرسل الإشعار إلى: ${_audiences[_targetAudience]}', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -61,18 +62,18 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: const Text('إدارة الإشعارات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('إدارة الإشعارات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text('إرسال إشعار جماعي', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
+            Text('إرسال إشعار جماعي', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
@@ -88,14 +89,14 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _titleController,
-              style: const TextStyle(color: AppColors.text),
+              style: TextStyle(color: AppColors.text),
               decoration: InputDecoration(hintText: 'عنوان الإشعار', hintStyle: TextStyle(color: AppColors.subText), filled: true, fillColor: AppColors.card, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _bodyController,
               maxLines: 4,
-              style: const TextStyle(color: AppColors.text),
+              style: TextStyle(color: AppColors.text),
               decoration: InputDecoration(hintText: 'نص الإشعار', hintStyle: TextStyle(color: AppColors.subText), filled: true, fillColor: AppColors.card, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
             ),
             const SizedBox(height: 16),
@@ -111,13 +112,13 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
               ),
             ),
             const SizedBox(height: 28),
-            const Text('سجل الإشعارات المرسلة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+            Text('سجل الإشعارات المرسلة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 10),
             StreamBuilder<List<NotificationModel>>(
               stream: NotificationService.instance.getBroadcastLog(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Center(child: CircularProgressIndicator(color: AppColors.gold)));
+                  return Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Center(child: CircularProgressIndicator(color: AppColors.gold)));
                 }
                 final log = snapshot.data!;
                 if (log.isEmpty) {
@@ -131,7 +132,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(n.title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+                        Text(n.title, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
                         const SizedBox(height: 4),
                         Text('${_audiences[n.targetAudience] ?? n.targetAudience} • ${n.recipientCount} مستلم', style: TextStyle(color: AppColors.subText, fontSize: 11)),
                       ],

@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import '../../widgets/common/product_thumbnail.dart';
 import '../../widgets/common/report_problem_dialog.dart';
+import '../../core/settings/app_prefs.dart';
 
 enum _StageStatus { completed, current, pending }
 
@@ -69,7 +70,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: StreamBuilder<OrderModel?>(
@@ -79,7 +80,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
               return Center(child: Text('تعذّر تحميل الطلب', style: TextStyle(color: AppColors.subText)));
             }
             if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+              return Center(child: CircularProgressIndicator(color: AppColors.gold));
             }
             final order = snapshot.data;
             if (order == null) {
@@ -89,12 +90,12 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
               slivers: [
                 SliverAppBar(
                   backgroundColor: AppColors.background,
-                  iconTheme: const IconThemeData(color: AppColors.gold),
+                  iconTheme: IconThemeData(color: AppColors.gold),
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('تتبع الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text(order.orderNumber, style: const TextStyle(color: AppColors.gold, fontSize: 12)),
+                      Text('تتبع الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(order.orderNumber, style: TextStyle(color: AppColors.gold, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -142,9 +143,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
-                Text('د.ع ${_formatPrice(order.price)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                Text('د.ع ${_formatPrice(order.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -229,13 +230,13 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
         return Container(
           width: 28,
           height: 28,
-          decoration: const BoxDecoration(color: AppColors.gold, shape: BoxShape.circle),
+          decoration: BoxDecoration(color: AppColors.gold, shape: BoxShape.circle),
           child: const Icon(Icons.check, color: Colors.white, size: 16),
         );
       case _StageStatus.current:
         return ScaleTransition(
           scale: _pulseAnimation,
-          child: const SizedBox(
+          child: SizedBox(
             width: 28,
             height: 28,
             child: DecoratedBox(decoration: BoxDecoration(color: AppColors.gold, shape: BoxShape.circle)),
@@ -260,7 +261,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
           if (buyerUid == null) return;
           showReportProblemDialog(context, orderId: order.id, reporterUid: buyerUid, reportedUid: order.artisanUid, disputeType: 'buyer_report');
         },
-        icon: const Icon(Icons.report_problem_outlined, color: AppColors.subText, size: 18),
+        icon: Icon(Icons.report_problem_outlined, color: AppColors.subText, size: 18),
         label: Text('الإبلاغ عن مشكلة', style: TextStyle(color: AppColors.subText, fontSize: 13)),
       ),
     );
@@ -272,13 +273,13 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
-          const Icon(Icons.delivery_dining_outlined, color: AppColors.gold, size: 28),
+          Icon(Icons.delivery_dining_outlined, color: AppColors.gold, size: 28),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(order.artisanName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+                Text(order.artisanName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 2),
                 Text('سيتواصل معك الحرفي لتوصيل طلبك — الدفع كاشاً عند الاستلام', style: TextStyle(color: AppColors.subText, fontSize: 11)),
               ],
@@ -297,10 +298,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
-          const Icon(Icons.local_shipping_outlined, color: AppColors.gold, size: 28),
+          Icon(Icons.local_shipping_outlined, color: AppColors.gold, size: 28),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(order.shippingCompanyName ?? 'شركة الشحن', style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+            child: Text(order.shippingCompanyName ?? 'شركة الشحن', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

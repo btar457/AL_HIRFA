@@ -4,6 +4,7 @@ import '../../core/constants/colors.dart';
 import '../../models/notification_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../core/settings/app_prefs.dart';
 
 IconData _iconFor(NotificationModel n) {
   if (n.title.contains('قبول') || n.title.contains('الطريق') || n.title.contains('تسليم') || n.title.contains('شحن')) return Icons.local_shipping_outlined;
@@ -29,18 +30,18 @@ class NotificationsScreen extends StatelessWidget {
     final userId = context.watch<AuthProvider>().currentUser?.uid;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: const Text('الإشعارات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('الإشعارات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
           actions: [
             if (userId != null)
               TextButton(
                 onPressed: () => context.read<NotificationProvider>().markAllAsRead(userId),
-                child: const Text('تعليم الكل كمقروء', style: TextStyle(color: AppColors.gold, fontSize: 12)),
+                child: Text('تعليم الكل كمقروء', style: TextStyle(color: AppColors.gold, fontSize: 12)),
               ),
           ],
         ),
@@ -80,7 +81,7 @@ class NotificationsScreen extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(n.title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+                                    Text(n.title, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
                                     const SizedBox(height: 4),
                                     Text(n.body, style: TextStyle(color: AppColors.subText, fontSize: 12, height: 24 / 12)),
                                     const SizedBox(height: 6),
@@ -88,7 +89,7 @@ class NotificationsScreen extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              if (!n.read) Container(width: 8, height: 8, margin: const EdgeInsets.only(top: 4), decoration: const BoxDecoration(color: AppColors.gold, shape: BoxShape.circle)),
+                              if (!n.read) Container(width: 8, height: 8, margin: const EdgeInsets.only(top: 4), decoration: BoxDecoration(color: AppColors.gold, shape: BoxShape.circle)),
                             ],
                           ),
                         ),

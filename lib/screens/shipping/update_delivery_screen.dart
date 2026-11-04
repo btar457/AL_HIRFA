@@ -9,6 +9,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/dispute_service.dart';
 import '../../services/order_service.dart';
 import '../../services/storage_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -95,17 +96,17 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تأكيد التسليم والمبلغ المحصّل', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('تأكيد التسليم والمبلغ المحصّل', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text('المبلغ المطلوب تحصيله: ${_formatPrice(order.totalAmount)} د.ع', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -143,7 +144,7 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
             scrollDirection: Axis.horizontal,
             children: [
               ..._evidenceImages.asMap().entries.map((entry) => Padding(
-                    padding: const EdgeInsets.only(left: 8),
+                    padding: const EdgeInsetsDirectional.only(end: 8),
                     child: Stack(
                       children: [
                         ClipRRect(
@@ -176,7 +177,7 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: AppColors.gold.withOpacity(0.4)),
                     ),
-                    child: const Icon(Icons.add_a_photo_outlined, color: AppColors.gold, size: 22),
+                    child: Icon(Icons.add_a_photo_outlined, color: AppColors.gold, size: 22),
                   ),
                 ),
             ],
@@ -208,19 +209,19 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: const Text('تحديث حالة التوصيل', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('تحديث حالة التوصيل', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: StreamBuilder<OrderModel?>(
           stream: OrderService.instance.watchOrder(widget.orderId),
           builder: (context, snapshot) {
             if (!snapshot.hasData || snapshot.data == null) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+              return Center(child: CircularProgressIndicator(color: AppColors.gold));
             }
             final order = snapshot.data!;
             final pickedUp = order.status != 'shipping_assigned';
@@ -231,7 +232,7 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(order.orderNumber, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                  Text(order.orderNumber, style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
                   _buildStep('تم قبول الطلب', true),
                   _buildStep('استلمت من البائع', pickedUp),
@@ -243,9 +244,9 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
                       width: double.infinity,
                       height: 50,
                       child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                         onPressed: _isUpdating ? null : _confirmPickup,
-                        child: const Text('تأكيد الاستلام من البائع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                        child: Text('تأكيد الاستلام من البائع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                       ),
                     )
                   else if (!delivered)
@@ -259,17 +260,17 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
                       ),
                     ),
                   const SizedBox(height: 28),
-                  const Text('هل واجهت مشكلة؟', style: TextStyle(color: AppColors.gold, fontSize: 14, fontWeight: FontWeight.bold)),
+                  Text('هل واجهت مشكلة؟', style: TextStyle(color: AppColors.gold, fontSize: 14, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
                     initialValue: _selectedProblem,
                     dropdownColor: AppColors.card,
-                    style: const TextStyle(color: AppColors.text),
+                    style: TextStyle(color: AppColors.text),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: AppColors.card,
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-                      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     items: _problems.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
@@ -280,14 +281,14 @@ class _UpdateDeliveryScreenState extends State<UpdateDeliveryScreen> {
                     TextFormField(
                       controller: _problemDetailsController,
                       maxLines: 3,
-                      style: const TextStyle(color: AppColors.text),
+                      style: TextStyle(color: AppColors.text),
                       decoration: InputDecoration(
                         hintText: 'اشرح المشكلة',
                         hintStyle: TextStyle(color: AppColors.subText),
                         filled: true,
                         fillColor: AppColors.card,
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-                        focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
                       ),
                     ),
                     const SizedBox(height: 14),

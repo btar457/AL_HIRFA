@@ -17,8 +17,10 @@ import 'providers/notification_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/reset_password_screen.dart';
 import 'screens/auth/splash_screen.dart';
+import 'screens/shared/language_appearance_screen.dart';
 import 'services/auth_service.dart';
 import 'widgets/common/connectivity_banner.dart';
+import 'core/settings/app_prefs.dart';
 
 /// يستمع لروابط App Links الواردة من رسائل Firebase (إعادة تعيين كلمة
 /// المرور، تأكيد البريد) طوال عمر التطبيق — راجع auth_service.dart.
@@ -36,9 +38,9 @@ void _listenForAuthActionLinks() {
       String message;
       try {
         await AuthService.instance.applyEmailVerificationCode(oobCode);
-        message = 'تم تأكيد بريدك الإلكتروني — يمكنك تسجيل الدخول الآن';
+        message = tr('تم تأكيد بريدك الإلكتروني — يمكنك تسجيل الدخول الآن', 'Your email is confirmed — you can sign in now');
       } catch (_) {
-        message = 'رابط التأكيد غير صالح أو منتهي — سجّل الدخول لإرسال رابط جديد';
+        message = tr('رابط التأكيد غير صالح أو منتهي — سجّل الدخول لإرسال رابط جديد', 'The confirmation link is invalid or expired — sign in to get a new one');
       }
       final messengerContext = navigatorKey.currentState?.overlay?.context;
       if (messengerContext != null && messengerContext.mounted) {
@@ -79,6 +81,7 @@ Future<void> main() async {
   );
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   _listenForAuthActionLinks();
+  await AppPrefs.load();
   runApp(
     MultiProvider(
       providers: [
@@ -95,13 +98,21 @@ class AlHirfaApp extends StatelessWidget {
   const AlHirfaApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppStrings.appTitle,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
-      navigatorKey: navigatorKey,
-      home: const AuthGate(),
-      builder: (context, child) => ConnectivityBanner(child: child!),
+    // تغيير اللغة/المظهر يعيد بناء التطبيق كاملاً (key جديد): الألوان
+    // والنصوص تُقرأ من AppPrefs مباشرة في كل الشاشات، لا عبر Theme.of، فلا
+    // يكفي تحديث الثيم وحده.
+    return AnimatedBuilder(
+      animation: AppPrefs.instance,
+      builder: (context, _) => MaterialApp(
+        key: ValueKey('${AppPrefs.language}-${AppPrefs.isDark}'),
+        title: AppStrings.appTitle,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.current,
+        locale: AppPrefs.locale,
+        navigatorKey: navigatorKey,
+        home: const AuthGate(),
+        builder: (context, child) => ConnectivityBanner(child: child!),
+      ),
     );
   }
 }
@@ -134,7 +145,9 @@ class _AuthGateState extends State<AuthGate> {
     final user = auth.currentUser;
     if (user == null && auth.sessionRestoreFailed) return;
     _hasNavigated = true;
-    if (user == null) {
+    if (user == null && !AppPrefs.hasChosen) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LanguageAppearanceScreen(firstRun: true)));
+    } else if (user == null) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
     } else {
       navigateByRole(context, user.role, user: user);
@@ -160,7 +173,7 @@ class _SessionRetryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Center(
@@ -169,11 +182,11 @@ class _SessionRetryScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.wifi_off_rounded, color: AppColors.gold, size: 64),
+                Icon(Icons.wifi_off_rounded, color: AppColors.gold, size: 64),
                 const SizedBox(height: 20),
-                const Text('تعذّر الاتصال', style: TextStyle(color: AppColors.text, fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(tr('تعذّر الاتصال', 'Connection failed'), style: TextStyle(color: AppColors.text, fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
-                Text('ما زلت مسجّل الدخول — تحقّق من اتصالك بالإنترنت ثم أعد المحاولة.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.subText, height: 1.6)),
+                Text(tr('ما زلت مسجّل الدخول — تحقّق من اتصالك بالإنترنت ثم أعد المحاولة.', 'You\'re still signed in — check your internet connection and try again.'), textAlign: TextAlign.center, style: TextStyle(color: AppColors.subText, height: 1.6)),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
@@ -181,12 +194,12 @@ class _SessionRetryScreen extends StatelessWidget {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                     onPressed: onRetry,
-                    child: const Text('إعادة المحاولة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: Text(tr('إعادة المحاولة', 'Try again'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                 ),
                 TextButton(
                   onPressed: onSignOut,
-                  child: Text('تسجيل الخروج', style: TextStyle(color: AppColors.subText)),
+                  child: Text(tr('تسجيل الخروج', 'Sign out'), style: TextStyle(color: AppColors.subText)),
                 ),
               ],
             ),

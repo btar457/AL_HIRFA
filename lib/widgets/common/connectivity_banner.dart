@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// يلفّ التطبيق بالكامل (عبر MaterialApp.builder) ويعرض شريطاً علوياً عند
 /// انقطاع الاتصال بالإنترنت — كل الشاشات تعتمد على Firestore/Firebase Auth
@@ -38,7 +39,7 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Column(
         children: [
           SafeArea(
@@ -50,7 +51,7 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
               color: Colors.red.shade800,
               alignment: Alignment.center,
               child: _isOffline
-                  ? const Text('لا يوجد اتصال بالإنترنت', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold))
+                  ? Text(tr('لا يوجد اتصال بالإنترنت', 'No internet connection'), style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold))
                   : null,
             ),
           ),

@@ -9,6 +9,7 @@ import '../../screens/shipping/shipping_nav.dart';
 import '../../services/auth_service.dart';
 import '../constants/app_rules.dart';
 import '../constants/colors.dart';
+import '../settings/app_prefs.dart';
 
 /// ينقل المستخدم إلى الشاشة الرئيسية المناسبة لدوره بعد تسجيل الدخول أو إنشاء الحساب.
 ///
@@ -57,14 +58,14 @@ void _showTermsUpdateSheet(BuildContext context, UserModel user, VoidCallback on
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
     builder: (sheetContext) {
       return Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('تم تحديث الشروط والأحكام', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+              Text('تم تحديث الشروط والأحكام', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(height: 10),
               Text(
                 'يجب قراءة الشروط الجديدة والموافقة عليها للمتابعة في استخدام AL-HIRFA.',
@@ -75,11 +76,11 @@ void _showTermsUpdateSheet(BuildContext context, UserModel user, VoidCallback on
                 children: [
                   TextButton(
                     onPressed: () => Navigator.push(sheetContext, MaterialPageRoute(builder: (_) => const TermsScreen())),
-                    child: const Text('عرض الشروط الكاملة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                    child: Text('عرض الشروط الكاملة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                   ),
                   TextButton(
                     onPressed: () => Navigator.push(sheetContext, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen())),
-                    child: const Text('سياسة الخصوصية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                    child: Text('سياسة الخصوصية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

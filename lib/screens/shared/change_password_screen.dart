@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// شاشة تغيير كلمة المرور (SHARED-7).
 class ChangePasswordScreen extends StatefulWidget {
@@ -33,7 +34,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       filled: true,
       fillColor: AppColors.card,
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
@@ -72,11 +73,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تم تغيير كلمة المرور', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          title: Text('تم تغيير كلمة المرور', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -95,13 +96,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: const Text('تغيير كلمة المرور', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('تغيير كلمة المرور', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -112,7 +113,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 controller: _currentController,
                 obscureText: _obscureCurrent,
                 onChanged: (_) => setState(() {}),
-                style: const TextStyle(color: AppColors.text),
+                style: TextStyle(color: AppColors.text),
                 decoration: _fieldDecoration(
                   suffix: IconButton(
                     icon: Icon(_obscureCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.gold),
@@ -124,7 +125,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               TextFormField(
                 controller: _newController,
                 obscureText: _obscureNew,
-                style: const TextStyle(color: AppColors.text),
+                style: TextStyle(color: AppColors.text),
                 onChanged: (value) => setState(() => _newPassword = value),
                 decoration: _fieldDecoration(
                   suffix: IconButton(
@@ -137,7 +138,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               TextFormField(
                 controller: _confirmController,
                 obscureText: _obscureConfirm,
-                style: const TextStyle(color: AppColors.text),
+                style: TextStyle(color: AppColors.text),
                 onChanged: (_) => setState(() {}),
                 decoration: _fieldDecoration(
                   suffix: IconButton(

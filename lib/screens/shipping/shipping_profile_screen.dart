@@ -10,6 +10,8 @@ import '../shared/change_password_screen.dart';
 import '../shared/delete_account_screen.dart';
 import '../shared/terms_screen.dart';
 import 'shipping_wallet_screen.dart';
+import '../../core/settings/app_prefs.dart';
+import '../shared/language_appearance_screen.dart';
 
 /// الملف الشخصي لشركة الشحن (SHIPPING-8).
 class ShippingProfileScreen extends StatefulWidget {
@@ -25,17 +27,17 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تسجيل الخروج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('تسجيل الخروج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text('هل أنت متأكد من رغبتك في تسجيل الخروج؟', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -57,21 +59,21 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تعديل IBAN', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('تعديل IBAN', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: TextFormField(
             controller: ibanController,
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             decoration: InputDecoration(enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4)))),
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -105,7 +107,7 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: AppColors.subText, fontSize: 13)),
-          Text(value, style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.bold)),
+          Text(value, style: TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -116,7 +118,7 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
     final user = context.watch<AuthProvider>().currentUser;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: user == null
@@ -138,10 +140,10 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
                               _buildInfoRow('اسم الشركة', user.companyName.isNotEmpty ? user.companyName : '—'),
                               _buildInfoRow('رقم السجل التجاري', user.registrationNumber.isNotEmpty ? user.registrationNumber : '—'),
                               const SizedBox(height: 8),
-                              Align(alignment: Alignment.centerRight, child: Text('المحافظات التي تعمل بها', style: TextStyle(color: AppColors.subText, fontSize: 12))),
+                              Align(alignment: AlignmentDirectional.centerStart, child: Text('المحافظات التي تعمل بها', style: TextStyle(color: AppColors.subText, fontSize: 12))),
                               const SizedBox(height: 8),
                               if (user.provinces.isEmpty)
-                                Align(alignment: Alignment.centerRight, child: Text('لا توجد محافظات مسجَّلة', style: TextStyle(color: AppColors.subText, fontSize: 12)))
+                                Align(alignment: AlignmentDirectional.centerStart, child: Text('لا توجد محافظات مسجَّلة', style: TextStyle(color: AppColors.subText, fontSize: 12)))
                               else
                                 Wrap(
                                   spacing: 8,
@@ -160,12 +162,12 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
                         const SizedBox(height: 14),
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(16),
                           decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.3))),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(children: const [Icon(Icons.lock_outline, color: AppColors.gold, size: 18), SizedBox(width: 8), Text('الحساب المصرفي (IBAN)', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13))]),
+                              Row(children: [Icon(Icons.lock_outline, color: AppColors.gold, size: 18), SizedBox(width: 8), Text('الحساب المصرفي (IBAN)', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13))]),
                               const SizedBox(height: 10),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -173,14 +175,14 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
                                   Expanded(
                                     child: Text(
                                       user.iban.isEmpty ? 'لم يُسجَّل بعد' : (_obscureIban ? '•' * user.iban.length : user.iban),
-                                      style: const TextStyle(color: AppColors.text, fontSize: 13),
+                                      style: TextStyle(color: AppColors.text, fontSize: 13),
                                     ),
                                   ),
                                   IconButton(
                                     icon: Icon(_obscureIban ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.gold, size: 18),
                                     onPressed: () => setState(() => _obscureIban = !_obscureIban),
                                   ),
-                                  TextButton(onPressed: () => _editIban(user.iban), child: const Text('تعديل', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold))),
+                                  TextButton(onPressed: () => _editIban(user.iban), child: Text('تعديل', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold))),
                                 ],
                               ),
                             ],
@@ -204,6 +206,7 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
                   const SizedBox(height: 12),
                   _buildTile(context, icon: Icons.account_balance_wallet_outlined, title: 'محفظة الشركة', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShippingWalletScreen()))),
                   _buildTile(context, icon: Icons.description_outlined, title: 'شروط الشراكة', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen()))),
+                  _buildTile(context, icon: Icons.translate, title: tr('اللغة والمظهر', 'Language & appearance'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageAppearanceScreen()))),
                   _buildTile(context, icon: Icons.lock_outline, title: 'تغيير كلمة المرور', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()))),
                   _buildTile(context, icon: Icons.logout, title: 'تسجيل الخروج', color: Colors.redAccent, onTap: () => _confirmLogout(context)),
                   _buildTile(context, icon: Icons.delete_outline, title: 'حذف الحساب', color: Colors.redAccent, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeleteAccountScreen()))),
@@ -220,7 +223,7 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(10)),
       child: Column(
         children: [
-          Text(value, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
+          Text(value, style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 4),
           Text(label, style: TextStyle(color: AppColors.subText, fontSize: 10), textAlign: TextAlign.center),
         ],
@@ -236,7 +239,7 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
         children: [
           Container(
             height: 110,
-            decoration: const BoxDecoration(gradient: LinearGradient(colors: [AppColors.gold, Color(0xFF8B6B1F)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+            decoration: BoxDecoration(gradient: LinearGradient(colors: [AppColors.gold, Color(0xFF8B6B1F)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
           ),
           Positioned(
             top: 60,
@@ -246,10 +249,10 @@ class _ShippingProfileScreenState extends State<ShippingProfileScreen> {
                   width: 90,
                   height: 90,
                   decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.card, border: Border.all(color: AppColors.background, width: 3)),
-                  child: const Icon(Icons.local_shipping, color: AppColors.gold, size: 40),
+                  child: Icon(Icons.local_shipping, color: AppColors.gold, size: 40),
                 ),
                 const SizedBox(height: 10),
-                Text(companyName, style: const TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(companyName, style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 2),
                 Text('شركة شحن موثّقة ✓', style: TextStyle(color: AppColors.subText, fontSize: 12)),
               ],

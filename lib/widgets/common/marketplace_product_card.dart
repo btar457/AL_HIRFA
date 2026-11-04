@@ -23,7 +23,7 @@ class MarketplaceProductCard extends StatelessWidget {
       decoration: const BoxDecoration(
         gradient: LinearGradient(colors: [Color(0xFF2A1A08), Color(0xFF3A2A10)], begin: Alignment.topLeft, end: Alignment.bottomRight),
       ),
-      child: const Center(child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 36)),
+      child: Center(child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 36)),
     );
   }
 
@@ -68,7 +68,7 @@ class MarketplaceProductCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(6)),
-                    child: Text(product.cityTag, style: const TextStyle(color: AppColors.gold, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                    child: Text(product.cityTag, style: TextStyle(color: AppColors.gold, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                   ),
                 ),
                 Positioned(
@@ -91,10 +91,10 @@ class MarketplaceProductCard extends StatelessWidget {
             product.name,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13, height: 1.3),
+            style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13, height: 1.3),
           ),
           const SizedBox(height: 4),
-          Text('د.ع ${product.price}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+          Text('د.ع ${product.price}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
         ],
       ),
     );

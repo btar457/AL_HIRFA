@@ -13,6 +13,8 @@ import '../shared/change_password_screen.dart';
 import '../shared/delete_account_screen.dart';
 import '../shared/privacy_policy_screen.dart';
 import '../shared/terms_screen.dart';
+import '../../core/settings/app_prefs.dart';
+import '../shared/language_appearance_screen.dart';
 
 class ArtisanProfileScreen extends StatefulWidget {
   const ArtisanProfileScreen({super.key});
@@ -33,7 +35,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
       filled: true,
       fillColor: AppColors.card,
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
@@ -42,7 +44,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         field,
       ],
@@ -53,7 +55,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
     if (picked == null || !mounted) return;
 
-    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator(color: AppColors.gold)));
+    showDialog(context: context, barrierDismissible: false, builder: (_) => Center(child: CircularProgressIndicator(color: AppColors.gold)));
     try {
       await context.read<AuthProvider>().uploadProfilePhoto(File(picked.path));
       if (!mounted) return;
@@ -88,17 +90,17 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تسجيل الخروج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('تسجيل الخروج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text('هل أنت متأكد من رغبتك في تسجيل الخروج؟', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -127,7 +129,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: ListView(
@@ -140,14 +142,14 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildLabeledField(label: 'الاسم الكامل', field: TextFormField(controller: _nameController, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+                  _buildLabeledField(label: 'الاسم الكامل', field: TextFormField(controller: _nameController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
                   const SizedBox(height: 14),
                   _buildLabeledField(
                     label: 'المدينة',
                     field: DropdownButtonFormField<String>(
                       initialValue: _selectedCity,
                       dropdownColor: AppColors.card,
-                      style: const TextStyle(color: AppColors.text),
+                      style: TextStyle(color: AppColors.text),
                       decoration: _fieldDecoration(),
                       items: kCities.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                       onChanged: (value) => setState(() => _selectedCity = value!),
@@ -159,6 +161,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            _buildSettingsTile(icon: Icons.translate, title: tr('اللغة والمظهر', 'Language & appearance'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageAppearanceScreen()))),
             _buildSettingsTile(icon: Icons.lock_outline, title: 'تغيير كلمة المرور', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()))),
             _buildSettingsTile(icon: Icons.description_outlined, title: 'الشروط والأحكام', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen()))),
             _buildSettingsTile(icon: Icons.privacy_tip_outlined, title: 'سياسة الخصوصية', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()))),
@@ -200,7 +203,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
             right: 0,
             height: 160,
             child: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(colors: [AppColors.gold, Color(0xFF8B6B1F)], begin: Alignment.topLeft, end: Alignment.bottomRight),
               ),
             ),
@@ -220,8 +223,8 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.card, border: Border.all(color: AppColors.background, width: 3)),
                       child: (user?.photoUrl.isEmpty ?? true)
-                          ? const Icon(Icons.person, color: AppColors.gold, size: 44)
-                          : CachedNetworkImage(imageUrl: user!.photoUrl, fit: BoxFit.cover, errorWidget: (_, __, ___) => const Icon(Icons.person, color: AppColors.gold, size: 44)),
+                          ? Icon(Icons.person, color: AppColors.gold, size: 44)
+                          : CachedNetworkImage(imageUrl: user!.photoUrl, fit: BoxFit.cover, errorWidget: (_, __, ___) => Icon(Icons.person, color: AppColors.gold, size: 44)),
                     ),
                     Positioned(
                       bottom: 0,
@@ -244,7 +247,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
             child: Center(
               child: Column(
                 children: [
-                  Text(user?.name ?? '', style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text(user?.name ?? '', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -270,13 +273,13 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
   Widget _buildBankSection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.3))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
+            children: [
               Icon(Icons.lock_outline, color: AppColors.gold, size: 18),
               SizedBox(width: 8),
               Text('الحساب المصرفي (IBAN)', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
@@ -286,7 +289,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
           TextFormField(
             controller: _ibanController,
             obscureText: _obscureIban,
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             decoration: _fieldDecoration(
               suffix: IconButton(
                 icon: Icon(_obscureIban ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.gold),

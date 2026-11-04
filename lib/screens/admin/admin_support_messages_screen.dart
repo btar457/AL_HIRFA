@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/support_message_model.dart';
 import '../../services/support_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatDate(DateTime date) {
   const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -19,11 +20,11 @@ class AdminSupportMessagesScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('الردّ على ${message.name}', style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('الردّ على ${message.name}', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +34,7 @@ class AdminSupportMessagesScreen extends StatelessWidget {
               TextFormField(
                 controller: replyController,
                 maxLines: 3,
-                style: const TextStyle(color: AppColors.text),
+                style: TextStyle(color: AppColors.text),
                 decoration: InputDecoration(
                   hintText: 'ردّك (اختياري)',
                   hintStyle: TextStyle(color: AppColors.subText),
@@ -44,9 +45,9 @@ class AdminSupportMessagesScreen extends StatelessWidget {
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -65,14 +66,14 @@ class AdminSupportMessagesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
-          title: const Text('رسائل الدعم', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('رسائل الدعم', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: StreamBuilder<List<SupportMessageModel>>(
           stream: SupportService.instance.getAllMessages(),
@@ -81,7 +82,7 @@ class AdminSupportMessagesScreen extends StatelessWidget {
               return Center(child: Text('تعذّر تحميل رسائل الدعم', style: TextStyle(color: AppColors.subText)));
             }
             if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+              return Center(child: CircularProgressIndicator(color: AppColors.gold));
             }
             final messages = snapshot.data!;
             if (messages.isEmpty) {
@@ -103,12 +104,12 @@ class AdminSupportMessagesScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('${m.name} (${_roleLabels[m.role] ?? m.role})', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text('${m.name} (${_roleLabels[m.role] ?? m.role})', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                           Text(_formatDate(m.createdAt), style: TextStyle(color: AppColors.subText, fontSize: 11)),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text(m.message, style: const TextStyle(color: AppColors.text, fontSize: 13, height: 22 / 13)),
+                      Text(m.message, style: TextStyle(color: AppColors.text, fontSize: 13, height: 22 / 13)),
                       if (resolved && m.adminReply != null && m.adminReply!.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text('ردّك: ${m.adminReply}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
@@ -118,9 +119,9 @@ class AdminSupportMessagesScreen extends StatelessWidget {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                            style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                             onPressed: () => _showReplyDialog(context, m),
-                            child: const Text('الردّ / تعليم كمُعالَجة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                            child: Text('الردّ / تعليم كمُعالَجة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                           ),
                         )
                       else

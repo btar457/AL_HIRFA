@@ -6,6 +6,7 @@ import '../../providers/cart_provider.dart';
 import '../../widgets/common/product_thumbnail.dart';
 import 'checkout_screen.dart';
 import 'customer_nav.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -25,13 +26,13 @@ class CartScreen extends StatelessWidget {
     final cart = context.watch<CartProvider>();
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          iconTheme: const IconThemeData(color: AppColors.gold),
-          title: Text('سلتي (${cart.itemCount})', style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
+          title: Text('سلتي (${cart.itemCount})', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
         body: cart.items.isEmpty ? _buildEmptyState(context) : _buildCartBody(context, cart),
       ),
@@ -47,7 +48,7 @@ class CartScreen extends StatelessWidget {
           children: [
             const Icon(Icons.shopping_cart_outlined, color: Color(0xFF555555), size: 80),
             const SizedBox(height: 20),
-            const Text('سلتك فارغة', style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('سلتك فارغة', style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
@@ -99,7 +100,7 @@ class CartScreen extends StatelessWidget {
       onDismissed: (_) => cart.removeItem(item.product.id),
       background: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        alignment: Alignment.centerLeft,
+        alignment: AlignmentDirectional.centerEnd,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(12)),
         child: const Icon(Icons.delete_outline, color: Colors.white),
@@ -117,16 +118,16 @@ class CartScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.product.name, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(item.product.name, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
                   Text(item.product.artisanName, style: TextStyle(color: AppColors.subText, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
-                  Text('د.ع ${_formatPrice(item.product.price)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text('د.ع ${_formatPrice(item.product.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       _quantityButton(icon: Icons.remove, onTap: () => cart.updateQuantity(item.product.id, item.quantity - 1)),
-                      SizedBox(width: 36, child: Text('${item.quantity}', textAlign: TextAlign.center, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold))),
+                      SizedBox(width: 36, child: Text('${item.quantity}', textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold))),
                       _quantityButton(icon: Icons.add, onTap: () => cart.updateQuantity(item.product.id, item.quantity + 1)),
                     ],
                   ),
@@ -166,8 +167,8 @@ class CartScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('المجموع الكلي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
-              Text('${_formatPrice(cart.total)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
+              Text('المجموع الكلي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+              Text('${_formatPrice(cart.total)} د.ع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
             ],
           ),
         ],
@@ -180,7 +181,7 @@ class CartScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: TextStyle(color: AppColors.subText, fontSize: 14)),
-        Text('$value د.ع', style: const TextStyle(color: AppColors.text, fontSize: 14)),
+        Text('$value د.ع', style: TextStyle(color: AppColors.text, fontSize: 14)),
       ],
     );
   }

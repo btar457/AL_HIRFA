@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/order_model.dart';
 import '../../services/admin_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatDate(DateTime date) {
   const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -20,20 +21,20 @@ class AdminStuckOrdersScreen extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('إعادة الطلب للحرفي؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('إعادة الطلب للحرفي؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text(
             'سيعود طلب ${order.orderNumber} إلى الحرفي (${order.artisanName}) ليتولّى توصيله بنفسه ويؤكّد التسليم مباشرة من تطبيقه.',
             style: TextStyle(color: AppColors.subText),
           ),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -52,14 +53,14 @@ class AdminStuckOrdersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
-          title: const Text('طلبات عالقة (شحن قديم)', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('طلبات عالقة (شحن قديم)', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: StreamBuilder<List<OrderModel>>(
           stream: AdminService.instance.getStuckLegacyShippingOrders(),
@@ -68,7 +69,7 @@ class AdminStuckOrdersScreen extends StatelessWidget {
               return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
             }
             if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+              return Center(child: CircularProgressIndicator(color: AppColors.gold));
             }
             final orders = snapshot.data!;
             if (orders.isEmpty) {
@@ -98,7 +99,7 @@ class AdminStuckOrdersScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(order.orderNumber, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                          Text(order.orderNumber, style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(color: Colors.orange.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
@@ -107,7 +108,7 @@ class AdminStuckOrdersScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text('الحرفي: ${order.artisanName}', style: const TextStyle(color: AppColors.text, fontSize: 13)),
+                      Text('الحرفي: ${order.artisanName}', style: TextStyle(color: AppColors.text, fontSize: 13)),
                       Text('الزبون: ${order.buyerName}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
                       if (order.shippingCompanyName != null) Text('شركة الشحن: ${order.shippingCompanyName}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
                       Text('تاريخ الطلب: ${_formatDate(order.createdAt)}', style: TextStyle(color: AppColors.subText, fontSize: 11)),
@@ -115,9 +116,9 @@ class AdminStuckOrdersScreen extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                          style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                           onPressed: () => _confirmUnstuck(context, order),
-                          child: const Text('إعادة الطلب للحرفي للتوصيل الذاتي', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                          child: Text('إعادة الطلب للحرفي للتوصيل الذاتي', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ],

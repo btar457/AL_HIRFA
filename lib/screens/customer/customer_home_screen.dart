@@ -14,6 +14,7 @@ import 'marketplace_screen.dart';
 import 'orders_history_screen.dart';
 import 'product_detail_screen.dart';
 import 'search_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 const _activeOrderStatuses = {'pending', 'seller_approved', 'shipping_assigned', 'picked_up'};
 
@@ -41,7 +42,7 @@ class CustomerHomeScreen extends StatelessWidget {
     final user = context.watch<AuthProvider>().currentUser;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -58,7 +59,7 @@ class CustomerHomeScreen extends StatelessWidget {
                   decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.gold.withOpacity(0.5))),
                   child: Row(
                     children: [
-                      const Icon(Icons.search, color: AppColors.gold, size: 20),
+                      Icon(Icons.search, color: AppColors.gold, size: 20),
                       const SizedBox(width: 8),
                       Expanded(child: Text('ابحث عن التحف والأعمال اليدوية...', style: TextStyle(color: AppColors.subText, fontSize: 13))),
                     ],
@@ -68,17 +69,17 @@ class CustomerHomeScreen extends StatelessWidget {
               const SizedBox(height: 20),
               if (user != null) _buildActiveOrdersCard(context, user.uid),
               const SizedBox(height: 20),
-              const Text('تصفّح حسب الفئة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+              Text('تصفّح حسب الفئة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
               const SizedBox(height: 10),
               _buildCategoriesGrid(context),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('أحدث المنتجات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+                  Text('أحدث المنتجات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
                   TextButton(
                     onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MarketplaceScreen())),
-                    child: const Text('عرض الكل', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: Text('عرض الكل', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -97,7 +98,7 @@ class CustomerHomeScreen extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)),
+            Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)),
             if (name.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text('مرحباً، $name', style: TextStyle(color: AppColors.subText, fontSize: 13)),
@@ -109,7 +110,7 @@ class CustomerHomeScreen extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: AppColors.gold),
+                icon: Icon(Icons.notifications_outlined, color: AppColors.gold),
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
               ),
               if (notifications.unreadCount > 0)
@@ -136,7 +137,7 @@ class CustomerHomeScreen extends StatelessWidget {
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: const LinearGradient(colors: [AppColors.gold, Color(0xFF8B6B1F)])),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: LinearGradient(colors: [AppColors.gold, Color(0xFF8B6B1F)])),
             child: Row(
               children: [
                 const Icon(Icons.local_shipping_outlined, color: Colors.black),
@@ -188,7 +189,7 @@ class CustomerHomeScreen extends StatelessWidget {
       stream: ProductService.instance.getActiveProducts(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Padding(padding: EdgeInsets.symmetric(vertical: 30), child: Center(child: CircularProgressIndicator(color: AppColors.gold)));
+          return Padding(padding: EdgeInsets.symmetric(vertical: 30), child: Center(child: CircularProgressIndicator(color: AppColors.gold)));
         }
         final products = snapshot.data!..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         final latest = products.take(6).toList();

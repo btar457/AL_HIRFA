@@ -8,6 +8,7 @@ import '../../widgets/common/product_thumbnail.dart';
 import '../../widgets/common/loading_shimmer.dart';
 import 'order_review_screen.dart';
 import 'order_tracking_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 const _activeStatuses = {'pending', 'seller_approved', 'shipping_assigned', 'picked_up'};
 const _cancelledStatuses = {'cancelled', 'disputed'};
@@ -47,13 +48,13 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
     final buyerUid = context.watch<AuthProvider>().currentUser?.uid;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: const Text('طلباتي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: AppColors.gold),
+          title: Text('طلباتي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: AppColors.gold,
@@ -129,14 +130,14 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(order.orderNumber, style: const TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                          Text(order.orderNumber, style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                           _buildStatusChip(order.status),
                         ],
                       ),
                       const SizedBox(height: 6),
-                      Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
-                      Text('د.ع ${_formatPrice(order.price)}', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text('د.ع ${_formatPrice(order.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -145,20 +146,20 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
             if (isActive || (isCompleted && !order.isReviewed)) ...[
               const SizedBox(height: 10),
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerEnd,
                 child: isActive
                     ? OutlinedButton(
-                        style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => OrderTrackingScreen(orderId: order.id))),
-                        child: const Text('تتبع الطلب', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: Text('تتبع الطلب', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                       )
                     : OutlinedButton(
-                        style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                         onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => OrderReviewScreen(order: order)),
                         ),
-                        child: const Text('تقييم', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: Text('تقييم', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
               ),
             ],

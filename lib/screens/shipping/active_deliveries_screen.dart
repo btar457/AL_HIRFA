@@ -8,6 +8,7 @@ import '../../widgets/common/product_thumbnail.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import 'update_delivery_screen.dart';
+import '../../core/settings/app_prefs.dart';
 
 const _activeStatuses = {'shipping_assigned', 'picked_up'};
 
@@ -47,17 +48,17 @@ class _ActiveDeliveriesScreenState extends State<ActiveDeliveriesScreen> {
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: const Text('تأكيد التسليم', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('تأكيد التسليم', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text('تأكد أنك حصّلت ${_formatPrice(order.totalAmount)} د.ع كاشاً من المشتري قبل التأكيد.', style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -83,13 +84,13 @@ class _ActiveDeliveriesScreenState extends State<ActiveDeliveriesScreen> {
     final shippingUid = context.watch<AuthProvider>().currentUser?.uid;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: const Text('توصيلاتي النشطة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('توصيلاتي النشطة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
         body: shippingUid == null
             ? Center(child: Text('سجّل الدخول لعرض توصيلاتك', style: TextStyle(color: AppColors.subText)))
@@ -100,7 +101,7 @@ class _ActiveDeliveriesScreenState extends State<ActiveDeliveriesScreen> {
                     return Center(child: Text('تعذّر تحميل التوصيلات', style: TextStyle(color: AppColors.subText)));
                   }
                   if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+                    return Center(child: CircularProgressIndicator(color: AppColors.gold));
                   }
                   final active = snapshot.data!.where((o) => _activeStatuses.contains(o.status)).toList();
                   if (active.isEmpty) {
@@ -131,15 +132,15 @@ class _ActiveDeliveriesScreenState extends State<ActiveDeliveriesScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(order.orderNumber, style: const TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                Text(order.orderNumber, style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
-                  child: Text(isWaitingPickup ? 'بانتظار الاستلام' : 'في الطريق', style: const TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
+                  child: Text(isWaitingPickup ? 'بانتظار الاستلام' : 'في الطريق', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
-            const Divider(color: AppColors.divider),
+            Divider(color: AppColors.divider),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -149,9 +150,9 @@ class _ActiveDeliveriesScreenState extends State<ActiveDeliveriesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 6),
-                      Row(children: [const Icon(Icons.location_on_outlined, color: AppColors.subText, size: 13), const SizedBox(width: 4), Expanded(child: Text('التسليم إلى: ${order.governorate} - ${order.district}', style: TextStyle(color: AppColors.subText, fontSize: 11)))]),
+                      Row(children: [Icon(Icons.location_on_outlined, color: AppColors.subText, size: 13), const SizedBox(width: 4), Expanded(child: Text('التسليم إلى: ${order.governorate} - ${order.district}', style: TextStyle(color: AppColors.subText, fontSize: 11)))]),
                     ],
                   ),
                 ),
@@ -162,25 +163,25 @@ class _ActiveDeliveriesScreenState extends State<ActiveDeliveriesScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                    style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                     onPressed: () => _call(order.buyerPhone),
-                    icon: const Icon(Icons.call, color: AppColors.gold, size: 15),
-                    label: const Text('اتصال بالمشتري', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                    icon: Icon(Icons.call, color: AppColors.gold, size: 15),
+                    label: Text('اتصال بالمشتري', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 10),
-            Text('أجرك: ${_formatPrice(order.shippingEarnings)} د.ع — تُجمعه كاشاً عند التسليم', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12)),
+            Text('أجرك: ${_formatPrice(order.shippingEarnings)} د.ع — تُجمعه كاشاً عند التسليم', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12)),
             Text('مستحق لـ AL-HIRFA: ${_formatPrice(order.deliveryFee - order.shippingEarnings)} د.ع', style: TextStyle(color: AppColors.subText, fontSize: 11)),
             const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: isWaitingPickup
                   ? OutlinedButton(
-                      style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       onPressed: () => _markPickedUp(order),
-                      child: const Text('استلمت من البائع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                      child: Text('استلمت من البائع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                     )
                   : ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),

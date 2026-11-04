@@ -10,6 +10,7 @@ import '../../models/categories.dart';
 import '../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/product_service.dart';
+import '../../core/settings/app_prefs.dart';
 
 const int _kMaxImages = 5;
 
@@ -107,7 +108,7 @@ class _ProductFormState extends State<ProductForm> {
       filled: true,
       fillColor: AppColors.card,
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
-      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
@@ -116,7 +117,7 @@ class _ProductFormState extends State<ProductForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         field,
       ],
@@ -193,11 +194,11 @@ class _ProductFormState extends State<ProductForm> {
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text(widget.successTitle, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(widget.successTitle, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: Text(widget.successMessage, style: TextStyle(color: AppColors.subText)),
           actions: [
             ElevatedButton(
@@ -217,13 +218,13 @@ class _ProductFormState extends State<ProductForm> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          iconTheme: const IconThemeData(color: AppColors.gold),
-          title: Text(widget.title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          iconTheme: IconThemeData(color: AppColors.gold),
+          title: Text(widget.title, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
         body: Form(
           key: _formKey,
@@ -238,7 +239,7 @@ class _ProductFormState extends State<ProductForm> {
                   label: 'اسم المنتج',
                   field: TextFormField(
                     controller: _nameController,
-                    style: const TextStyle(color: AppColors.text),
+                    style: TextStyle(color: AppColors.text),
                     decoration: _fieldDecoration(),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'اسم المنتج مطلوب' : null,
                   ),
@@ -249,7 +250,7 @@ class _ProductFormState extends State<ProductForm> {
                   field: DropdownButtonFormField<AppCategory>(
                     initialValue: _selectedCategory,
                     dropdownColor: AppColors.card,
-                    style: const TextStyle(color: AppColors.text),
+                    style: TextStyle(color: AppColors.text),
                     decoration: _fieldDecoration(),
                     items: _selectableCategories.map((c) => DropdownMenuItem(value: c, child: Text(c.nameAr))).toList(),
                     onChanged: (value) => setState(() => _selectedCategory = value!),
@@ -261,7 +262,7 @@ class _ProductFormState extends State<ProductForm> {
                   field: TextFormField(
                     controller: _priceController,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(color: AppColors.text),
+                    style: TextStyle(color: AppColors.text),
                     decoration: _fieldDecoration(),
                     validator: (v) {
                       final trimmed = v?.trim() ?? '';
@@ -278,7 +279,7 @@ class _ProductFormState extends State<ProductForm> {
                   field: TextFormField(
                     controller: _stockController,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(color: AppColors.text),
+                    style: TextStyle(color: AppColors.text),
                     decoration: _fieldDecoration(hint: 'عدد القطع الجاهزة للبيع'),
                     validator: (v) {
                       final parsed = int.tryParse(v?.trim() ?? '');
@@ -295,7 +296,7 @@ class _ProductFormState extends State<ProductForm> {
                   field: DropdownButtonFormField<String>(
                     initialValue: _selectedCity,
                     dropdownColor: AppColors.card,
-                    style: const TextStyle(color: AppColors.text),
+                    style: TextStyle(color: AppColors.text),
                     decoration: _fieldDecoration(),
                     items: kCities.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                     onChanged: (value) => setState(() => _selectedCity = value!),
@@ -307,7 +308,7 @@ class _ProductFormState extends State<ProductForm> {
                   field: TextFormField(
                     controller: _descriptionController,
                     maxLines: 4,
-                    style: const TextStyle(color: AppColors.text),
+                    style: TextStyle(color: AppColors.text),
                     decoration: _fieldDecoration(),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'وصف المنتج مطلوب' : null,
                   ),
@@ -352,7 +353,7 @@ class _ProductFormState extends State<ProductForm> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.camera_alt_outlined, color: AppColors.gold, size: 48),
+                  Icon(Icons.camera_alt_outlined, color: AppColors.gold, size: 48),
                   const SizedBox(height: 12),
                   Text('أضف حتى 5 صور للمنتج', style: TextStyle(color: AppColors.subText, fontSize: 13)),
                 ],
@@ -408,12 +409,12 @@ class _ProductFormState extends State<ProductForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('THE NARRATIVE — حكاية القطعة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
+          Text('THE NARRATIVE — حكاية القطعة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 12),
           TextFormField(
             controller: _narrativeController,
             maxLines: 6,
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             decoration: _fieldDecoration(hint: 'اروِ قصة هذه القطعة، من أين جاءت المادة، كم استغرق صنعها...'),
           ),
         ],
@@ -429,15 +430,15 @@ class _ProductFormState extends State<ProductForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('شهادة الأصالة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
+          Text('شهادة الأصالة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 14),
-          _buildLabeledField(label: 'المادة الخام', field: TextFormField(controller: _materialController, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+          _buildLabeledField(label: 'المادة الخام', field: TextFormField(controller: _materialController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
           const SizedBox(height: 14),
-          _buildLabeledField(label: 'مكان المنشأ', field: TextFormField(controller: _originController, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+          _buildLabeledField(label: 'مكان المنشأ', field: TextFormField(controller: _originController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
           const SizedBox(height: 14),
-          _buildLabeledField(label: 'سنوات الخبرة', field: TextFormField(controller: _experienceController, keyboardType: TextInputType.number, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+          _buildLabeledField(label: 'سنوات الخبرة', field: TextFormField(controller: _experienceController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
           const SizedBox(height: 14),
-          _buildLabeledField(label: 'تقنية الصنع', field: TextFormField(controller: _techniqueController, style: const TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+          _buildLabeledField(label: 'تقنية الصنع', field: TextFormField(controller: _techniqueController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
         ],
       ),
     );

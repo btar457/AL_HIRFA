@@ -8,6 +8,7 @@ import '../../widgets/common/product_thumbnail.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import '../../widgets/common/loading_shimmer.dart';
+import '../../core/settings/app_prefs.dart';
 
 String _formatPrice(int value) {
   final str = value.toString();
@@ -76,7 +77,7 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
     showDialog(
       context: context,
       builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -97,16 +98,16 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppPrefs.dir,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: const Text('طلبات التوصيل المتاحة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text('طلبات التوصيل المتاحة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           actions: [
             IconButton(
-              icon: const Icon(Icons.filter_alt_outlined, color: AppColors.gold),
+              icon: Icon(Icons.filter_alt_outlined, color: AppColors.gold),
               onPressed: () => _showGovernorateFilterSheet(context),
             ),
           ],
@@ -143,7 +144,7 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
       backgroundColor: AppColors.card,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (sheetContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppPrefs.dir,
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -152,7 +153,7 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
                 value: null,
                 groupValue: _governorateFilter,
                 activeColor: AppColors.gold,
-                title: const Text('كل نطاق تغطيتي', style: TextStyle(color: AppColors.text)),
+                title: Text('كل نطاق تغطيتي', style: TextStyle(color: AppColors.text)),
                 onChanged: (val) {
                   setState(() => _governorateFilter = val);
                   Navigator.pop(sheetContext);
@@ -162,7 +163,7 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
                 value: city,
                 groupValue: _governorateFilter,
                 activeColor: AppColors.gold,
-                title: Text(city, style: const TextStyle(color: AppColors.text)),
+                title: Text(city, style: TextStyle(color: AppColors.text)),
                 onChanged: (val) {
                   setState(() => _governorateFilter = val);
                   Navigator.pop(sheetContext);
@@ -182,9 +183,9 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
       decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
       child: Row(
         children: [
-          const Icon(Icons.notifications_active, color: AppColors.gold),
+          Icon(Icons.notifications_active, color: AppColors.gold),
           const SizedBox(width: 10),
-          Expanded(child: Text('طلب توصيل جديد في ${order.governorate}! اقبل الآن', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13))),
+          Expanded(child: Text('طلب توصيل جديد في ${order.governorate}! اقبل الآن', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13))),
         ],
       ),
     );
@@ -230,7 +231,7 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(order.productName, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
                     Text(order.orderNumber, style: TextStyle(color: AppColors.subText, fontSize: 12)),
                   ],
@@ -238,17 +239,17 @@ class _AvailableDeliveriesScreenState extends State<AvailableDeliveriesScreen> {
               ),
             ],
           ),
-          const Divider(color: AppColors.divider, height: 20),
-          Row(children: [const Icon(Icons.location_on_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Text('المحافظة: ${order.governorate}', style: TextStyle(color: AppColors.subText, fontSize: 12))]),
+          Divider(color: AppColors.divider, height: 20),
+          Row(children: [Icon(Icons.location_on_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Text('المحافظة: ${order.governorate}', style: TextStyle(color: AppColors.subText, fontSize: 12))]),
           const SizedBox(height: 4),
-          Row(children: [const Icon(Icons.flag_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Expanded(child: Text('العنوان: ${order.district}', style: TextStyle(color: AppColors.subText, fontSize: 12)))]),
+          Row(children: [Icon(Icons.flag_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Expanded(child: Text('العنوان: ${order.district}', style: TextStyle(color: AppColors.subText, fontSize: 12)))]),
           const SizedBox(height: 4),
-          Row(children: [const Icon(Icons.call_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Text('رقم المشتري: مخفي حتى القبول', style: TextStyle(color: AppColors.subText, fontSize: 12))]),
+          Row(children: [Icon(Icons.call_outlined, color: AppColors.subText, size: 14), const SizedBox(width: 6), Text('رقم المشتري: مخفي حتى القبول', style: TextStyle(color: AppColors.subText, fontSize: 12))]),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('أجر التوصيل: ${_formatPrice(order.shippingEarnings)} د.ع', style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
+              Text('أجر التوصيل: ${_formatPrice(order.shippingEarnings)} د.ع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
               Row(children: [Text('متبقي للانتهاء: ', style: TextStyle(color: AppColors.subText, fontSize: 11)), Text(_formatRemaining(order.shippingAcceptDeadline), style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13))]),
             ],
           ),
