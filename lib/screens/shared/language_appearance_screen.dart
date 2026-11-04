@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../../core/navigation/app_navigator.dart';
 import '../../core/settings/app_prefs.dart';
 
 /// اختيار لغة الواجهة والمظهر. تظهر مرة واحدة عند أول تشغيل (قبل الدخول،
@@ -43,6 +44,11 @@ class _LanguageAppearanceScreenState extends State<LanguageAppearanceScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _apply() async {
+    await AppPrefs.instance.update(language: _language, isDark: _isDark);
+    restartToStart();
   }
 
   Widget _sectionTitle(String text) => Align(
@@ -120,7 +126,7 @@ class _LanguageAppearanceScreenState extends State<LanguageAppearanceScreen> {
                   height: 54,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                    onPressed: () => AppPrefs.instance.update(language: _language, isDark: _isDark),
+                    onPressed: _apply,
                     child: Text(widget.firstRun ? _t('متابعة', 'Continue') : _t('حفظ', 'Save'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
                   ),
                 ),

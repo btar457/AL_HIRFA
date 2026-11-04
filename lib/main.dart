@@ -82,6 +82,7 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   _listenForAuthActionLinks();
   await AppPrefs.load();
+  appStartBuilder = (_) => const AuthGate();
   runApp(
     MultiProvider(
       providers: [
@@ -98,13 +99,12 @@ class AlHirfaApp extends StatelessWidget {
   const AlHirfaApp({super.key});
   @override
   Widget build(BuildContext context) {
-    // تغيير اللغة/المظهر يعيد بناء التطبيق كاملاً (key جديد): الألوان
-    // والنصوص تُقرأ من AppPrefs مباشرة في كل الشاشات، لا عبر Theme.of، فلا
-    // يكفي تحديث الثيم وحده.
+    // تغيير اللغة/المظهر يعيد بناء MaterialApp (الثيم)، ثم تعيد شاشة
+    // الاختيار التنقّل إلى AuthGate (restartToStart) فتُبنى كل الشاشات من جديد
+    // بالألوان والنصوص الجديدة — تُقرأ من AppPrefs مباشرة لا عبر Theme.of.
     return AnimatedBuilder(
       animation: AppPrefs.instance,
       builder: (context, _) => MaterialApp(
-        key: ValueKey('${AppPrefs.language}-${AppPrefs.isDark}'),
         title: AppStrings.appTitle,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.current,

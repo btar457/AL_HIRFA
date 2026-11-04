@@ -1,4 +1,5 @@
 import 'package:al_hirfa/core/constants/colors.dart';
+import 'package:al_hirfa/core/navigation/app_navigator.dart';
 import 'package:al_hirfa/core/settings/app_prefs.dart';
 import 'package:al_hirfa/screens/shared/language_appearance_screen.dart';
 import 'package:flutter/material.dart';
@@ -53,5 +54,44 @@ void main() {
 
     // يعود للافتراضي كي لا يؤثر على بقية الاختبارات
     await AppPrefs.instance.update(language: 'ar', isDark: true);
+  });
+
+  // نفس بنية AlHirfaApp: MaterialApp يُعاد بناؤه عند تغيير الإعدادات مع
+  // navigatorKey عام — كان يُبقي شاشة الاختيار ظاهرة بعد "متابعة".
+  Future<void> pumpApp(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(360 * 3, 640 * 3);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    appStartBuilder = (_) => const Scaffold(body: Text('START'));
+    await tester.pumpWidget(AnimatedBuilder(
+      animation: AppPrefs.instance,
+      builder: (context, _) => MaterialApp(
+        navigatorKey: navigatorKey,
+        home: const LanguageAppearanceScreen(firstRun: true),
+      ),
+    ));
+  }
+
+  testWidgets('Continue leaves the picker after changing language and theme', (tester) async {
+    await AppPrefs.load();
+    await pumpApp(tester);
+    await tester.tap(find.text('English'));
+    await tester.pump();
+    await tester.tap(find.text('Light'));
+    await tester.pump();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('START'), findsOneWidget);
+    expect(find.byType(LanguageAppearanceScreen), findsNothing);
+    await AppPrefs.instance.update(language: 'ar', isDark: true);
+  });
+
+  testWidgets('Continue leaves the picker even when nothing was changed', (tester) async {
+    await AppPrefs.load();
+    await pumpApp(tester);
+    await tester.tap(find.text('متابعة'));
+    await tester.pumpAndSettle();
+    expect(find.text('START'), findsOneWidget);
+    expect(find.byType(LanguageAppearanceScreen), findsNothing);
   });
 }
