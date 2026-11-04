@@ -24,9 +24,7 @@ class ArtisanProfileScreen extends StatefulWidget {
 
 class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
   late final _nameController = TextEditingController(text: context.read<AuthProvider>().currentUser?.name ?? '');
-  late final _ibanController = TextEditingController(text: context.read<AuthProvider>().currentUser?.iban ?? '');
   late String _selectedCity = context.read<AuthProvider>().currentUser?.city.isNotEmpty == true ? context.read<AuthProvider>().currentUser!.city : kCities.first;
-  bool _obscureIban = true;
   bool _isSaving = false;
 
   InputDecoration _fieldDecoration({Widget? suffix}) {
@@ -74,7 +72,6 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
       await context.read<AuthProvider>().updateProfile({
         'name': _nameController.text.trim(),
         'city': _selectedCity,
-        'iban': _ibanController.text.trim(),
       });
       if (!mounted) return;
       AppError.showSnackbar(context, tr('تم حفظ التعديلات بنجاح', 'Changes saved successfully'), isError: false);
@@ -155,8 +152,6 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                       onChanged: (value) => setState(() => _selectedCity = value!),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  _buildBankSection(),
                 ],
               ),
             ),
@@ -265,40 +260,6 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBankSection() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.3))),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.lock_outline, color: AppColors.gold, size: 18),
-              SizedBox(width: 8),
-              Text(tr('الحساب المصرفي (IBAN)', 'Bank account (IBAN)'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _ibanController,
-            obscureText: _obscureIban,
-            style: TextStyle(color: AppColors.text),
-            decoration: _fieldDecoration(
-              suffix: IconButton(
-                icon: Icon(_obscureIban ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.gold),
-                onPressed: () => setState(() => _obscureIban = !_obscureIban),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(tr('يُستخدم لتحويل أرباحك عند طلب السحب', 'Used to transfer your earnings when you request a payout'), style: TextStyle(color: AppColors.subText, fontSize: 11)),
         ],
       ),
     );

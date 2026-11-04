@@ -9,6 +9,7 @@ import '../../core/utils/error_handler.dart';
 import '../../models/categories.dart';
 import '../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/notification_service.dart';
 import '../../services/product_service.dart';
 import '../../core/settings/app_prefs.dart';
 
@@ -65,6 +66,7 @@ class ProductForm extends StatefulWidget {
 
 class _ProductFormState extends State<ProductForm> {
   final _formKey = GlobalKey<FormState>();
+  bool _sentForReview = false;
   late final _nameController = TextEditingController(text: widget.initialProduct?.name ?? '');
   late final _priceController = TextEditingController(text: widget.initialProduct != null ? widget.initialProduct!.price.toString() : '');
   late final String _initialStockText = widget.initialProduct?.stock?.toString() ?? '';
@@ -163,8 +165,24 @@ class _ProductFormState extends State<ProductForm> {
         await ProductService.instance.addProduct(product, _images);
       } else {
         final product = widget.initialProduct!;
+        final price = int.tryParse(_priceController.text.replaceAll(',', '').trim()) ?? 0;
+        // تعديل المحتوى (لا الكمية وحدها) يعيد المنتج لمراجعة الإدارة — كي لا
+        // يتحوّل منتج موافَق عليه إلى محتوى مخالف دون مراجعة.
+        final contentChanged = _images.isNotEmpty ||
+            _existingImageUrls.length != product.images.length ||
+            _nameController.text.trim() != product.name ||
+            _descriptionController.text.trim() != product.description ||
+            price != product.price ||
+            _selectedCategory.id != product.category ||
+            _selectedCity != product.city ||
+            _narrativeController.text.trim() != product.narrative ||
+            _materialController.text.trim() != product.material ||
+            _originController.text.trim() != product.originPlace ||
+            _techniqueController.text.trim() != product.technique;
+        final needsReview = contentChanged && (product.status == 'active' || product.status == 'rejected');
         final newImageUrls = _images.isEmpty ? const <String>[] : await ProductService.instance.uploadImages(product.artisanUid, product.id, _images);
         await ProductService.instance.updateProduct(product.id, {
+          if (needsReview) 'status': 'pending',
           'name': _nameController.text.trim(),
           'description': _descriptionController.text.trim(),
           'price': int.tryParse(_priceController.text.replaceAll(',', '').trim()) ?? 0,
@@ -179,6 +197,12 @@ class _ProductFormState extends State<ProductForm> {
           // حدث من طلب جديد بين فتح النموذج وحفظه.
           if (_stockController.text.trim() != _initialStockText) 'stock': int.parse(_stockController.text.trim()),
         });
+        _sentForReview = needsReview;
+        if (needsReview) {
+          try {
+            await NotificationService.instance.notifyAdmins(title: 'منتج معدَّل بانتظار المراجعة', body: _nameController.text.trim());
+          } catch (_) {}
+        }
       }
       if (!mounted) return;
       _showSuccessDialog();
@@ -199,7 +223,11 @@ class _ProductFormState extends State<ProductForm> {
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: Text(widget.successTitle, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text(widget.successMessage, style: TextStyle(color: AppColors.subText)),
+          content: Text(
+              _sentForReview
+                  ? tr('تم حفظ التعديلات، وسيظهر المنتج للمشترين بعد مراجعة الإدارة للتعديل.', 'Changes saved. The product will be visible to buyers again after the admin reviews the edit.')
+                  : widget.successMessage,
+              style: TextStyle(color: AppColors.subText)),
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),

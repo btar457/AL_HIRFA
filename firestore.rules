@@ -164,6 +164,18 @@ service cloud.firestore {
           'name', 'description', 'price', 'category', 'city',
           'narrative', 'material', 'originPlace', 'technique', 'images', 'stock'
         ]) && validStock())
+        // تعديل محتوى منتج منشور/مرفوض يعيده لمراجعة الإدارة (product_form.dart)
+        // — status إلى pending فقط، ومن active/pending/rejected فقط (لا يخرج
+        // منتج موقوف أو محذوف من حالته بهذا المسار).
+        || (resource.data.artisanUid == request.auth.uid && isActiveNonBanned()
+            && onlyFieldsChanged([
+              'name', 'description', 'price', 'category', 'city',
+              'narrative', 'material', 'originPlace', 'technique', 'images', 'stock',
+              'status', 'rejectionReason'
+            ])
+            && resource.data.status in ['active', 'pending', 'rejected']
+            && request.resource.data.status == 'pending'
+            && validStock())
         // المشتري يحجز الكمية عند إنشاء طلب (order_service.dart: createOrders)
         // — في نفس الدفعة الذرّية مع إنشاء الطلب نفسه: getAfter يثبت أن طلباً
         // *جديداً* (غير موجود قبل الدفعة) لهذا المشتري ولهذا المنتج بالكمية

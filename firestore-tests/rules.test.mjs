@@ -1163,3 +1163,21 @@ test('إشعار الإدارة من غير-مدير: نسخة لكل مدير �
   await assertFails(setDoc(doc(ctx('artisanA'), 'notifications/n2'), n('')));
   await assertSucceeds(setDoc(doc(ctx('adminA'), 'notifications/n3'), n('')));
 });
+
+test('تعديل محتوى منتج منشور يعيده للمراجعة: active→pending مسموح، والعكس أو من موقوف/محذوف مرفوض', async () => {
+  await seedBaseFixtures();
+  const seed = async (status) => testEnv.withSecurityRulesDisabled(async (c) => {
+    await setDoc(doc(c.firestore(), 'products/e1'), newProductDoc({ status }));
+  });
+  await seed('active');
+  await assertSucceeds(updateDoc(doc(ctx('artisanA'), 'products/e1'), { name: 'جديد', status: 'pending' }));
+  await assertFails(updateDoc(doc(ctx('artisanA'), 'products/e1'), { status: 'active' }));
+  await seed('rejected');
+  await assertSucceeds(updateDoc(doc(ctx('artisanA'), 'products/e1'), { name: 'جديد', status: 'pending', rejectionReason: '' }));
+  for (const st of ['suspended', 'deleted']) {
+    await seed(st);
+    await assertFails(updateDoc(doc(ctx('artisanA'), 'products/e1'), { name: 'جديد', status: 'pending' }));
+  }
+  await seed('active');
+  await assertFails(updateDoc(doc(ctx('artisanB'), 'products/e1'), { name: 'x', status: 'pending' }));
+});
