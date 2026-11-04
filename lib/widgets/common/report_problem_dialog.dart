@@ -75,7 +75,7 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
       );
       if (!mounted) return;
       Navigator.pop(context);
-      AppError.showSnackbar(context, 'تم إرسال البلاغ، ستراجعه الإدارة قريباً', isError: false);
+      AppError.showSnackbar(context, tr('تم إرسال البلاغ، ستراجعه الإدارة قريباً', 'Report sent — the admin will review it soon'), isError: false);
     } catch (e) {
       if (!mounted) return;
       AppError.showSnackbar(context, AppError.getFirebaseError(e));
@@ -97,7 +97,7 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
       child: AlertDialog(
         backgroundColor: AppColors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: Text('الإبلاغ عن مشكلة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+        title: Text(tr('الإبلاغ عن مشكلة', 'Report a problem'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -108,7 +108,7 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
                 maxLines: 3,
                 style: TextStyle(color: AppColors.text),
                 decoration: InputDecoration(
-                  hintText: 'اشرح المشكلة بالتفصيل',
+                  hintText: tr('اشرح المشكلة بالتفصيل', 'Describe the problem in detail'),
                   hintStyle: TextStyle(color: AppColors.subText),
                   filled: true,
                   fillColor: AppColors.background,
@@ -117,7 +117,7 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
                 ),
               ),
               const SizedBox(height: 14),
-              Text('صور كدليل (اختياري، حتى $_kMaxEvidenceImages)', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+              Text(tr('صور كدليل (اختياري، حتى $_kMaxEvidenceImages)', 'Photos as evidence (optional, up to $_kMaxEvidenceImages)'), style: TextStyle(color: AppColors.subText, fontSize: 12)),
               const SizedBox(height: 8),
               SizedBox(
                 height: 64,
@@ -168,13 +168,13 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
           ),
         ),
         actions: [
-          TextButton(onPressed: _isSubmitting ? null : () => Navigator.pop(context), child: Text('إلغاء', style: TextStyle(color: AppColors.subText))),
+          TextButton(onPressed: _isSubmitting ? null : () => Navigator.pop(context), child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.subText))),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: _isSubmitting ? null : _submit,
             child: _isSubmitting
                 ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                : const Text('إرسال البلاغ', style: TextStyle(fontWeight: FontWeight.bold)),
+                : Text(tr('إرسال البلاغ', 'Send report'), style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

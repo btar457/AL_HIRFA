@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:aws_common/aws_common.dart';
 import 'package:aws_signature_v4/aws_signature_v4.dart';
+import '../core/settings/app_prefs.dart';
 
 /// طبقة رفع الملفات إلى Cloudflare R2 (متوافق مع S3) — بديل Firebase Storage
 /// الذي تعذّر تفعيله (يتطلب خطة Blaze المدفوعة، غير المتاحة كخيار فوترة في
@@ -49,7 +50,7 @@ class StorageService {
     // بلا مهلة، اتصال متقطّع يُبقي زر النشر يدور إلى ما لا نهاية.
     final response = await signedRequest.send().response.timeout(const Duration(seconds: 60));
     if (response.statusCode != 200) {
-      throw Exception('فشل رفع الملف إلى التخزين (${response.statusCode})');
+      throw Exception(tr('فشل رفع الملف إلى التخزين (${response.statusCode})', 'File upload failed (${response.statusCode})'));
     }
     return '$_publicBaseUrl/$key';
   }

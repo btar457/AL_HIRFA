@@ -8,7 +8,9 @@ import '../../services/support_service.dart';
 import '../../core/settings/app_prefs.dart';
 
 String _formatDate(DateTime date) {
-  const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const monthsAr = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  final months = AppPrefs.isEnglish ? monthsEn : monthsAr;
   return '${date.day} ${months[date.month - 1]} ${date.year}';
 }
 
@@ -38,7 +40,7 @@ class _ContactSupportScreenState extends State<ContactSupportScreen> {
       );
       _messageController.clear();
       if (!mounted) return;
-      AppError.showSnackbar(context, 'تم إرسال رسالتك، سيتواصل معك الدعم قريباً', isError: false);
+      AppError.showSnackbar(context, tr('تم إرسال رسالتك، سيتواصل معك الدعم قريباً', 'Message sent — support will get back to you soon'), isError: false);
     } catch (e) {
       if (!mounted) return;
       AppError.showSnackbar(context, AppError.getFirebaseError(e));
@@ -57,22 +59,22 @@ class _ContactSupportScreenState extends State<ContactSupportScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
-          title: Text('تواصل مع الدعم', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          title: Text(tr('تواصل مع الدعم', 'Contact support'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: uid == null
-            ? Center(child: Text('سجّل الدخول للتواصل مع الدعم', style: TextStyle(color: AppColors.subText)))
+            ? Center(child: Text(tr('سجّل الدخول للتواصل مع الدعم', 'Sign in to contact support'), style: TextStyle(color: AppColors.subText)))
             : ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  Text('اكتب رسالتك وستصل مباشرة لفريق الدعم داخل التطبيق.', style: TextStyle(color: AppColors.subText, fontSize: 13, height: 22 / 13)),
+                  Text(tr('اكتب رسالتك وستصل مباشرة لفريق الدعم داخل التطبيق.', 'Write your message and it will reach the support team in the app.'), style: TextStyle(color: AppColors.subText, fontSize: 13, height: 22 / 13)),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _messageController,
                     maxLines: 4,
                     style: TextStyle(color: AppColors.text),
                     decoration: InputDecoration(
-                      hintText: 'اكتب مشكلتك أو استفسارك هنا...',
+                      hintText: tr('اكتب مشكلتك أو استفسارك هنا...', 'Describe your issue or question here...'),
                       hintStyle: TextStyle(color: AppColors.subText),
                       filled: true,
                       fillColor: AppColors.card,
@@ -88,24 +90,24 @@ class _ContactSupportScreenState extends State<ContactSupportScreen> {
                       onPressed: _isSending ? null : _send,
                       child: _isSending
                           ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                          : const Text('إرسال', style: TextStyle(fontWeight: FontWeight.bold)),
+                          : Text(tr('إرسال', 'Send'), style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(height: 28),
-                  Text('رسائلك السابقة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+                  Text(tr('رسائلك السابقة', 'Your previous messages'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
                   const SizedBox(height: 12),
                   StreamBuilder<List<SupportMessageModel>>(
                     stream: SupportService.instance.getMyMessages(uid),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
-                        return Text('تعذّر تحميل رسائلك', style: TextStyle(color: AppColors.subText));
+                        return Text(tr('تعذّر تحميل رسائلك', 'Couldn\'t load your messages'), style: TextStyle(color: AppColors.subText));
                       }
                       if (!snapshot.hasData) {
                         return Center(child: CircularProgressIndicator(color: AppColors.gold));
                       }
                       final messages = snapshot.data!;
                       if (messages.isEmpty) {
-                        return Text('لا توجد رسائل سابقة', style: TextStyle(color: AppColors.subText));
+                        return Text(tr('لا توجد رسائل سابقة', 'No previous messages'), style: TextStyle(color: AppColors.subText));
                       }
                       return Column(children: messages.map(_buildMessageCard).toList());
                     },
@@ -132,7 +134,7 @@ class _ContactSupportScreenState extends State<ContactSupportScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(color: (resolved ? Colors.green : AppColors.gold).withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
-                child: Text(resolved ? 'تم الردّ' : 'قيد المراجعة', style: TextStyle(color: resolved ? Colors.green : AppColors.gold, fontSize: 10, fontWeight: FontWeight.bold)),
+                child: Text(resolved ? tr('تم الردّ', 'Answered') : tr('قيد المراجعة', 'Under review'), style: TextStyle(color: resolved ? Colors.green : AppColors.gold, fontSize: 10, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -146,7 +148,7 @@ class _ContactSupportScreenState extends State<ContactSupportScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('ردّ الدعم', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
+                  Text(tr('ردّ الدعم', 'Support reply'), style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
                   Text(m.adminReply!, style: TextStyle(color: AppColors.text, fontSize: 13, height: 22 / 13)),
                 ],

@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
 import '../../models/marketplace_product.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// بطاقة منتج تُستخدم في شبكة المتجر، والمفضلة، وملف الحرفي العام.
 class MarketplaceProductCard extends StatelessWidget {
@@ -59,7 +60,7 @@ class MarketplaceProductCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 5),
                       decoration: BoxDecoration(color: Colors.black.withOpacity(0.75), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12))),
-                      child: const Text('نفدت الكمية', textAlign: TextAlign.center, style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: Text(tr('نفدت الكمية', 'Out of stock'), textAlign: TextAlign.center, style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 Positioned(
@@ -94,7 +95,7 @@ class MarketplaceProductCard extends StatelessWidget {
             style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13, height: 1.3),
           ),
           const SizedBox(height: 4),
-          Text('د.ع ${product.price}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+          Text(tr('د.ع ${product.price}', 'IQD ${product.price}'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
         ],
       ),
     );

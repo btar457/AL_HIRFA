@@ -6,38 +6,38 @@ import '../../core/settings/app_prefs.dart';
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
 
-  static const _buyerData = [
-    'الاسم، البريد، الهاتف، العنوان',
-    'سجل الطلبات والتقييمات',
-    'صورة الملف الشخصي (اختياري)',
+  static List<String> get _buyerData => [
+    tr('الاسم، البريد، الهاتف، العنوان', 'Name, email, phone, address'),
+    tr('سجل الطلبات والتقييمات', 'Order and review history'),
+    tr('صورة الملف الشخصي (اختياري)', 'Profile photo (optional)'),
   ];
 
-  static const _artisanData = [
-    'الهوية المهنية، IBAN، الموقع',
-    'سجل المنتجات والمبيعات',
+  static List<String> get _artisanData => [
+    tr('الهوية المهنية، الموقع', 'Professional identity, location'),
+    tr('سجل المنتجات والمبيعات', 'Product and sales history'),
   ];
 
-  static const _shippingData = [
-    'بيانات الشركة، IBAN، السجل التجاري',
-    'سجل التوصيلات',
+  static List<String> get _shippingData => [
+    tr('بيانات الشركة، IBAN، السجل التجاري', 'Company details, IBAN, commercial registration'),
+    tr('سجل التوصيلات', 'Delivery history'),
   ];
 
-  static const _technicalData = [
-    'رمز إشعارات الدفع (FCM Token) — لإرسال إشعارات الطلبات والتحديثات لجهازك',
-    'بيانات أعطال وتشخيص تقني (Firebase Crashlytics) — لتحسين استقرار التطبيق فقط',
+  static List<String> get _technicalData => [
+    tr('رمز إشعارات الدفع (FCM Token) — لإرسال إشعارات الطلبات والتحديثات لجهازك', 'Push notification token (FCM) — to send order notifications and updates to your device'),
+    tr('بيانات أعطال وتشخيص تقني (Firebase Crashlytics) — لتحسين استقرار التطبيق فقط', 'Crash and diagnostic data (Firebase Crashlytics) — only to improve app stability'),
   ];
 
-  static const _thirdParties = [
-    'Firebase (Google) — تسجيل الدخول، قاعدة البيانات، الإشعارات، وتقارير الأعطال',
-    'Cloudflare R2 — تخزين صور المنتجات المرفوعة',
+  static List<String> get _thirdParties => [
+    tr('Firebase (Google) — تسجيل الدخول، قاعدة البيانات، الإشعارات، وتقارير الأعطال', 'Firebase (Google) — sign-in, database, notifications and crash reports'),
+    tr('Cloudflare R2 — تخزين صور المنتجات المرفوعة', 'Cloudflare R2 — storage for uploaded product photos'),
   ];
 
-  static const _securityMeasures = [
-    'تشفير HTTPS لكل الاتصالات',
-    'Firebase Security Rules لحماية Firestore',
-    'IBAN مشفّر في قاعدة البيانات',
-    'رمز QR للتحقق من هوية المنتج',
-    'لا يرى المشتري رقم IBAN الحرفي',
+  static List<String> get _securityMeasures => [
+    tr('تشفير HTTPS لكل الاتصالات', 'HTTPS encryption for all connections'),
+    tr('Firebase Security Rules لحماية Firestore', 'Firebase Security Rules protecting the database'),
+    tr('IBAN مشفّر في قاعدة البيانات', 'IBAN stored privately'),
+    tr('رمز QR للتحقق من هوية المنتج', 'QR code to verify product authenticity'),
+    tr('لا يرى المشتري رقم IBAN الحرفي', 'Buyers never see bank details'),
   ];
 
   @override
@@ -49,51 +49,51 @@ class PrivacyPolicyScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           elevation: 0,
-          title: Text('سياسة الخصوصية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          title: Text(tr('سياسة الخصوصية', 'Privacy policy'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: ListView(
           padding: const EdgeInsets.all(20),
           children: [
             Text(
-              'نحرص في AL-HIRFA على حماية بياناتك الشخصية، ونجمع فقط ما يلزم لتشغيل المنصة وتقديم تجربة آمنة لجميع الأطراف.',
+              tr('نحرص في AL-HIRFA على حماية بياناتك الشخصية، ونجمع فقط ما يلزم لتشغيل المنصة وتقديم تجربة آمنة لجميع الأطراف.', 'At AL-HIRFA we protect your personal data and collect only what\'s needed to run the platform and keep it safe for everyone.'),
               style: TextStyle(color: AppColors.subText, fontSize: 13, height: 24 / 14),
             ),
             const SizedBox(height: 24),
-            Text('البيانات المجمّعة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(tr('البيانات المجمّعة', 'Data we collect'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
-            _buildSection(title: 'من المشتري', points: _buyerData),
+            _buildSection(title: tr('من المشتري', 'From buyers'), points: _buyerData),
             const SizedBox(height: 16),
-            _buildSection(title: 'من الحرفي', points: _artisanData),
+            _buildSection(title: tr('من الحرفي', 'From artisans'), points: _artisanData),
             const SizedBox(height: 16),
-            _buildSection(title: 'من شركة الشحن', points: _shippingData),
+            _buildSection(title: tr('من شركة الشحن', 'From shipping companies'), points: _shippingData),
             const SizedBox(height: 16),
-            _buildSection(title: 'بيانات تقنية', points: _technicalData),
+            _buildSection(title: tr('بيانات تقنية', 'Technical data'), points: _technicalData),
             const SizedBox(height: 24),
-            Text('مزوّدو الخدمة (الأطراف الثالثة)', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(tr('مزوّدو الخدمة (الأطراف الثالثة)', 'Service providers (third parties)'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
-            _buildSection(title: 'نستعين بهم لتشغيل المنصة فقط', points: _thirdParties),
+            _buildSection(title: tr('نستعين بهم لتشغيل المنصة فقط', 'Used only to run the platform'), points: _thirdParties),
             const SizedBox(height: 16),
-            _buildNotice('لا نبيع بياناتك ولا نشاركها لأغراض تسويقية مع أي جهة. مزوّدو الخدمة أعلاه يعالجون بياناتك تقنياً بصفتهم البنية التحتية للتطبيق فقط، ولا نفصح عنها لأي طرف آخر إلا بأمر قانوني صادر من الجهات المختصة.'),
+            _buildNotice(tr('لا نبيع بياناتك ولا نشاركها لأغراض تسويقية مع أي جهة. مزوّدو الخدمة أعلاه يعالجون بياناتك تقنياً بصفتهم البنية التحتية للتطبيق فقط، ولا نفصح عنها لأي طرف آخر إلا بأمر قانوني صادر من الجهات المختصة.', 'We don\'t sell your data or share it for marketing. The providers above process it only as the app\'s technical infrastructure, and we disclose it to no one else except under a lawful order from the competent authorities.')),
             const SizedBox(height: 24),
-            Text('أمان البيانات', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(tr('أمان البيانات', 'Data security'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
-            _buildSection(title: 'الإجراءات المتّبعة', points: _securityMeasures),
+            _buildSection(title: tr('الإجراءات المتّبعة', 'Measures we take'), points: _securityMeasures),
             const SizedBox(height: 24),
-            Text('الحد الأدنى للعمر', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(tr('الحد الأدنى للعمر', 'Minimum age'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
-            Text('يجب أن يكون عمرك 18 عاماً فأكثر لإنشاء حساب وإجراء معاملات مالية عبر AL-HIRFA.', style: TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 13)),
+            Text(tr('يجب أن يكون عمرك 18 عاماً فأكثر لإنشاء حساب وإجراء معاملات مالية عبر AL-HIRFA.', 'You must be 18 or older to create an account and make transactions on AL-HIRFA.'), style: TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 13)),
             const SizedBox(height: 24),
-            Text('حذف الحساب وبياناتك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(tr('حذف الحساب وبياناتك', 'Deleting your account and data'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
-            _buildNotice('يمكنك طلب حذف حسابك وجميع بياناتك الشخصية في أي وقت من "الملف الشخصي ← حذف الحساب"، أو بمراسلتنا على support@alhirfa.iq. تُحذف بياناتك خلال 30 يوماً كحد أقصى، عدا سجلات المعاملات المالية التي نحتفظ بها للامتثال القانوني.'),
+            _buildNotice(tr('يمكنك طلب حذف حسابك وجميع بياناتك الشخصية في أي وقت من "الملف الشخصي ← حذف الحساب"، أو بمراسلتنا على support@alhirfa.iq. تُحذف بياناتك خلال 30 يوماً كحد أقصى، عدا سجلات المعاملات المالية التي نحتفظ بها للامتثال القانوني.', 'You can delete your account and all your personal data at any time from "Profile → Delete account", or by emailing support@alhirfa.iq. Your data is deleted within 30 days at most, except financial transaction records kept for legal compliance.')),
             const SizedBox(height: 24),
-            Text('الجهة المسؤولة عن معالجة بياناتك', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(tr('الجهة المسؤولة عن معالجة بياناتك', 'Who is responsible for your data'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
-            Text('يُدار تطبيق AL-HIRFA من قِبل Mustafa Alshlany (بغداد، العراق). للتواصل بخصوص بياناتك الشخصية: mustafaalshlany@gmail.com', style: TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 13)),
+            Text(tr('يُدار تطبيق AL-HIRFA من قِبل Mustafa Alshlany (بغداد، العراق). للتواصل بخصوص بياناتك الشخصية: mustafaalshlany@gmail.com', 'AL-HIRFA is operated by Mustafa Alshlany (Baghdad, Iraq). For questions about your personal data: mustafaalshlany@gmail.com'), style: TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 13)),
             const SizedBox(height: 24),
             Center(
-              child: Text('آخر تحديث: سبتمبر 2026 — للاستفسارات: support@alhirfa.iq', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+              child: Text(tr('آخر تحديث: سبتمبر 2026 — للاستفسارات: support@alhirfa.iq', 'Last updated: September 2026 — questions: support@alhirfa.iq'), style: TextStyle(color: AppColors.subText, fontSize: 11)),
             ),
             const SizedBox(height: 8),
           ],

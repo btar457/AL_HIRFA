@@ -3,6 +3,7 @@ import '../core/constants/app_rules.dart';
 import '../models/order_model.dart';
 import '../models/transaction_model.dart';
 import 'notification_service.dart';
+import '../core/settings/app_prefs.dart';
 
 /// الكمية المطلوبة أكبر من المتوفر. [productName]/[available] null إن
 /// اكتُشف النفاد لحظة الحفظ فقط (مشترٍ آخر سبق لآخر قطعة).
@@ -12,9 +13,9 @@ class OutOfStockException implements Exception {
   const OutOfStockException(this.productName, this.available);
 
   String get message {
-    if (productName == null) return 'نفدت كمية أحد المنتجات قبل إتمام طلبك — راجع سلتك وحاول مجدداً';
-    if (available == 0) return 'نفدت كمية "$productName" — احذفه من السلة لإتمام الطلب';
-    return 'المتوفر من "$productName" $available فقط — عدّل الكمية في السلة';
+    if (productName == null) return tr('نفدت كمية أحد المنتجات قبل إتمام طلبك — راجع سلتك وحاول مجدداً', 'A product sold out before your order was placed — check your cart and try again');
+    if (available == 0) return tr('نفدت كمية "$productName" — احذفه من السلة لإتمام الطلب', '"$productName" is sold out — remove it from the cart to continue');
+    return tr('المتوفر من "$productName" $available فقط — عدّل الكمية في السلة', 'Only $available of "$productName" left — adjust the quantity in your cart');
   }
 }
 
@@ -45,7 +46,7 @@ class OrderService {
   Future<OrderModel> _requireOrder(String orderId) async {
     final doc = await _firestore.collection(_ordersCollection).doc(orderId).get();
     if (!doc.exists) {
-      throw Exception('تعذّر العثور على الطلب');
+      throw Exception(tr('تعذّر العثور على الطلب', 'Order not found'));
     }
     return OrderModel.fromMap(orderId, doc.data()!);
   }
@@ -81,7 +82,7 @@ class OrderService {
       currentCount = windowExpired ? 0 : rateLimitDoc.data()!['hourlyCount'] as int;
     }
     if (currentCount + orders.length > AppRules.maxOrdersPerHour) {
-      throw Exception('لقد تجاوزت الحد المسموح لعدد الطلبات خلال ساعة واحدة، يرجى المحاولة لاحقاً');
+      throw Exception(tr('لقد تجاوزت الحد المسموح لعدد الطلبات خلال ساعة واحدة، يرجى المحاولة لاحقاً', 'You\'ve reached the hourly order limit — please try again later'));
     }
 
     // [order.reservedQuantity] القادم من السلة = الكمية المطلوبة. المخزون

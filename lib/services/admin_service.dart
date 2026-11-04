@@ -328,7 +328,7 @@ class AdminService {
 
   Future<void> _sendCommissionWarning(String artisanUid, {required int level}) async {
     final message = level == 1
-        ? 'لديك عمولة منصة مستحقة لم تُسدَّد منذ أكثر من ${AppRules.commissionWarningIntervalDays} يوماً. يرجى التحويل البنكي للمنصة خلال ${AppRules.commissionWarningIntervalDays} يوماً لتجنّب مزيد من الإجراءات.'
+        ? 'لديك عمولة منصة مستحقة لم تُسدَّد منذ أكثر من ${AppRules.commissionWarningIntervalDays} يوماً. يرجى تسديدها للمنصة نقداً خلال ${AppRules.commissionWarningIntervalDays} يوماً لتجنّب مزيد من الإجراءات.'
         : 'تنبيه أخير: لم تسدّد عمولتك المستحقة رغم التنبيه السابق. سيُحظر حسابك خلال ${AppRules.commissionWarningIntervalDays} يوماً ما لم تسدّد فوراً.';
     await _firestore.collection(_usersCollection).doc(artisanUid).update({
       'commissionWarningLevel': level,

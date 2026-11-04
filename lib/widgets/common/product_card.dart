@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../../core/settings/app_prefs.dart';
 
 /// بطاقة عرض منتج ضمن شبكة السوق.
 class ProductCard extends StatelessWidget {
@@ -30,9 +31,9 @@ class ProductCard extends StatelessWidget {
           Text(artisan, style: TextStyle(color: AppColors.subText, fontSize: 11)),
           const SizedBox(height: 6),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('$price د.ع', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+            Text(tr('$price د.ع', '$price IQD'), style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
             GestureDetector(
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم إضافة $name للسلة'), backgroundColor: AppColors.gold.withOpacity(0.8))),
+              onTap: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('تم إضافة $name للسلة', 'Added $name to the cart')), backgroundColor: AppColors.gold.withOpacity(0.8))),
               child: Container(padding: const EdgeInsets.all(4), decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.circular(6)), child: const Icon(Icons.add, color: Colors.black, size: 16)),
             ),
           ]),
