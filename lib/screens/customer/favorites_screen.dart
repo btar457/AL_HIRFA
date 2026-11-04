@@ -34,22 +34,22 @@ class FavoritesScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           iconTheme: IconThemeData(color: AppColors.gold),
-          title: Text('المفضلة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('المفضلة', 'Favorites'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
         body: userId == null
-            ? _buildEmptyState(context, 'سجّل الدخول لعرض المفضلة')
+            ? _buildEmptyState(context, tr('سجّل الدخول لعرض المفضلة', 'Sign in to see your favorites'))
             : StreamBuilder<List<ProductModel>>(
                 stream: ProductService.instance.getFavorites(userId),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return Center(child: Text('تعذّر تحميل المفضلة', style: TextStyle(color: AppColors.subText)));
+                    return Center(child: Text(tr('تعذّر تحميل المفضلة', 'Couldn\'t load favorites'), style: TextStyle(color: AppColors.subText)));
                   }
                   if (!snapshot.hasData) {
                     return Center(child: CircularProgressIndicator(color: AppColors.gold));
                   }
                   final favorites = snapshot.data!;
                   if (favorites.isEmpty) {
-                    return _buildEmptyState(context, 'لا توجد منتجات في المفضلة');
+                    return _buildEmptyState(context, tr('لا توجد منتجات في المفضلة', 'No favorite products'));
                   }
                   return _buildFavoritesGrid(context, favorites, userId);
                 },
@@ -69,12 +69,12 @@ class FavoritesScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Text(message, style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('أضف منتجات تعجبك لمتابعتها لاحقاً', style: TextStyle(color: AppColors.subText, fontSize: 13), textAlign: TextAlign.center),
+            Text(tr('أضف منتجات تعجبك لمتابعتها لاحقاً', 'Add products you like to find them later'), style: TextStyle(color: AppColors.subText, fontSize: 13), textAlign: TextAlign.center),
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
               onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const CustomerNav())),
-              child: const Text('تصفح المتجر', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تصفح المتجر', 'Browse the store'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),

@@ -71,7 +71,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('الفئة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(tr('الفئة', 'Category'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 8),
                     ...kAppCategories.map((cat) => CheckboxListTile(
                       value: _selectedCategoryId == cat.id,
@@ -109,8 +109,8 @@ class _SearchScreenState extends State<SearchScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('السعر', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text('${_priceRange.start.toInt()} - ${_priceRange.end.toInt()} د.ع', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                    Text(tr('السعر', 'Price'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(tr('${_priceRange.start.toInt()} - ${_priceRange.end.toInt()} د.ع', '${_priceRange.start.toInt()} - ${_priceRange.end.toInt()} IQD'), style: TextStyle(color: AppColors.subText, fontSize: 12)),
                     RangeSlider(
                       values: _priceRange,
                       min: 0,
@@ -146,7 +146,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('المدينة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(tr('المدينة', 'City'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
                     ...kCities.map((city) => RadioListTile<String>(
                       value: city,
                       groupValue: _selectedCity,
@@ -183,12 +183,12 @@ class _SearchScreenState extends State<SearchScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('التقييم', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(tr('التقييم', 'Rating'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16)),
                     ...[4.5, 4.0, 3.5, 3.0].map((r) => RadioListTile<double>(
                       value: r,
                       groupValue: _minRating,
                       activeColor: AppColors.gold,
-                      title: Text('$r فأعلى ⭐', style: TextStyle(color: AppColors.text)),
+                      title: Text(tr('$r فأعلى ⭐', '$r+ ⭐'), style: TextStyle(color: AppColors.text)),
                       onChanged: (val) {
                         setSheetState(() {});
                         setState(() => _minRating = val);
@@ -251,7 +251,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                 style: TextStyle(color: AppColors.text, fontSize: 13),
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
-                                  hintText: 'ابحث عن التحف والأعمال اليدوية...',
+                                  hintText: tr('ابحث عن التحف والأعمال اليدوية...', 'Search crafts and handmade items...'),
                                   hintStyle: TextStyle(color: AppColors.subText, fontSize: 13),
                                 ),
                                 onChanged: (value) => setState(() => _query = value),
@@ -263,7 +263,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text('إلغاء', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                      child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -272,10 +272,10 @@ class _SearchScreenState extends State<SearchScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
                   children: [
-                    _buildFilterButton('الفئة', _showCategorySheet, active: _selectedCategoryId != null),
-                    _buildFilterButton('السعر', _showPriceSheet, active: _priceRange.start > 0 || _priceRange.end < 10000000),
-                    _buildFilterButton('المدينة', _showCitySheet, active: _selectedCity != null),
-                    _buildFilterButton('التقييم', _showRatingSheet, active: _minRating != null),
+                    _buildFilterButton(tr('الفئة', 'Category'), _showCategorySheet, active: _selectedCategoryId != null),
+                    _buildFilterButton(tr('السعر', 'Price'), _showPriceSheet, active: _priceRange.start > 0 || _priceRange.end < 10000000),
+                    _buildFilterButton(tr('المدينة', 'City'), _showCitySheet, active: _selectedCity != null),
+                    _buildFilterButton(tr('التقييم', 'Rating'), _showRatingSheet, active: _minRating != null),
                   ],
                 ),
               ),
@@ -291,7 +291,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      return Center(child: Text('تعذّر تحميل النتائج', style: TextStyle(color: AppColors.subText)));
+                      return Center(child: Text(tr('تعذّر تحميل النتائج', 'Couldn\'t load results'), style: TextStyle(color: AppColors.subText)));
                     }
                     if (!snapshot.hasData) {
                       return Center(child: CircularProgressIndicator(color: AppColors.gold));
@@ -303,7 +303,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Align(
                             alignment: AlignmentDirectional.centerStart,
-                            child: Text('${results.length} نتيجة', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                            child: Text(tr('${results.length} نتيجة', '${results.length} results'), style: TextStyle(color: AppColors.subText, fontSize: 12)),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -334,9 +334,9 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           Icon(Icons.search_off, color: AppColors.subText.withOpacity(0.5), size: 64),
           const SizedBox(height: 16),
-          Text(_query.isEmpty ? 'لا توجد نتائج' : "لا توجد نتائج لـ '$_query'", style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          Text(_query.isEmpty ? tr('لا توجد نتائج', 'No results') : "لا توجد نتائج لـ '$_query'", style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           const SizedBox(height: 6),
-          Text('جرّب كلمات أو فلاتر مختلفة', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+          Text(tr('جرّب كلمات أو فلاتر مختلفة', 'Try different words or filters'), style: TextStyle(color: AppColors.subText, fontSize: 12)),
         ],
       ),
     );

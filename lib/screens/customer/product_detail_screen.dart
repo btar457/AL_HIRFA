@@ -54,7 +54,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     )
                   : _buildHeroImage(product, isFavorite: _isFavorite, onFavoriteToggle: () => setState(() => _isFavorite = !_isFavorite)),
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -98,7 +98,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               imageUrl: product.images.first,
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
-                decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF3A2A10), Color(0xFF1A1208)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+                decoration: BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF3A2A10), Color(0xFF1A1208)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
                 child: Center(child: CircularProgressIndicator(color: AppColors.gold)),
               ),
               errorWidget: (context, url, error) => _heroPlaceholder(),
@@ -120,7 +120,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             right: 16,
             child: Row(
               children: [
-                _circleIconButton(icon: Icons.share_outlined, onTap: () => Share.share('${product.name} — د.ع ${_formatPrice(product.price)}\nمن صنع ${product.artisanName} على AL-HIRFA')),
+                _circleIconButton(icon: Icons.share_outlined, onTap: () => Share.share(tr('${product.name} — د.ع ${_formatPrice(product.price)}\nمن صنع ${product.artisanName} على AL-HIRFA', '${product.name} — IQD ${_formatPrice(product.price)}\nHandmade by ${product.artisanName} on AL-HIRFA'))),
                 const SizedBox(width: 8),
                 _circleIconButton(
                   icon: isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -137,7 +137,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Widget _heroPlaceholder() {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(colors: [Color(0xFF3A2A10), Color(0xFF1A1208)], begin: Alignment.topLeft, end: Alignment.bottomRight),
       ),
       child: Center(child: Icon(Icons.auto_awesome, color: AppColors.gold, size: 72)),
@@ -156,7 +156,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         height: 48,
         child: Center(
           child: Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8),
             decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
             child: Icon(icon, color: iconColor, size: 20),
           ),
@@ -171,9 +171,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.circular(20)),
-          child: Text(product.city.toUpperCase(), style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+          child: Text(product.city.toUpperCase(), style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
         ),
         const SizedBox(height: 12),
         Text(product.name, style: TextStyle(color: AppColors.text, fontSize: 24, fontWeight: FontWeight.bold), maxLines: 3, overflow: TextOverflow.ellipsis),
@@ -182,19 +182,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           children: [
             ...List.generate(5, (i) => Icon(i < filledStars ? Icons.star : Icons.star_border, color: AppColors.gold, size: 16)),
             const SizedBox(width: 8),
-            Text(product.reviewCount > 0 ? '(${product.reviewCount} تقييم)' : 'لا توجد تقييمات بعد', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+            Text(product.reviewCount > 0 ? tr('(${product.reviewCount} تقييم)', '(${product.reviewCount} reviews)') : tr('لا توجد تقييمات بعد', 'No reviews yet'), style: TextStyle(color: AppColors.subText, fontSize: 13)),
           ],
         ),
         const SizedBox(height: 12),
-        Text('د.ع ${_formatPrice(product.price)}', style: TextStyle(color: AppColors.gold, fontSize: 28, fontWeight: FontWeight.bold)),
+        Text(tr('د.ع ${_formatPrice(product.price)}', 'IQD ${_formatPrice(product.price)}'), style: TextStyle(color: AppColors.gold, fontSize: 28, fontWeight: FontWeight.bold)),
         if (product.stock != null) ...[
           const SizedBox(height: 6),
           if (product.isOutOfStock)
-            const Text('نفدت الكمية', style: TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold))
+            Text(tr('نفدت الكمية', 'Out of stock'), style: TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold))
           else if (product.stock! <= 5)
-            Text('متبقٍّ ${product.stock} فقط', style: const TextStyle(color: Colors.orange, fontSize: 13, fontWeight: FontWeight.bold))
+            Text(tr('متبقٍّ ${product.stock} فقط', 'Only ${product.stock} left'), style: const TextStyle(color: Colors.orange, fontSize: 13, fontWeight: FontWeight.bold))
           else
-            Text('متوفر: ${product.stock} قطعة', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+            Text(tr('متوفر: ${product.stock} قطعة', 'In stock: ${product.stock}'), style: TextStyle(color: AppColors.subText, fontSize: 13)),
         ],
       ],
     );
@@ -218,14 +218,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(product.artisanName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-                Text('صنع بيدي في ${product.city}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+                Text(tr('صنع بيدي في ${product.city}', 'Handmade in ${product.city}'), style: TextStyle(color: AppColors.subText, fontSize: 12)),
               ],
             ),
           ),
           OutlinedButton(
             style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ArtisanPublicProfileScreen(artisanUid: product.artisanUid))),
-            child: Text('زيارة الملف', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+            child: Text(tr('زيارة الملف', 'View profile'), style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -277,7 +277,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(disabledBackgroundColor: AppColors.card, disabledForegroundColor: AppColors.subText, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
           onPressed: null,
-          child: const Text('نفدت الكمية', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          child: Text(tr('نفدت الكمية', 'Out of stock'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         ),
       );
     }
@@ -290,7 +290,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
               onPressed: () {
                 if (_addToCart(product)) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('أُضيف "${product.name}" إلى السلة')));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('أُضيف "${product.name}" إلى السلة', 'Added "${product.name}" to the cart'))));
                 }
               },
               child: Icon(Icons.add_shopping_cart_outlined, color: AppColors.gold),
@@ -311,7 +311,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutScreen()));
                 }
               },
-              child: const Text('اشترِ الآن', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text(tr('اشترِ الآن', 'Buy now'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
           ),
         ),
@@ -325,14 +325,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       children: [
         Text('THE NARRATIVE', style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 3)),
         const SizedBox(height: 6),
-        Text('حكاية القطعة', style: TextStyle(color: AppColors.text, fontSize: 20, fontWeight: FontWeight.bold)),
+        Text(tr('حكاية القطعة', 'The story of this piece'), style: TextStyle(color: AppColors.text, fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Divider(color: AppColors.gold.withOpacity(0.3)),
         const SizedBox(height: 12),
         Text(
           product.narrative.isNotEmpty
               ? product.narrative
-              : 'وُلدت هذه القطعة بين يدي حرفي عراقي أصيل توارث الصنعة عن أجداده، يشكّل المادة بصبر وأناة ليحوّلها إلى عمل فني يحمل عبق الرافدين وتفاصيل الحضارة العراقية العريقة.',
+              : tr('وُلدت هذه القطعة بين يدي حرفي عراقي أصيل توارث الصنعة عن أجداده، يشكّل المادة بصبر وأناة ليحوّلها إلى عمل فني يحمل عبق الرافدين وتفاصيل الحضارة العراقية العريقة.', 'This piece was made by an Iraqi artisan who inherited the craft from his ancestors, patiently shaping the material into a work of art that carries the spirit of Mesopotamia and the rich details of Iraqi heritage.'),
           style: TextStyle(color: AppColors.subText, fontSize: 14, height: 24 / 14),
         ),
       ],
@@ -347,7 +347,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('شهادة موثوقية', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          title: Text(tr('شهادة موثوقية', 'Certificate of authenticity'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -358,11 +358,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               const SizedBox(height: 14),
               Text(product.name, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-              Text('صنع يد الحرفي: ${product.artisanName}', style: TextStyle(color: AppColors.subText, fontSize: 12)),
+              Text(tr('صنع يد الحرفي: ${product.artisanName}', 'Handmade by: ${product.artisanName}'), style: TextStyle(color: AppColors.subText, fontSize: 12)),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text('إغلاق', style: TextStyle(color: AppColors.gold))),
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(tr('إغلاق', 'Close'), style: TextStyle(color: AppColors.gold))),
           ],
         ),
       ),
@@ -378,14 +378,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         children: [
           Icon(Icons.qr_code_2, color: AppColors.gold, size: 64),
           const SizedBox(height: 12),
-          Text('شهادة موثوقية', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(tr('شهادة موثوقية', 'Certificate of authenticity'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 6),
-          Text('امسح رمز QR للتحقق من الأصالة', textAlign: TextAlign.center, style: TextStyle(color: AppColors.subText, fontSize: 12)),
+          Text(tr('امسح رمز QR للتحقق من الأصالة', 'Scan the QR code to verify authenticity'), textAlign: TextAlign.center, style: TextStyle(color: AppColors.subText, fontSize: 12)),
           const SizedBox(height: 14),
           OutlinedButton(
             style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: () => _showAuthenticityDialog(product),
-            child: Text('عرض الوثيقة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+            child: Text(tr('عرض الوثيقة', 'View certificate'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -400,7 +400,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             children: [
               Icon(Icons.category_outlined, color: AppColors.gold),
               const SizedBox(height: 6),
-              Text(product.material.isNotEmpty ? product.material : 'غير محدد', style: TextStyle(color: AppColors.text, fontSize: 13), textAlign: TextAlign.center),
+              Text(product.material.isNotEmpty ? product.material : tr('غير محدد', 'Not specified'), style: TextStyle(color: AppColors.text, fontSize: 13), textAlign: TextAlign.center),
             ],
           ),
         ),
@@ -423,7 +423,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('صور إضافية', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(tr('صور إضافية', 'More photos'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 12),
         SizedBox(
           height: 70,

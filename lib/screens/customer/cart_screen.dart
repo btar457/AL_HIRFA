@@ -32,7 +32,7 @@ class CartScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           iconTheme: IconThemeData(color: AppColors.gold),
-          title: Text('سلتي (${cart.itemCount})', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('سلتي (${cart.itemCount})', 'My cart (${cart.itemCount})'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         ),
         body: cart.items.isEmpty ? _buildEmptyState(context) : _buildCartBody(context, cart),
       ),
@@ -48,12 +48,12 @@ class CartScreen extends StatelessWidget {
           children: [
             const Icon(Icons.shopping_cart_outlined, color: Color(0xFF555555), size: 80),
             const SizedBox(height: 20),
-            Text('سلتك فارغة', style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(tr('سلتك فارغة', 'Your cart is empty'), style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
               onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const CustomerNav())),
-              child: const Text('تصفح المتجر', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تصفح المتجر', 'Browse the store'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -83,7 +83,7 @@ class CartScreen extends StatelessWidget {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutScreen())),
-                  child: const Text('إتمام الشراء', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  child: Text(tr('إتمام الشراء', 'Checkout'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],
@@ -122,7 +122,7 @@ class CartScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(item.product.artisanName, style: TextStyle(color: AppColors.subText, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
-                  Text('د.ع ${_formatPrice(item.product.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(tr('د.ع ${_formatPrice(item.product.price)}', 'IQD ${_formatPrice(item.product.price)}'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -158,17 +158,17 @@ class CartScreen extends StatelessWidget {
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.3))),
       child: Column(
         children: [
-          _summaryRow('المجموع الفرعي', _formatPrice(cart.subtotal)),
+          _summaryRow(tr('المجموع الفرعي', 'Subtotal'), _formatPrice(cart.subtotal)),
           const SizedBox(height: 8),
-          _summaryRow('سعر التوصيل', _formatPrice(cart.deliveryFee)),
+          _summaryRow(tr('سعر التوصيل', 'Delivery fee'), _formatPrice(cart.deliveryFee)),
           const SizedBox(height: 12),
           Divider(color: AppColors.gold.withOpacity(0.4)),
           const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('المجموع الكلي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
-              Text('${_formatPrice(cart.total)} د.ع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
+              Text(tr('المجموع الكلي', 'Total'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+              Text(tr('${_formatPrice(cart.total)} د.ع', '${_formatPrice(cart.total)} IQD'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
             ],
           ),
         ],
@@ -181,7 +181,7 @@ class CartScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: TextStyle(color: AppColors.subText, fontSize: 14)),
-        Text('$value د.ع', style: TextStyle(color: AppColors.text, fontSize: 14)),
+        Text(tr('$value د.ع', '$value IQD'), style: TextStyle(color: AppColors.text, fontSize: 14)),
       ],
     );
   }

@@ -60,10 +60,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
     final delivered = order.status == 'delivered';
 
     return [
-      const _TimelineStage(title: 'تم استلام الطلب', subtitle: '', status: _StageStatus.completed),
-      _TimelineStage(title: 'موافقة البائع', subtitle: approved ? '' : 'بانتظار موافقة الحرفي...', status: stageStatus(approved, order.status == 'pending')),
-      _TimelineStage(title: 'قيد التوصيل', subtitle: delivered ? '' : (inDelivery ? 'الحرفي في طريقه إليك...' : ''), status: stageStatus(delivered, inDelivery)),
-      _TimelineStage(title: 'تم التسليم', subtitle: '', status: delivered ? _StageStatus.completed : _StageStatus.pending),
+      _TimelineStage(title: tr('تم استلام الطلب', 'Order received'), subtitle: '', status: _StageStatus.completed),
+      _TimelineStage(title: tr('موافقة البائع', 'Seller approval'), subtitle: approved ? '' : tr('بانتظار موافقة الحرفي...', 'Waiting for the artisan\'s approval...'), status: stageStatus(approved, order.status == 'pending')),
+      _TimelineStage(title: tr('قيد التوصيل', 'Out for delivery'), subtitle: delivered ? '' : (inDelivery ? tr('الحرفي في طريقه إليك...', 'The artisan is on the way...') : ''), status: stageStatus(delivered, inDelivery)),
+      _TimelineStage(title: tr('تم التسليم', 'Delivered'), subtitle: '', status: delivered ? _StageStatus.completed : _StageStatus.pending),
     ];
   }
 
@@ -77,14 +77,14 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
           stream: OrderService.instance.watchOrder(widget.orderId),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return Center(child: Text('تعذّر تحميل الطلب', style: TextStyle(color: AppColors.subText)));
+              return Center(child: Text(tr('تعذّر تحميل الطلب', 'Couldn\'t load the order'), style: TextStyle(color: AppColors.subText)));
             }
             if (!snapshot.hasData) {
               return Center(child: CircularProgressIndicator(color: AppColors.gold));
             }
             final order = snapshot.data;
             if (order == null) {
-              return Center(child: Text('الطلب غير موجود', style: TextStyle(color: AppColors.subText)));
+              return Center(child: Text(tr('الطلب غير موجود', 'Order not found'), style: TextStyle(color: AppColors.subText)));
             }
             return CustomScrollView(
               slivers: [
@@ -94,7 +94,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('تتبع الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(tr('تتبع الطلب', 'Track order'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
                       Text(order.orderNumber, style: TextStyle(color: AppColors.gold, fontSize: 12)),
                     ],
                   ),
@@ -145,7 +145,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
               children: [
                 Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
-                Text('د.ع ${_formatPrice(order.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                Text(tr('د.ع ${_formatPrice(order.price)}', 'IQD ${_formatPrice(order.price)}'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -163,7 +163,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
         children: [
           const Icon(Icons.cancel_outlined, color: Colors.redAccent),
           const SizedBox(width: 10),
-          Expanded(child: Text('تم إلغاء هذا الطلب', style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold))),
+          Expanded(child: Text(tr('تم إلغاء هذا الطلب', 'This order was cancelled'), style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold))),
         ],
       ),
     );
@@ -262,7 +262,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
           showReportProblemDialog(context, orderId: order.id, reporterUid: buyerUid, reportedUid: order.artisanUid, disputeType: 'buyer_report');
         },
         icon: Icon(Icons.report_problem_outlined, color: AppColors.subText, size: 18),
-        label: Text('الإبلاغ عن مشكلة', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+        label: Text(tr('الإبلاغ عن مشكلة', 'Report a problem'), style: TextStyle(color: AppColors.subText, fontSize: 13)),
       ),
     );
   }
@@ -281,7 +281,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
               children: [
                 Text(order.artisanName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 2),
-                Text('سيتواصل معك الحرفي لتوصيل طلبك — الدفع كاشاً عند الاستلام', style: TextStyle(color: AppColors.subText, fontSize: 11)),
+                Text(tr('سيتواصل معك الحرفي لتوصيل طلبك — الدفع كاشاً عند الاستلام', 'The artisan will contact you to deliver your order — cash on delivery'), style: TextStyle(color: AppColors.subText, fontSize: 11)),
               ],
             ),
           ),
@@ -301,7 +301,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> with SingleTi
           Icon(Icons.local_shipping_outlined, color: AppColors.gold, size: 28),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(order.shippingCompanyName ?? 'شركة الشحن', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+            child: Text(order.shippingCompanyName ?? tr('شركة الشحن', 'Shipping company'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

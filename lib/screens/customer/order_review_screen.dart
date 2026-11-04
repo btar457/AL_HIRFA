@@ -23,12 +23,12 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
   int _rating = 0;
   bool _isSubmitting = false;
 
-  static const _ratingLabels = {
-    1: 'سيء جداً',
-    2: 'سيء',
-    3: 'مقبول',
-    4: 'جيد',
-    5: 'ممتاز!',
+  static Map<int, String> get _ratingLabels => {
+    1: tr('سيء جداً', 'Very bad'),
+    2: tr('سيء', 'Bad'),
+    3: tr('مقبول', 'Okay'),
+    4: tr('جيد', 'Good'),
+    5: tr('ممتاز!', 'Excellent!'),
   };
 
   Future<void> _submit() async {
@@ -64,13 +64,13 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('شكراً لتقييمك!', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
-          content: Text('تم إرسال تقييمك بنجاح.', style: TextStyle(color: AppColors.subText)),
+          title: Text(tr('شكراً لتقييمك!', 'Thanks for your review!'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          content: Text(tr('تم إرسال تقييمك بنجاح.', 'Your review was submitted.'), style: TextStyle(color: AppColors.subText)),
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()), (route) => route.isFirst),
-              child: const Text('حسناً', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('حسناً', 'OK'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -86,7 +86,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: Text('تقييم طلبك', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('تقييم طلبك', 'Rate your order'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: SingleChildScrollView(
@@ -98,13 +98,13 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
               _buildStars(),
               const SizedBox(height: 10),
               Text(
-                _rating == 0 ? 'اختر تقييمك' : _ratingLabels[_rating]!,
+                _rating == 0 ? tr('اختر تقييمك', 'Choose your rating') : _ratingLabels[_rating]!,
                 style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 28),
               Align(
                 alignment: AlignmentDirectional.centerStart,
-                child: Text('ملاحظاتك حول المنتج', style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
+                child: Text(tr('ملاحظاتك حول المنتج', 'Your feedback on the product'), style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -112,7 +112,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
                 maxLines: 5,
                 style: TextStyle(color: AppColors.text),
                 decoration: InputDecoration(
-                  hintText: 'اكتب تقييمك هنا...',
+                  hintText: tr('اكتب تقييمك هنا...', 'Write your review here...'),
                   hintStyle: TextStyle(color: AppColors.subText, fontSize: 13),
                   filled: true,
                   fillColor: AppColors.card,
@@ -131,7 +131,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
                   icon: _isSubmitting
                       ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
                       : const Icon(Icons.send_outlined),
-                  label: const Text('إرسال التقييم', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  label: Text(tr('إرسال التقييم', 'Submit review'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],

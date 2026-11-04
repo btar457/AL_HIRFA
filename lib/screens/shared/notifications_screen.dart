@@ -15,10 +15,10 @@ IconData _iconFor(NotificationModel n) {
 
 String _timeAgo(DateTime date) {
   final diff = DateTime.now().difference(date);
-  if (diff.inMinutes < 1) return 'قبل قليل';
-  if (diff.inHours < 1) return 'قبل ${diff.inMinutes} دقيقة';
-  if (diff.inHours < 24) return 'قبل ${diff.inHours} ساعة';
-  return 'قبل ${diff.inDays} يوم';
+  if (diff.inMinutes < 1) return tr('قبل قليل', 'Just now');
+  if (diff.inHours < 1) return tr('قبل ${diff.inMinutes} دقيقة', '${diff.inMinutes} min ago');
+  if (diff.inHours < 24) return tr('قبل ${diff.inHours} ساعة', '${diff.inHours} h ago');
+  return tr('قبل ${diff.inDays} يوم', '${diff.inDays} d ago');
 }
 
 /// شاشة الإشعارات الشخصية للمستخدم — مربوطة بـ NotificationProvider الحقيقي (SHARED-1).
@@ -35,23 +35,23 @@ class NotificationsScreen extends StatelessWidget {
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: Text('الإشعارات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('الإشعارات', 'Notifications'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           iconTheme: IconThemeData(color: AppColors.gold),
           actions: [
             if (userId != null)
               TextButton(
                 onPressed: () => context.read<NotificationProvider>().markAllAsRead(userId),
-                child: Text('تعليم الكل كمقروء', style: TextStyle(color: AppColors.gold, fontSize: 12)),
+                child: Text(tr('تعليم الكل كمقروء', 'Mark all as read'), style: TextStyle(color: AppColors.gold, fontSize: 12)),
               ),
           ],
         ),
         body: userId == null
-            ? Center(child: Text('سجّل الدخول لعرض إشعاراتك', style: TextStyle(color: AppColors.subText)))
+            ? Center(child: Text(tr('سجّل الدخول لعرض إشعاراتك', 'Sign in to see your notifications'), style: TextStyle(color: AppColors.subText)))
             : Consumer<NotificationProvider>(
                 builder: (context, provider, _) {
                   final notifications = provider.notifications;
                   if (notifications.isEmpty) {
-                    return Center(child: Text('لا توجد إشعارات', style: TextStyle(color: AppColors.subText)));
+                    return Center(child: Text(tr('لا توجد إشعارات', 'No notifications'), style: TextStyle(color: AppColors.subText)));
                   }
                   return ListView.separated(
                     padding: const EdgeInsets.all(16),

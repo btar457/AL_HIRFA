@@ -53,28 +53,28 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: Text('طلباتي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('طلباتي', 'My orders'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           iconTheme: IconThemeData(color: AppColors.gold),
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: AppColors.gold,
             labelColor: AppColors.gold,
             unselectedLabelColor: AppColors.subText,
-            tabs: const [
+            tabs: [
               Tab(text: 'الكل'),
-              Tab(text: 'قيد التنفيذ'),
-              Tab(text: 'مكتملة'),
-              Tab(text: 'ملغاة'),
+              Tab(text: tr('قيد التنفيذ', 'In progress')),
+              Tab(text: tr('مكتملة', 'Completed')),
+              Tab(text: tr('ملغاة', 'Cancelled')),
             ],
           ),
         ),
         body: buyerUid == null
-            ? Center(child: Text('سجّل الدخول لعرض طلباتك', style: TextStyle(color: AppColors.subText)))
+            ? Center(child: Text(tr('سجّل الدخول لعرض طلباتك', 'Sign in to see your orders'), style: TextStyle(color: AppColors.subText)))
             : StreamBuilder<List<OrderModel>>(
                 stream: OrderService.instance.getBuyerOrders(buyerUid),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
+                    return Center(child: Text(tr('تعذّر تحميل الطلبات', 'Couldn\'t load orders'), style: TextStyle(color: AppColors.subText)));
                   }
                   if (!snapshot.hasData) {
                     return const ListRowShimmer();
@@ -97,7 +97,7 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
 
   Widget _buildOrdersList(List<OrderModel> orders) {
     if (orders.isEmpty) {
-      return Center(child: Text('لا توجد طلبات', style: TextStyle(color: AppColors.subText)));
+      return Center(child: Text(tr('لا توجد طلبات', 'No orders'), style: TextStyle(color: AppColors.subText)));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(8),
@@ -137,7 +137,7 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
                       const SizedBox(height: 6),
                       Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
-                      Text('د.ع ${_formatPrice(order.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text(tr('د.ع ${_formatPrice(order.price)}', 'IQD ${_formatPrice(order.price)}'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -151,7 +151,7 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
                     ? OutlinedButton(
                         style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => OrderTrackingScreen(orderId: order.id))),
-                        child: Text('تتبع الطلب', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: Text(tr('تتبع الطلب', 'Track order'), style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                       )
                     : OutlinedButton(
                         style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -159,7 +159,7 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
                           context,
                           MaterialPageRoute(builder: (_) => OrderReviewScreen(order: order)),
                         ),
-                        child: Text('تقييم', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: Text(tr('تقييم', 'Rate'), style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
               ),
             ],
@@ -176,20 +176,20 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> with SingleTi
     if (status == 'delivered') {
       bg = Colors.green.withOpacity(0.2);
       fg = Colors.green;
-      label = 'مكتمل';
+      label = tr('مكتمل', 'Completed');
     } else if (_cancelledStatuses.contains(status)) {
       bg = Colors.red.withOpacity(0.2);
       fg = Colors.red;
-      label = status == 'disputed' ? 'نزاع' : 'ملغي';
+      label = status == 'disputed' ? tr('نزاع', 'Disputed') : tr('ملغي', 'Cancelled');
     } else {
       bg = AppColors.gold;
       fg = Colors.black;
       label = switch (status) {
-        'pending' => 'بانتظار الموافقة',
-        'seller_approved' => 'بانتظار الشحن',
-        'shipping_assigned' => 'تم تعيين الشحن',
-        'picked_up' => 'في الطريق',
-        _ => 'نشط',
+        'pending' => tr('بانتظار الموافقة', 'Awaiting approval'),
+        'seller_approved' => tr('بانتظار الشحن', 'Awaiting shipping'),
+        'shipping_assigned' => tr('تم تعيين الشحن', 'Shipping assigned'),
+        'picked_up' => tr('في الطريق', 'On the way'),
+        _ => tr('نشط', 'Active'),
       };
     }
     return Container(

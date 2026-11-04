@@ -84,7 +84,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   void _confirmOrder() {
     if (_nameController.text.trim().isEmpty || _phoneController.text.trim().isEmpty || _neighborhoodController.text.trim().isEmpty) {
-      AppError.showSnackbar(context, 'أكمل بيانات التوصيل أولاً');
+      AppError.showSnackbar(context, tr('أكمل بيانات التوصيل أولاً', 'Complete the delivery details first'));
       return;
     }
     showDialog(
@@ -94,13 +94,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('تأكيد الطلب؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text('سيتم إرسال طلبك للبائع للمراجعة', style: TextStyle(color: AppColors.subText)),
+          title: Text(tr('تأكيد الطلب؟', 'Confirm order?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('سيتم إرسال طلبك للبائع للمراجعة', 'Your order will be sent to the seller for approval'), style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -108,7 +108,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Navigator.pop(context);
                 _placeOrders();
               },
-              child: const Text('تأكيد', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تأكيد', 'Confirm'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -121,7 +121,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final buyer = context.read<AuthProvider>().currentUser;
     if (buyer == null || cart.items.isEmpty) return;
     if (cart.items.length > OrderService.maxItemsPerCheckout) {
-      AppError.showSnackbar(context, 'يمكن طلب ${OrderService.maxItemsPerCheckout} منتجات مختلفة كحد أقصى في المرة الواحدة — احذف بعضها وأكمل الباقي في طلب ثانٍ');
+      AppError.showSnackbar(context, tr('يمكن طلب ${OrderService.maxItemsPerCheckout} منتجات مختلفة كحد أقصى في المرة الواحدة — احذف بعضها وأكمل الباقي في طلب ثانٍ', 'You can order up to ${OrderService.maxItemsPerCheckout} different products at a time — remove some and order the rest separately'));
       return;
     }
 
@@ -167,7 +167,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       await OrderService.instance.createOrders(orders);
       cart.clearCart();
       if (!mounted) return;
-      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const OrdersHistoryScreen()), (route) => route.isFirst);
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => OrdersHistoryScreen()), (route) => route.isFirst);
     } catch (e) {
       if (!mounted) return;
       if (e is OutOfStockException) {
@@ -192,20 +192,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: Text('تأكيد الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('تأكيد الطلب', 'Confirm order'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: cart.items.isEmpty
-            ? Center(child: Text('السلة فارغة', style: TextStyle(color: AppColors.subText)))
+            ? Center(child: Text(tr('السلة فارغة', 'The cart is empty'), style: TextStyle(color: AppColors.subText)))
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildOrderSummary(cart),
                     const SizedBox(height: 24),
                     _buildLabeledField(
-                      label: 'الاسم الكامل',
+                      label: tr('الاسم الكامل', 'Full name'),
                       field: TextFormField(
                         controller: _nameController,
                         textInputAction: TextInputAction.next,
@@ -215,7 +215,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     const SizedBox(height: 16),
                     _buildLabeledField(
-                      label: 'رقم الهاتف',
+                      label: tr('رقم الهاتف', 'Phone number'),
                       field: TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
@@ -225,7 +225,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                     ),
                     _buildLabeledField(
-                      label: 'المحافظة',
+                      label: tr('المحافظة', 'Governorate'),
                       field: DropdownButtonFormField<String>(
                         initialValue: _selectedProvince,
                         dropdownColor: AppColors.card,
@@ -237,7 +237,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     const SizedBox(height: 16),
                     _buildLabeledField(
-                      label: 'المنطقة/الحي',
+                      label: tr('المنطقة/الحي', 'Area / neighborhood'),
                       field: TextFormField(
                         controller: _neighborhoodController,
                         style: TextStyle(color: AppColors.text),
@@ -246,7 +246,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     const SizedBox(height: 16),
                     _buildLabeledField(
-                      label: 'ملاحظات للمندوب (اختياري)',
+                      label: tr('ملاحظات للمندوب (اختياري)', 'Notes for delivery (optional)'),
                       field: TextFormField(
                         controller: _notesController,
                         maxLines: 3,
@@ -269,8 +269,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, disabledBackgroundColor: AppColors.gold.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                         onPressed: (_cashAccepted && _policyAccepted && !_isSubmitting) ? _confirmOrder : null,
                         child: _isSubmitting
-                            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                            : const Text('تأكيد الطلب', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                            : Text(tr('تأكيد الطلب', 'Confirm order'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
                     ),
                   ],
@@ -282,12 +282,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _buildOrderSummary(CartProvider cart) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
       child: Column(
         children: cart.items.map((item) {
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
+            padding: EdgeInsets.symmetric(vertical: 6),
             child: Row(
               children: [
                 ProductThumbnail(imageUrl: item.product.images.isNotEmpty ? item.product.images.first : '', size: 56, iconSize: 22),
@@ -312,21 +312,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _buildInvoiceCard(CartProvider cart) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.3))),
       child: Column(
         children: [
-          _invoiceRow('سعر المنتجات', _formatPrice(cart.subtotal)),
+          _invoiceRow(tr('سعر المنتجات', 'Products'), _formatPrice(cart.subtotal)),
           const SizedBox(height: 8),
-          _invoiceRow('سعر التوصيل (${cart.items.length} × ${_settings?.fixedDeliveryFee ?? cart.deliveryFee})', _formatPrice(cart.deliveryFee)),
+          _invoiceRow(tr('سعر التوصيل (${cart.items.length} × ${_settings?.fixedDeliveryFee ?? cart.deliveryFee})', 'Delivery (${cart.items.length} × ${_settings?.fixedDeliveryFee ?? cart.deliveryFee})'), _formatPrice(cart.deliveryFee)),
           const SizedBox(height: 12),
           Divider(color: AppColors.gold.withOpacity(0.4)),
           const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('المجموع', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
-              Text('${_formatPrice(cart.total)} د.ع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
+              Text(tr('المجموع', 'Total'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(tr('${_formatPrice(cart.total)} د.ع', '${_formatPrice(cart.total)} IQD'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
             ],
           ),
         ],
@@ -339,7 +339,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: TextStyle(color: AppColors.subText, fontSize: 14)),
-        Text('$value د.ع', style: TextStyle(color: AppColors.text, fontSize: 14)),
+        Text(tr('$value د.ع', '$value IQD'), style: TextStyle(color: AppColors.text, fontSize: 14)),
       ],
     );
   }
@@ -353,7 +353,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             value: _cashAccepted,
             activeColor: AppColors.gold,
             controlAffinity: ListTileControlAffinity.leading,
-            title: Text('أفهم أن الدفع كاشاً عند الاستلام فقط', style: TextStyle(color: AppColors.text, fontSize: 13)),
+            title: Text(tr('أفهم أن الدفع كاشاً عند الاستلام فقط', 'I understand payment is cash on delivery only'), style: TextStyle(color: AppColors.text, fontSize: 13)),
             onChanged: (val) => setState(() => _cashAccepted = val ?? false),
           ),
           CheckboxListTile(
@@ -364,9 +364,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               text: TextSpan(
                 style: TextStyle(color: AppColors.text, fontSize: 13),
                 children: [
-                  const TextSpan(text: 'أوافق على '),
+                  TextSpan(text: tr('أوافق على ', 'I agree to the ')),
                   TextSpan(
-                    text: 'سياسة الإرجاع',
+                    text: tr('سياسة الإرجاع', 'return policy'),
                     style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen())),
@@ -397,10 +397,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('معلومات التوصيل', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(tr('معلومات التوصيل', 'Delivery information'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
                 const SizedBox(height: 4),
                 Text(
-                  'الحرفي نفسه سيتولّى توصيل طلبك ويتواصل معك على رقم هاتفك لتنسيق موعد التسليم — لا وسيط شحن حالياً.',
+                  tr('الحرفي نفسه سيتولّى توصيل طلبك ويتواصل معك على رقم هاتفك لتنسيق موعد التسليم — لا وسيط شحن حالياً.', 'The artisan will deliver your order personally and contact you by phone to arrange delivery — there\'s no shipping company for now.'),
                   style: TextStyle(color: AppColors.subText, fontSize: 12, height: 20 / 12),
                 ),
               ],
@@ -419,7 +419,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           Icon(Icons.account_balance_wallet_outlined, color: AppColors.gold),
           const SizedBox(width: 12),
-          Expanded(child: Text('الدفع عند الاستلام', style: TextStyle(color: AppColors.text))),
+          Expanded(child: Text(tr('الدفع عند الاستلام', 'Cash on delivery'), style: TextStyle(color: AppColors.text))),
           Icon(Icons.check_circle, color: AppColors.gold),
         ],
       ),

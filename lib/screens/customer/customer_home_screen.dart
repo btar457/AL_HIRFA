@@ -61,7 +61,7 @@ class CustomerHomeScreen extends StatelessWidget {
                     children: [
                       Icon(Icons.search, color: AppColors.gold, size: 20),
                       const SizedBox(width: 8),
-                      Expanded(child: Text('ابحث عن التحف والأعمال اليدوية...', style: TextStyle(color: AppColors.subText, fontSize: 13))),
+                      Expanded(child: Text(tr('ابحث عن التحف والأعمال اليدوية...', 'Search crafts and handmade items...'), style: TextStyle(color: AppColors.subText, fontSize: 13))),
                     ],
                   ),
                 ),
@@ -69,17 +69,17 @@ class CustomerHomeScreen extends StatelessWidget {
               const SizedBox(height: 20),
               if (user != null) _buildActiveOrdersCard(context, user.uid),
               const SizedBox(height: 20),
-              Text('تصفّح حسب الفئة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+              Text(tr('تصفّح حسب الفئة', 'Browse by category'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
               const SizedBox(height: 10),
               _buildCategoriesGrid(context),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('أحدث المنتجات', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+                  Text(tr('أحدث المنتجات', 'Latest products'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
                   TextButton(
                     onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MarketplaceScreen())),
-                    child: Text('عرض الكل', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: Text(tr('عرض الكل', 'See all'), style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -101,7 +101,7 @@ class CustomerHomeScreen extends StatelessWidget {
             Text('AL-HIRFA', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)),
             if (name.isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text('مرحباً، $name', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+              Text(tr('مرحباً، $name', 'Hello, $name'), style: TextStyle(color: AppColors.subText, fontSize: 13)),
             ],
           ],
         ),
@@ -142,7 +142,7 @@ class CustomerHomeScreen extends StatelessWidget {
               children: [
                 const Icon(Icons.local_shipping_outlined, color: Colors.black),
                 const SizedBox(width: 10),
-                Expanded(child: Text('لديك $activeCount طلب قيد التنفيذ — اضغط للمتابعة', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13))),
+                Expanded(child: Text(tr('لديك $activeCount طلب قيد التنفيذ — اضغط للمتابعة', 'You have $activeCount order(s) in progress — tap to track'), style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13))),
                 const Icon(Icons.arrow_back_ios, color: Colors.black, size: 14),
               ],
             ),
@@ -194,7 +194,7 @@ class CustomerHomeScreen extends StatelessWidget {
         final products = snapshot.data!..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         final latest = products.take(6).toList();
         if (latest.isEmpty) {
-          return Padding(padding: const EdgeInsets.symmetric(vertical: 20), child: Center(child: Text('لا توجد منتجات بعد', style: TextStyle(color: AppColors.subText))));
+          return Padding(padding: const EdgeInsets.symmetric(vertical: 20), child: Center(child: Text(tr('لا توجد منتجات بعد', 'No products yet'), style: TextStyle(color: AppColors.subText))));
         }
         return GridView.builder(
           padding: const EdgeInsets.only(top: 12),

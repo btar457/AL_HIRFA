@@ -93,7 +93,7 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
                 children: [
                   _buildBackButton(),
                   const Spacer(),
-                  Text('تعذّر تحميل ملف الحرفي', style: TextStyle(color: AppColors.subText)),
+                  Text(tr('تعذّر تحميل ملف الحرفي', 'Couldn\'t load the artisan\'s profile'), style: TextStyle(color: AppColors.subText)),
                   const Spacer(),
                 ],
               );
@@ -118,7 +118,7 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
                       indicatorColor: AppColors.gold,
                       labelColor: AppColors.gold,
                       unselectedLabelColor: AppColors.subText,
-                      tabs: const [Tab(text: 'منتجاته'), Tab(text: 'تقييماته')],
+                      tabs: [Tab(text: tr('منتجاته', 'Products')), Tab(text: tr('تقييماته', 'Reviews'))],
                     ),
                   ),
                 ),
@@ -227,12 +227,12 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.circular(20)),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.verified, color: Colors.black, size: 12),
                     SizedBox(width: 4),
-                    Text('حرفي موثّق', style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text(tr('حرفي موثّق', 'Verified artisan'), style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -253,11 +253,11 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildStat(Icons.star, 'التقييم', data.averageRating > 0 ? data.averageRating.toStringAsFixed(1) : '—'),
+            _buildStat(Icons.star, tr('التقييم', 'Rating'), data.averageRating > 0 ? data.averageRating.toStringAsFixed(1) : '—'),
             _statDivider(),
-            _buildStat(Icons.inventory_2_outlined, 'المبيعات', '${data.totalSales}'),
+            _buildStat(Icons.inventory_2_outlined, tr('المبيعات', 'Sales'), '${data.totalSales}'),
             _statDivider(),
-            _buildStat(Icons.storefront_outlined, 'المنتجات', '${data.products.length}'),
+            _buildStat(Icons.storefront_outlined, tr('المنتجات', 'Products'), '${data.products.length}'),
           ],
         ),
       ],
@@ -279,7 +279,7 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
 
   Widget _buildProductsTab(List<ProductModel> products) {
     if (products.isEmpty) {
-      return Center(child: Text('لا توجد منتجات منشورة بعد', style: TextStyle(color: AppColors.subText)));
+      return Center(child: Text(tr('لا توجد منتجات منشورة بعد', 'No published products yet'), style: TextStyle(color: AppColors.subText)));
     }
     return GridView.builder(
       padding: const EdgeInsets.all(16),
@@ -297,7 +297,7 @@ class _ArtisanPublicProfileScreenState extends State<ArtisanPublicProfileScreen>
 
   Widget _buildReviewsTab(List<ReviewModel> reviews) {
     if (reviews.isEmpty) {
-      return Center(child: Text('لا توجد تقييمات بعد', style: TextStyle(color: AppColors.subText)));
+      return Center(child: Text(tr('لا توجد تقييمات بعد', 'No reviews yet'), style: TextStyle(color: AppColors.subText)));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),

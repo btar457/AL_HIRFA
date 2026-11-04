@@ -14,7 +14,7 @@ class PaymentMethodsScreen extends StatelessWidget {
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.background,
-          title: Text('طرق الدفع', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('طرق الدفع', 'Payment methods'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           iconTheme: IconThemeData(color: AppColors.gold),
         ),
         body: ListView(
@@ -22,29 +22,29 @@ class PaymentMethodsScreen extends StatelessWidget {
           children: [
             _buildMethodCard(
               icon: Icons.account_balance_wallet_outlined,
-              title: 'الدفع عند الاستلام',
-              subtitle: 'ادفع كاشاً عند استلام طلبك',
+              title: tr('الدفع عند الاستلام', 'Cash on delivery'),
+              subtitle: tr('ادفع كاشاً عند استلام طلبك', 'Pay cash when you receive your order'),
               trailing: Icon(Icons.check_circle, color: AppColors.gold),
               enabled: true,
             ),
             _buildMethodCard(
               icon: Icons.phone_iphone,
               title: 'ZainCash',
-              subtitle: 'ادفع عبر محفظة زين كاش',
+              subtitle: tr('ادفع عبر محفظة زين كاش', 'Pay with Zain Cash'),
               trailing: _buildComingSoonChip(),
               enabled: false,
             ),
             _buildMethodCard(
               icon: Icons.credit_card,
               title: 'Qi Card',
-              subtitle: 'ادفع عبر بطاقة كي',
+              subtitle: tr('ادفع عبر بطاقة كي', 'Pay with Qi Card'),
               trailing: _buildComingSoonChip(),
               enabled: false,
             ),
             _buildMethodCard(
               icon: Icons.public,
               title: 'Payoneer',
-              subtitle: 'للمدفوعات الدولية',
+              subtitle: tr('للمدفوعات الدولية', 'For international payments'),
               trailing: _buildComingSoonChip(),
               enabled: false,
             ),
@@ -59,7 +59,7 @@ class PaymentMethodsScreen extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'حالياً الدفع عند الاستلام فقط متاح. طرق دفع إضافية قريباً!',
+                      tr('حالياً الدفع عند الاستلام فقط متاح. طرق دفع إضافية قريباً!', 'Only cash on delivery is available for now. More payment methods coming soon!'),
                       style: TextStyle(color: AppColors.text, fontSize: 13, height: 24 / 14),
                     ),
                   ),
@@ -76,7 +76,7 @@ class PaymentMethodsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(color: AppColors.subText.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
-      child: Text('قريباً', style: TextStyle(color: AppColors.subText, fontSize: 10, fontWeight: FontWeight.bold)),
+      child: Text(tr('قريباً', 'Soon'), style: TextStyle(color: AppColors.subText, fontSize: 10, fontWeight: FontWeight.bold)),
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/categories.dart';
 import '../../core/constants/colors.dart';
 import '../../models/categories.dart';
 import '../../models/marketplace_product.dart';
@@ -48,7 +49,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   String _selectedCity = 'الكل';
   late String _selectedCategory = widget.initialCategory ?? 'all';
 
-  final _cities = const ['الكل', 'نجف', 'بصرة', 'بغداد', 'أربيل', 'موصل', 'كربلاء', 'الديوانية'];
+  // نفس قيم kCities المخزّنة في المنتجات حرفياً — كانت 'نجف'/'بصرة'/'موصل'
+  // هنا فلا يطابق الفلتر أي منتج من هذه المدن.
+  final _cities = const ['الكل', ...kCities];
 
   @override
   Widget build(BuildContext context) {
@@ -70,14 +73,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   stream: ProductService.instance.getActiveProducts(city: _selectedCity == 'الكل' ? null : _selectedCity, categoryId: _selectedCategory),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      return Center(child: Text('تعذّر تحميل المنتجات', style: TextStyle(color: AppColors.subText)));
+                      return Center(child: Text(tr('تعذّر تحميل المنتجات', 'Couldn\'t load products'), style: TextStyle(color: AppColors.subText)));
                     }
                     if (!snapshot.hasData) {
                       return const ProductGridShimmer();
                     }
                     final products = snapshot.data!;
                     if (products.isEmpty) {
-                      return Center(child: Text('لا توجد منتجات حالياً', style: TextStyle(color: AppColors.subText)));
+                      return Center(child: Text(tr('لا توجد منتجات حالياً', 'No products right now'), style: TextStyle(color: AppColors.subText)));
                     }
                     return StreamBuilder<Set<String>>(
                       stream: userId == null ? Stream.value(const <String>{}) : ProductService.instance.getFavoriteIds(userId),
@@ -174,7 +177,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               Icon(Icons.search, color: AppColors.gold, size: 20),
               const SizedBox(width: 8),
               Expanded(
-                child: Text('ابحث عن التحف والأعمال اليدوية...', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+                child: Text(tr('ابحث عن التحف والأعمال اليدوية...', 'Search crafts and handmade items...'), style: TextStyle(color: AppColors.subText, fontSize: 13)),
               ),
             ],
           ),
@@ -253,7 +256,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                 border: Border.all(color: AppColors.gold.withOpacity(selected ? 1 : 0.4)),
               ),
               child: Center(
-                child: Text(city, style: TextStyle(color: selected ? Colors.black : AppColors.text, fontWeight: selected ? FontWeight.bold : FontWeight.normal, fontSize: 13)),
+                child: Text(city == 'الكل' ? tr('الكل', 'All') : (AppPrefs.isEnglish ? (kCityNamesEn[city] ?? city) : city), style: TextStyle(color: selected ? Colors.black : AppColors.text, fontWeight: selected ? FontWeight.bold : FontWeight.normal, fontSize: 13)),
               ),
             ),
           );
