@@ -10,3 +10,7 @@ analyzer:
   errors:
     deprecated_member_use: ignore
     invalid_use_of_visible_for_testing_member: ignore
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
