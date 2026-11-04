@@ -43,7 +43,9 @@ class DisputeService {
       tx.update(orderRef, {'status': 'disputed', 'disputeId': docRef.id, 'preDisputeStatus': currentStatus});
     });
 
-    await NotificationService.instance.sendBulkNotification(targetRole: 'admin', title: 'بلاغ جديد', body: description);
+    try {
+      await NotificationService.instance.notifyAdmins(title: 'بلاغ جديد', body: description);
+    } catch (_) {}
     return docRef.id;
   }
 

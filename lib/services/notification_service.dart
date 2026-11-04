@@ -48,6 +48,17 @@ class NotificationService {
     );
   }
 
+  /// يُشعر كل حسابات الإدارة (نسخة لكل مدير، بلا مستند سجل بث) — للاستدعاء
+  /// من أي مستخدم: طلب سحب، بلاغ، رسالة دعم، منتج جديد. sendBulkNotification
+  /// تكتب أيضاً مستند سجل البث (userId فارغ) المسموح للإدارة وحدها، فكانت
+  /// تُفشل هذه العمليات برسالة خطأ رغم نجاحها فعلاً.
+  Future<void> notifyAdmins({required String title, required String body}) async {
+    final admins = await _firestore.collection(_usersCollection).where('role', isEqualTo: 'admin').get();
+    for (final doc in admins.docs) {
+      await sendToUser(userUid: doc.id, title: title, body: body, type: 'system');
+    }
+  }
+
   /// يسجّل إشعار طلب توصيل جديد لكل شركات الشحن النشطة في محافظة معيّنة.
   Future<void> sendToShippingCompanies({
     required String city,

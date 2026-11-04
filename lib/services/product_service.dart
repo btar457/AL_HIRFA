@@ -54,7 +54,7 @@ class ProductService {
     // إشعار الإدارة إجراء ثانوي — فشله (شبكة، صلاحيات...) لا يجب أن يُظهر
     // للحرفي رسالة خطأ بعد أن نُشر منتجه فعلاً بنجاح في السطر أعلاه.
     try {
-      await NotificationService.instance.sendBulkNotification(targetRole: 'admin', title: 'منتج جديد بانتظار المراجعة', body: newProduct.name);
+      await NotificationService.instance.notifyAdmins(title: 'منتج جديد بانتظار المراجعة', body: newProduct.name);
     } catch (_) {}
     return productId;
   }
@@ -96,7 +96,9 @@ class ProductService {
       if (minPrice != null) products = products.where((p) => p.price >= minPrice).toList();
       if (maxPrice != null) products = products.where((p) => p.price <= maxPrice).toList();
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        products = products.where((p) => p.name.contains(searchQuery)).toList();
+        // بلا حساسية لحالة الأحرف (اللاتينية)، ويبحث في الوصف والمادة أيضاً.
+        final q = searchQuery.trim().toLowerCase();
+        products = products.where((p) => '${p.name} ${p.description} ${p.material}'.toLowerCase().contains(q)).toList();
       }
       return products;
     });

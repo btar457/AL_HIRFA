@@ -12,7 +12,7 @@ class SupportService {
   static const _collection = 'support_messages';
 
   /// يُنشئ رسالة دعم جديدة ويُشعر كل حسابات الإدارة فوراً (نفس نمط طلب
-  /// السحب في wallet_service.dart: sendBulkNotification(targetRole: 'admin')).
+  /// السحب في wallet_service.dart: notifyAdmins).
   Future<void> sendMessage({
     required String uid,
     required String name,
@@ -22,11 +22,9 @@ class SupportService {
     await _firestore.collection(_collection).add(
       SupportMessageModel(id: '', uid: uid, name: name, role: role, message: message, createdAt: DateTime.now()).toMap(),
     );
-    await NotificationService.instance.sendBulkNotification(
-      targetRole: 'admin',
-      title: 'رسالة دعم جديدة',
-      body: '$name: $message',
-    );
+    try {
+      await NotificationService.instance.notifyAdmins(title: 'رسالة دعم جديدة', body: '$name: $message');
+    } catch (_) {}
   }
 
   /// رسائل مستخدم معيّن (لعرض سجل رسائله وردود الإدارة عليها).

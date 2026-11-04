@@ -76,7 +76,9 @@ class WalletService {
       'createdAt': Timestamp.now(),
     });
 
-    await NotificationService.instance.sendBulkNotification(targetRole: 'admin', title: 'طلب سحب جديد', body: 'حرفي طلب سحب $amount د.ع');
+    try {
+      await NotificationService.instance.notifyAdmins(title: 'طلب سحب جديد', body: 'حرفي طلب سحب $amount د.ع');
+    } catch (_) {}
   }
 
   /// Admin: طلبات سحب الحرفيين بحسب الحالة — لشاشة admin_financials.

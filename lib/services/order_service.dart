@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/app_rules.dart';
 import '../models/order_model.dart';
 import '../models/transaction_model.dart';
-import 'admin_service.dart';
 import 'notification_service.dart';
 
 /// الكمية المطلوبة أكبر من المتوفر. [productName]/[available] null إن
@@ -226,11 +225,16 @@ class OrderService {
       data: {'orderId': orderId},
     );
 
-    await _enforceRejectionPenalties(order.artisanUid);
+    // الرفض تمّ فعلاً — فشل فحص العقوبات لا يجب أن يُظهر للحرفي خطأً.
+    try {
+      await _enforceRejectionPenalties(order.artisanUid);
+    } catch (_) {}
   }
 
-  /// يطبّق تحذيراً/تعليقاً تراكمياً على الحرفي حسب حدود AppRules عند تكرار
-  /// رفضه للطلبات (consecutiveRejectsWarning شهرياً/تراكمياً).
+  /// يتحقق من تكرار رفض الحرفي للطلبات (حدود AppRules) ويُنبّه الإدارة.
+  /// يُستدعى من جلسة الحرفي نفسه: التحذير/التعليق الفعلي (warnUser/
+  /// suspendUser) صلاحية إدارية في firestore.rules — كان استدعاؤهما هنا
+  /// يُرفض دائماً فيظهر للحرفي خطأ بعد رفض ناجح. القرار للإدارة الآن.
   Future<void> _enforceRejectionPenalties(String artisanUid) async {
     final monthStart = DateTime(DateTime.now().year, DateTime.now().month, 1);
     final monthlyRejects = await _firestore
@@ -243,7 +247,10 @@ class OrderService {
     final monthlyCount = monthlyRejects.count ?? 0;
 
     if (monthlyCount >= AppRules.monthlyRejectsSuspension) {
-      await AdminService.instance.suspendUser(artisanUid, 'تجاوز الحد الأقصى لرفض الطلبات خلال الشهر ($monthlyCount مرات)');
+      await NotificationService.instance.notifyAdmins(
+        title: 'حرفي تجاوز حد رفض الطلبات',
+        body: 'رفض $monthlyCount طلبات هذا الشهر — راجع حسابه من إدارة الحسابات (المعرّف: $artisanUid)',
+      );
       return;
     }
 
@@ -256,7 +263,10 @@ class OrderService {
     final allRecentRejected = recentOrders.docs.length == AppRules.consecutiveRejectsWarning &&
         recentOrders.docs.every((doc) => doc.data()['rejectedBy'] == 'seller');
     if (allRecentRejected) {
-      await AdminService.instance.warnUser(artisanUid, 'رفض ${AppRules.consecutiveRejectsWarning} طلبات متتالية');
+      await NotificationService.instance.notifyAdmins(
+        title: 'حرفي رفض طلبات متتالية',
+        body: 'رفض آخر ${AppRules.consecutiveRejectsWarning} طلبات متتالية — قد يستحق تحذيراً (المعرّف: $artisanUid)',
+      );
     }
   }
 

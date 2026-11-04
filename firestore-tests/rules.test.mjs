@@ -1155,3 +1155,11 @@ test('رفض: منتج جديد بـ stock=null (سبب خطأ النشر في v
   await seedBaseFixtures();
   await assertFails(setDoc(doc(ctx('artisanA'), 'products/n1'), newProductDoc({ stock: null })));
 });
+
+test('إشعار الإدارة من غير-مدير: نسخة لكل مدير مسموحة، وسجل البث (userId فارغ) مرفوض', async () => {
+  await seedBaseFixtures();
+  const n = (userId) => ({ userId, title: 't', body: 'b', type: 'system', targetAudience: 'all', recipientCount: 0, isRead: false, data: {}, createdAt: new Date() });
+  await assertSucceeds(setDoc(doc(ctx('artisanA'), 'notifications/n1'), n('adminA')));
+  await assertFails(setDoc(doc(ctx('artisanA'), 'notifications/n2'), n('')));
+  await assertSucceeds(setDoc(doc(ctx('adminA'), 'notifications/n3'), n('')));
+});
