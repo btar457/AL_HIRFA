@@ -9,6 +9,7 @@ import 'admin_financials_screen.dart';
 import 'admin_notifications_screen.dart';
 import 'admin_products_screen.dart';
 import 'admin_stuck_orders_screen.dart';
+import 'admin_test_accounts_screen.dart';
 import '../../core/settings/app_prefs.dart';
 import '../shared/language_appearance_screen.dart';
 
@@ -75,6 +76,7 @@ class AdminSettingsScreen extends StatelessWidget {
             _buildTile(context, icon: Icons.inventory_2_outlined, title: tr('إدارة المنتجات', 'Manage products'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminProductsScreen()))),
             _buildTile(context, icon: Icons.category_outlined, title: tr('إدارة الفئات', 'Manage categories'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminCategoriesScreen()))),
             _buildTile(context, icon: Icons.build_circle_outlined, title: tr('طلبات عالقة (شحن قديم)', 'Stuck orders (legacy shipping)'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminStuckOrdersScreen()))),
+            _buildTile(context, icon: Icons.badge_outlined, title: tr('حسابات المختبرين', 'Tester accounts'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminTestAccountsScreen()))),
             Divider(color: AppColors.subText.withOpacity(0.2)),
             _buildTile(context, icon: Icons.translate, title: tr('اللغة والمظهر', 'Language & appearance'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageAppearanceScreen()))),
             _buildTile(context, icon: Icons.logout, title: tr('تسجيل الخروج', 'Sign out'), color: Colors.redAccent, onTap: () => _confirmLogout(context)),

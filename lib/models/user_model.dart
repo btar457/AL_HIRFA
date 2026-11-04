@@ -37,6 +37,11 @@ class UserModel {
   final bool? artisanTermsAccepted; // للحرفي فقط
   final bool? shippingTermsAccepted; // لشركة الشحن فقط
 
+  /// حساب تجريبي أنشأته الإدارة للمختبرين (AdminTestAccountsScreen) —
+  /// يُعفى من تأكيد البريد. يُقرأ فقط ولا يُكتب في toMap(): قواعد Firestore
+  /// تمنع أي مستخدم من وضعه لنفسه، والإدارة وحدها تضيفه بعد الإنشاء.
+  final bool isTestAccount;
+
   final DateTime createdAt;
 
   const UserModel({
@@ -65,6 +70,7 @@ class UserModel {
     this.termsVersion = '',
     this.artisanTermsAccepted,
     this.shippingTermsAccepted,
+    this.isTestAccount = false,
   });
 
   factory UserModel.fromMap(String uid, Map<String, dynamic> map) {
@@ -94,6 +100,7 @@ class UserModel {
       termsVersion: map['termsVersion'] as String? ?? '',
       artisanTermsAccepted: map['artisanTermsAccepted'] as bool?,
       shippingTermsAccepted: map['shippingTermsAccepted'] as bool?,
+      isTestAccount: map['isTestAccount'] as bool? ?? false,
     );
   }
 
@@ -157,6 +164,7 @@ class UserModel {
       termsVersion: termsVersion,
       artisanTermsAccepted: artisanTermsAccepted,
       shippingTermsAccepted: shippingTermsAccepted,
+      isTestAccount: isTestAccount,
     );
   }
 }

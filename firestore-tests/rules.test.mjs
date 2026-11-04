@@ -1126,3 +1126,27 @@ test('رفض: مستخدم يحذف حقل approvalStatus من مستنده لي
   await assertFails(updateDoc(doc(ctx('artisanA'), 'users/artisanA'), { approvalStatus: deleteField() }));
   await assertFails(updateDoc(doc(ctx('bannedA'), 'users/bannedA'), { banned: deleteField(), isActive: deleteField() }));
 });
+
+// ---------------- حسابات المختبرين (test_account_service.dart) ----------------
+test('رفض: مستخدم يسجّل نفسه بعلامة isTestAccount ليتجاوز تأكيد البريد', async () => {
+  await seedBaseFixtures();
+  await assertFails(setDoc(doc(ctx('newUser'), 'users/newUser'), {
+    role: 'customer', name: 'جديد', city: 'بغداد', isActive: true, banned: false,
+    warningCount: 0, approvalStatus: 'approved', isTestAccount: true,
+  }));
+  await assertFails(updateDoc(doc(ctx('customerA'), 'users/customerA'), { isTestAccount: true }));
+});
+
+test('سماح: الإدارة تعتمد حساب مختبر وتضع isTestAccount', async () => {
+  await seedBaseFixtures();
+  await assertSucceeds(updateDoc(doc(ctx('adminA'), 'users/artisanA'), { isTestAccount: true, approvalStatus: 'approved' }));
+});
+
+test('test_accounts: الإدارة فقط تقرأ وتكتب بيانات دخول المختبرين', async () => {
+  await seedBaseFixtures();
+  const data = { email: 't@x.app', password: 'p', role: 'customer' };
+  await assertSucceeds(setDoc(doc(ctx('adminA'), 'test_accounts/u1'), data));
+  await assertSucceeds(getDoc(doc(ctx('adminA'), 'test_accounts/u1')));
+  await assertFails(getDoc(doc(ctx('customerA'), 'test_accounts/u1')));
+  await assertFails(setDoc(doc(ctx('artisanA'), 'test_accounts/u2'), data));
+});

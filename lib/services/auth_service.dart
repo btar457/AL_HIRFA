@@ -87,6 +87,7 @@ class AuthService {
     // وقت إنشاء حساب Firebase Auth نفسه هو المرجع — UserModel.createdAt
     // يرجع لـ"الآن" إن غاب الحقل من مستند قديم، فيُقفل صاحبه خطأً.
     final createdAt = firebaseUser.metadata.creationTime ?? user.createdAt;
+    if (user.isTestAccount) return false; // حساب مختبر أنشأته الإدارة ببريد غير حقيقي
     return !firebaseUser.emailVerified && user.role != 'admin' && !createdAt.isBefore(emailVerificationRequiredSince);
   }
 

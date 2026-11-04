@@ -48,6 +48,11 @@ service cloud.firestore {
     // -----------------------------------------------------------------
     // users/{uid} — auth_service.dart, admin_service.dart
     // -----------------------------------------------------------------
+    // بيانات دخول حسابات المختبرين (test_account_service.dart) — الإدارة فقط.
+    match /test_accounts/{accountId} {
+      allow read, write: if isAdmin();
+    }
+
     match /users/{userId} {
       // قراءة أي مستخدم مسموحة لأي مسجّل دخول نشط غير محظور: يعرض التطبيق
       // فعلياً بيانات حرفيين/شركات شحن آخرين (الملف العام، شاشات تواصل
@@ -79,7 +84,10 @@ service cloud.firestore {
            )
         && request.resource.data.get('isActive', true) == true
         && request.resource.data.get('banned', false) == false
-        && request.resource.data.get('warningCount', 0) == 0;
+        && request.resource.data.get('warningCount', 0) == 0
+        // إعفاء حسابات المختبرين من تأكيد البريد تمنحه الإدارة وحدها لاحقاً
+        // (test_account_service.dart) — لا يضعه أحد لنفسه عند التسجيل.
+        && !('isTestAccount' in request.resource.data);
 
       // تعديل الذات مقصور على الحقول الشخصية فقط — يمنع ترقية role الذاتية
       // وتعديل isActive/banned/approvalStatus/warningCount ذاتياً (المبدأ
