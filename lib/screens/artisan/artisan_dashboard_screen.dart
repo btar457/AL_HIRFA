@@ -37,7 +37,7 @@ class ArtisanDashboardScreen extends StatelessWidget {
         backgroundColor: AppColors.background,
         body: SafeArea(
           child: user == null
-              ? Center(child: Text('سجّل الدخول لعرض لوحتك', style: TextStyle(color: AppColors.subText)))
+              ? Center(child: Text(tr('سجّل الدخول لعرض لوحتك', 'Sign in to see your dashboard'), style: TextStyle(color: AppColors.subText)))
               : ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   children: [
@@ -104,11 +104,11 @@ class ArtisanDashboardScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('مرحباً، $name', style: TextStyle(color: AppColors.text, fontSize: 22, fontWeight: FontWeight.bold)),
+        Text(tr('مرحباً، $name', 'Hello, $name'), style: TextStyle(color: AppColors.text, fontSize: 22, fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
         Row(
           children: [
-            Text('حرفي موثّق في AL-HIRFA', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+            Text(tr('حرفي موثّق في AL-HIRFA', 'Verified artisan on AL-HIRFA'), style: TextStyle(color: AppColors.subText, fontSize: 13)),
             const SizedBox(width: 6),
             Container(
               padding: const EdgeInsets.all(2),
@@ -138,13 +138,13 @@ class ArtisanDashboardScreen extends StatelessWidget {
               mainAxisSpacing: 12,
               childAspectRatio: 1.5,
               children: [
-                _buildStatCard(icon: Icons.payments_outlined, label: 'إجمالي المبيعات', value: '${_formatPrice(wallet.totalEarnings)} د.ع', valueColor: AppColors.gold, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanWalletScreen()))),
-                _buildStatCard(icon: Icons.inventory_2_outlined, label: 'طلبات جديدة', value: '$pendingOrdersCount', valueColor: AppColors.text, showBadge: pendingOrdersCount > 0, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanOrdersScreen()))),
-                _buildStatCard(icon: Icons.storefront_outlined, label: 'منتجاتي النشطة', valueColor: AppColors.gold, value: '$activeProducts'),
+                _buildStatCard(icon: Icons.payments_outlined, label: tr('إجمالي المبيعات', 'Total sales'), value: tr('${_formatPrice(wallet.totalEarnings)} د.ع', '${_formatPrice(wallet.totalEarnings)} IQD'), valueColor: AppColors.gold, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanWalletScreen()))),
+                _buildStatCard(icon: Icons.inventory_2_outlined, label: tr('طلبات جديدة', 'New orders'), value: '$pendingOrdersCount', valueColor: AppColors.text, showBadge: pendingOrdersCount > 0, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanOrdersScreen()))),
+                _buildStatCard(icon: Icons.storefront_outlined, label: tr('منتجاتي النشطة', 'Active products'), valueColor: AppColors.gold, value: '$activeProducts'),
                 // عمولة المنصة (5%) المستحقة عليك — دَين تسدّده أنت للمنصة، لا
                 // رصيد تسحبه منها (قسم الشحن مغلق مؤقتاً، تستلم كامل المبلغ
                 // كاشاً من الزبون مباشرة). راجع admin_commissions_owed_screen.dart.
-                _buildStatCard(icon: Icons.receipt_long_outlined, label: 'عمولة مستحقة عليك', value: '${_formatPrice(commissionOwed)} د.ع', valueColor: Colors.orange, showBadge: commissionOwed > 0),
+                _buildStatCard(icon: Icons.receipt_long_outlined, label: tr('عمولة مستحقة عليك', 'Commission you owe'), value: tr('${_formatPrice(commissionOwed)} د.ع', '${_formatPrice(commissionOwed)} IQD'), valueColor: Colors.orange, showBadge: commissionOwed > 0),
               ],
             );
           },
@@ -189,15 +189,15 @@ class ArtisanDashboardScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('طلبات تنتظر موافقتك', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(tr('طلبات تنتظر موافقتك', 'Orders awaiting your approval'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
             TextButton(
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ArtisanOrdersScreen())),
-              child: Text('عرض الكل', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+              child: Text(tr('عرض الكل', 'See all'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
             ),
           ],
         ),
         if (pendingOrders.isEmpty)
-          Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text('لا توجد طلبات تنتظر موافقتك حالياً', style: TextStyle(color: AppColors.subText, fontSize: 13)))
+          Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(tr('لا توجد طلبات تنتظر موافقتك حالياً', 'No orders awaiting your approval'), style: TextStyle(color: AppColors.subText, fontSize: 13)))
         else
           ...pendingOrders.take(3).map((order) => Container(
             margin: const EdgeInsets.only(bottom: 10),
@@ -221,14 +221,14 @@ class ArtisanDashboardScreen extends StatelessWidget {
                     children: [
                       Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
                       Text(order.buyerName, style: TextStyle(color: AppColors.subText, fontSize: 11)),
-                      Text('د.ع ${_formatPrice(order.totalAmount)}', style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text(tr('د.ع ${_formatPrice(order.totalAmount)}', 'IQD ${_formatPrice(order.totalAmount)}'), style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                   onPressed: () => OrderService.instance.sellerApproveOrder(order.id),
-                  child: const Text('قبول', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: Text(tr('قبول', 'Accept'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                 ),
               ],
             ),
@@ -247,10 +247,10 @@ class ArtisanDashboardScreen extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('الأكثر مبيعاً', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(tr('الأكثر مبيعاً', 'Best sellers'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
             if (bestSellers.isEmpty)
-              Text('لا توجد مبيعات مكتملة بعد', style: TextStyle(color: AppColors.subText, fontSize: 13))
+              Text(tr('لا توجد مبيعات مكتملة بعد', 'No completed sales yet'), style: TextStyle(color: AppColors.subText, fontSize: 13))
             else
               SizedBox(
                 height: 130,
@@ -278,7 +278,7 @@ class ArtisanDashboardScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(product.name, style: TextStyle(color: AppColors.text, fontSize: 11, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          Text('${product.salesCount} عملية بيع', style: TextStyle(color: AppColors.subText, fontSize: 10)),
+                          Text(tr('${product.salesCount} عملية بيع', '${product.salesCount} sales'), style: TextStyle(color: AppColors.subText, fontSize: 10)),
                         ],
                       ),
                     );

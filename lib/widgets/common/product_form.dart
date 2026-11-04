@@ -131,7 +131,7 @@ class _ProductFormState extends State<ProductForm> {
 
     final isAdd = widget.initialProduct == null;
     if (_totalImageCount == 0) {
-      AppError.showSnackbar(context, 'أضف صورة واحدة على الأقل للمنتج');
+      AppError.showSnackbar(context, tr('أضف صورة واحدة على الأقل للمنتج', 'Add at least one product photo'));
       return;
     }
 
@@ -140,7 +140,7 @@ class _ProductFormState extends State<ProductForm> {
       if (isAdd) {
         final artisan = context.read<AuthProvider>().currentUser;
         if (artisan == null) {
-          AppError.showSnackbar(context, 'يجب تسجيل الدخول لنشر منتج');
+          AppError.showSnackbar(context, tr('يجب تسجيل الدخول لنشر منتج', 'Sign in to publish a product'));
           return;
         }
         final product = ProductModel(
@@ -235,7 +235,7 @@ class _ProductFormState extends State<ProductForm> {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
-              child: const Text('حسناً', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('حسناً', 'OK'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -264,17 +264,17 @@ class _ProductFormState extends State<ProductForm> {
                 _buildImagesSection(),
                 const SizedBox(height: 24),
                 _buildLabeledField(
-                  label: 'اسم المنتج',
+                  label: tr('اسم المنتج', 'Product name'),
                   field: TextFormField(
                     controller: _nameController,
                     style: TextStyle(color: AppColors.text),
                     decoration: _fieldDecoration(),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'اسم المنتج مطلوب' : null,
+                    validator: (v) => (v == null || v.trim().isEmpty) ? tr('اسم المنتج مطلوب', 'Product name is required') : null,
                   ),
                 ),
                 const SizedBox(height: 16),
                 _buildLabeledField(
-                  label: 'الفئة',
+                  label: tr('الفئة', 'Category'),
                   field: DropdownButtonFormField<AppCategory>(
                     initialValue: _selectedCategory,
                     dropdownColor: AppColors.card,
@@ -286,7 +286,7 @@ class _ProductFormState extends State<ProductForm> {
                 ),
                 const SizedBox(height: 16),
                 _buildLabeledField(
-                  label: 'السعر بالدينار العراقي',
+                  label: tr('السعر بالدينار العراقي', 'Price (IQD)'),
                   field: TextFormField(
                     controller: _priceController,
                     keyboardType: TextInputType.number,
@@ -294,33 +294,33 @@ class _ProductFormState extends State<ProductForm> {
                     decoration: _fieldDecoration(),
                     validator: (v) {
                       final trimmed = v?.trim() ?? '';
-                      if (trimmed.isEmpty) return 'السعر مطلوب';
+                      if (trimmed.isEmpty) return tr('السعر مطلوب', 'Price is required');
                       final parsed = int.tryParse(trimmed.replaceAll(',', ''));
-                      if (parsed == null || parsed <= 0) return 'أدخل سعراً صحيحاً أكبر من صفر';
+                      if (parsed == null || parsed <= 0) return tr('أدخل سعراً صحيحاً أكبر من صفر', 'Enter a valid price above zero');
                       return null;
                     },
                   ),
                 ),
                 const SizedBox(height: 16),
                 _buildLabeledField(
-                  label: 'الكمية المتوفرة',
+                  label: tr('الكمية المتوفرة', 'Quantity in stock'),
                   field: TextFormField(
                     controller: _stockController,
                     keyboardType: TextInputType.number,
                     style: TextStyle(color: AppColors.text),
-                    decoration: _fieldDecoration(hint: 'عدد القطع الجاهزة للبيع'),
+                    decoration: _fieldDecoration(hint: tr('عدد القطع الجاهزة للبيع', 'Number of pieces ready to sell')),
                     validator: (v) {
                       final parsed = int.tryParse(v?.trim() ?? '');
-                      if (parsed == null) return 'الكمية مطلوبة';
+                      if (parsed == null) return tr('الكمية مطلوبة', 'Quantity is required');
                       final min = widget.initialProduct == null ? 1 : 0;
-                      if (parsed < min) return min == 1 ? 'أدخل كمية لا تقل عن 1' : 'الكمية لا يمكن أن تكون سالبة';
+                      if (parsed < min) return min == 1 ? tr('أدخل كمية لا تقل عن 1', 'Enter a quantity of at least 1') : tr('الكمية لا يمكن أن تكون سالبة', 'Quantity can\'t be negative');
                       return null;
                     },
                   ),
                 ),
                 const SizedBox(height: 16),
                 _buildLabeledField(
-                  label: 'المدينة',
+                  label: tr('المدينة', 'City'),
                   field: DropdownButtonFormField<String>(
                     initialValue: _selectedCity,
                     dropdownColor: AppColors.card,
@@ -332,13 +332,13 @@ class _ProductFormState extends State<ProductForm> {
                 ),
                 const SizedBox(height: 16),
                 _buildLabeledField(
-                  label: 'وصف المنتج',
+                  label: tr('وصف المنتج', 'Product description'),
                   field: TextFormField(
                     controller: _descriptionController,
                     maxLines: 4,
                     style: TextStyle(color: AppColors.text),
                     decoration: _fieldDecoration(),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'وصف المنتج مطلوب' : null,
+                    validator: (v) => (v == null || v.trim().isEmpty) ? tr('وصف المنتج مطلوب', 'Description is required') : null,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -383,7 +383,7 @@ class _ProductFormState extends State<ProductForm> {
                 children: [
                   Icon(Icons.camera_alt_outlined, color: AppColors.gold, size: 48),
                   const SizedBox(height: 12),
-                  Text('أضف حتى 5 صور للمنتج', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+                  Text(tr('أضف حتى 5 صور للمنتج', 'Add up to 5 product photos'), style: TextStyle(color: AppColors.subText, fontSize: 13)),
                 ],
               ),
             ),
@@ -437,13 +437,13 @@ class _ProductFormState extends State<ProductForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('THE NARRATIVE — حكاية القطعة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
+          Text(tr('THE NARRATIVE — حكاية القطعة', 'THE NARRATIVE — the story of the piece'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 12),
           TextFormField(
             controller: _narrativeController,
             maxLines: 6,
             style: TextStyle(color: AppColors.text),
-            decoration: _fieldDecoration(hint: 'اروِ قصة هذه القطعة، من أين جاءت المادة، كم استغرق صنعها...'),
+            decoration: _fieldDecoration(hint: tr('اروِ قصة هذه القطعة، من أين جاءت المادة، كم استغرق صنعها...', 'Tell the story of this piece: where the material came from, how long it took to make...')),
           ),
         ],
       ),
@@ -458,15 +458,15 @@ class _ProductFormState extends State<ProductForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('شهادة الأصالة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
+          Text(tr('شهادة الأصالة', 'Certificate of authenticity'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 14),
-          _buildLabeledField(label: 'المادة الخام', field: TextFormField(controller: _materialController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+          _buildLabeledField(label: tr('المادة الخام', 'Raw material'), field: TextFormField(controller: _materialController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
           const SizedBox(height: 14),
-          _buildLabeledField(label: 'مكان المنشأ', field: TextFormField(controller: _originController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+          _buildLabeledField(label: tr('مكان المنشأ', 'Place of origin'), field: TextFormField(controller: _originController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
           const SizedBox(height: 14),
-          _buildLabeledField(label: 'سنوات الخبرة', field: TextFormField(controller: _experienceController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+          _buildLabeledField(label: tr('سنوات الخبرة', 'Years of experience'), field: TextFormField(controller: _experienceController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
           const SizedBox(height: 14),
-          _buildLabeledField(label: 'تقنية الصنع', field: TextFormField(controller: _techniqueController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+          _buildLabeledField(label: tr('تقنية الصنع', 'Technique'), field: TextFormField(controller: _techniqueController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
         ],
       ),
     );

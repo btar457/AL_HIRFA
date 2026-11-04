@@ -50,13 +50,13 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('حذف المنتج؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text('لا يمكن التراجع عن حذف "${product.name}".', style: TextStyle(color: AppColors.subText)),
+          title: Text(tr('حذف المنتج؟', 'Delete product?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('لا يمكن التراجع عن حذف "${product.name}".', 'Deleting "${product.name}" can\'t be undone.'), style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -65,7 +65,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
                 if (!dialogContext.mounted) return;
                 Navigator.pop(dialogContext);
               },
-              child: const Text('حذف', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('حذف', 'Delete'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -84,22 +84,22 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: Text('منتجاتي', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('منتجاتي', 'My products'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: AppColors.gold,
             labelColor: AppColors.gold,
             unselectedLabelColor: AppColors.subText,
-            tabs: const [Tab(text: 'الكل'), Tab(text: 'نشط'), Tab(text: 'معلق'), Tab(text: 'مرفوض')],
+            tabs: [Tab(text: tr('الكل', 'All')), Tab(text: tr('نشط', 'Active')), Tab(text: tr('معلق', 'Pending')), Tab(text: tr('مرفوض', 'Rejected'))],
           ),
         ),
         body: artisanUid == null
-            ? Center(child: Text('سجّل الدخول لعرض منتجاتك', style: TextStyle(color: AppColors.subText)))
+            ? Center(child: Text(tr('سجّل الدخول لعرض منتجاتك', 'Sign in to see your products'), style: TextStyle(color: AppColors.subText)))
             : StreamBuilder<List<ProductModel>>(
                 stream: ProductService.instance.getArtisanProducts(artisanUid),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return Center(child: Text('تعذّر تحميل المنتجات', style: TextStyle(color: AppColors.subText)));
+                    return Center(child: Text(tr('تعذّر تحميل المنتجات', 'Couldn\'t load products'), style: TextStyle(color: AppColors.subText)));
                   }
                   if (!snapshot.hasData) {
                     return Center(child: CircularProgressIndicator(color: AppColors.gold));
@@ -127,7 +127,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
 
   Widget _buildProductsList(List<ProductModel> products) {
     if (products.isEmpty) {
-      return Center(child: Text('لا توجد منتجات', style: TextStyle(color: AppColors.subText)));
+      return Center(child: Text(tr('لا توجد منتجات', 'No products'), style: TextStyle(color: AppColors.subText)));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -174,14 +174,14 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
                     const SizedBox(height: 4),
                     Text(product.category, style: TextStyle(color: AppColors.subText, fontSize: 12)),
                     const SizedBox(height: 4),
-                    Text('د.ع ${_formatPrice(product.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                    Text(tr('د.ع ${_formatPrice(product.price)}', 'IQD ${_formatPrice(product.price)}'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
                     if (product.stock == null)
-                      Text('الكمية غير محددة — حدّثها من "تعديل"', style: TextStyle(color: AppColors.subText, fontSize: 12))
+                      Text(tr('الكمية غير محددة — حدّثها من "تعديل"', 'Quantity not set — update it from "Edit"'), style: TextStyle(color: AppColors.subText, fontSize: 12))
                     else if (product.isOutOfStock)
-                      const Text('نفدت الكمية — اضغط "تعديل" لإضافة كمية', style: TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold))
+                      Text(tr('نفدت الكمية — اضغط "تعديل" لإضافة كمية', 'Out of stock — tap "Edit" to add quantity'), style: TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold))
                     else
-                      Text('الكمية المتوفرة: ${product.stock}', style: TextStyle(color: product.stock! <= 2 ? Colors.orange : AppColors.subText, fontSize: 12)),
+                      Text(tr('الكمية المتوفرة: ${product.stock}', 'In stock: ${product.stock}'), style: TextStyle(color: product.stock! <= 2 ? Colors.orange : AppColors.subText, fontSize: 12)),
                   ],
                 ),
               ),
@@ -194,7 +194,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditProductScreen(product: product))),
-                  child: Text('تعديل', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                  child: Text(tr('تعديل', 'Edit'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -202,7 +202,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                   onPressed: () => _confirmDelete(product),
-                  child: const Text('حذف', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13)),
+                  child: Text(tr('حذف', 'Delete'), style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
               ),
             ],
@@ -220,22 +220,22 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> with Single
       case 'active':
         bg = Colors.green.withOpacity(0.2);
         fg = Colors.green;
-        label = 'نشط';
+        label = tr('نشط', 'Active');
         break;
       case 'pending':
         bg = Colors.grey.withOpacity(0.2);
         fg = Colors.grey;
-        label = 'معلق';
+        label = tr('معلق', 'Pending');
         break;
       case 'suspended':
         bg = Colors.orange.withOpacity(0.2);
         fg = Colors.orange;
-        label = 'موقوف';
+        label = tr('موقوف', 'Suspended');
         break;
       default:
         bg = Colors.red.withOpacity(0.2);
         fg = Colors.red;
-        label = 'مرفوض';
+        label = tr('مرفوض', 'Rejected');
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

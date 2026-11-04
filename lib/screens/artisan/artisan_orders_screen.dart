@@ -50,13 +50,13 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('قبول الطلب؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text('بعد قبولك، أنت المسؤول عن توصيل الطلب للزبون وتحصيل المبلغ كاشاً.', style: TextStyle(color: AppColors.subText)),
+          title: Text(tr('قبول الطلب؟', 'Accept the order?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('بعد قبولك، أنت المسؤول عن توصيل الطلب للزبون وتحصيل المبلغ كاشاً.', 'Once you accept, you\'re responsible for delivering the order and collecting the payment in cash.'), style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -69,7 +69,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                   AppError.showSnackbar(context, AppError.getFirebaseError(e));
                 }
               },
-              child: const Text('تأكيد', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تأكيد', 'Confirm'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -86,13 +86,13 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('رفض الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('رفض الطلب', 'Reject order'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: TextFormField(
             controller: reasonController,
             maxLines: 3,
             style: TextStyle(color: AppColors.text),
             decoration: InputDecoration(
-              hintText: 'سبب الرفض',
+              hintText: tr('سبب الرفض', 'Reason for rejection'),
               hintStyle: TextStyle(color: AppColors.subText),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
@@ -102,7 +102,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: Text('تراجع', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('تراجع', 'Back'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -115,7 +115,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                   AppError.showSnackbar(context, AppError.getFirebaseError(e));
                 }
               },
-              child: const Text('تأكيد الرفض', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تأكيد الرفض', 'Confirm rejection'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -131,13 +131,13 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('تأكيد التسليم؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text('أكِّد فقط بعد تسليم المنتج فعلياً واستلام كامل المبلغ من الزبون.', style: TextStyle(color: AppColors.subText)),
+          title: Text(tr('تأكيد التسليم؟', 'Confirm delivery?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('أكِّد فقط بعد تسليم المنتج فعلياً واستلام كامل المبلغ من الزبون.', 'Only confirm after you\'ve handed over the product and received the full payment.'), style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(context),
-              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -150,7 +150,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                   AppError.showSnackbar(context, AppError.getFirebaseError(e));
                 }
               },
-              child: const Text('تم التسليم', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تم التسليم', 'Delivered'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -169,22 +169,22 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
         appBar: AppBar(
           backgroundColor: AppColors.background,
           automaticallyImplyLeading: false,
-          title: Text('الطلبات الواردة', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('الطلبات الواردة', 'Incoming orders'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: AppColors.gold,
             labelColor: AppColors.gold,
             unselectedLabelColor: AppColors.subText,
-            tabs: const [Tab(text: 'جديدة 🔴'), Tab(text: 'قيد التنفيذ 🟡'), Tab(text: 'مكتملة ✅'), Tab(text: 'مرفوضة ❌')],
+            tabs: [Tab(text: tr('جديدة 🔴', 'New 🔴')), Tab(text: tr('قيد التنفيذ 🟡', 'In progress 🟡')), Tab(text: tr('مكتملة ✅', 'Completed ✅')), Tab(text: tr('مرفوضة ❌', 'Rejected ❌'))],
           ),
         ),
         body: artisanUid == null
-            ? Center(child: Text('سجّل الدخول لعرض الطلبات', style: TextStyle(color: AppColors.subText)))
+            ? Center(child: Text(tr('سجّل الدخول لعرض الطلبات', 'Sign in to see orders'), style: TextStyle(color: AppColors.subText)))
             : StreamBuilder<List<OrderModel>>(
                 stream: OrderService.instance.getArtisanOrders(artisanUid),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return Center(child: Text('تعذّر تحميل الطلبات', style: TextStyle(color: AppColors.subText)));
+                    return Center(child: Text(tr('تعذّر تحميل الطلبات', 'Couldn\'t load orders'), style: TextStyle(color: AppColors.subText)));
                   }
                   if (!snapshot.hasData) {
                     return const ListRowShimmer();
@@ -222,7 +222,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
         children: [
           Icon(Icons.notifications_active_outlined, color: AppColors.gold),
           const SizedBox(width: 10),
-          Expanded(child: Text('لديك $count طلبات جديدة بانتظار المراجعة', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13))),
+          Expanded(child: Text(tr('لديك $count طلبات جديدة بانتظار المراجعة', 'You have $count new order(s) to review'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13))),
         ],
       ),
     );
@@ -230,7 +230,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
 
   Widget _buildOrdersList(List<OrderModel> orders) {
     if (orders.isEmpty) {
-      return Center(child: Text('لا توجد طلبات', style: TextStyle(color: AppColors.subText)));
+      return Center(child: Text(tr('لا توجد طلبات', 'No orders'), style: TextStyle(color: AppColors.subText)));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -267,7 +267,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                     children: [
                       Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 2),
-                      Text('د.ع ${_formatPrice(order.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text(tr('د.ع ${_formatPrice(order.price)}', 'IQD ${_formatPrice(order.price)}'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
                       const SizedBox(height: 4),
                       Text(order.buyerName, style: TextStyle(color: AppColors.subText, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
@@ -286,7 +286,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                   onPressed: () => _acceptOrder(order),
-                  child: const Text('قبول الطلب', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(tr('قبول الطلب', 'Accept order'), style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 8),
@@ -295,7 +295,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                   onPressed: () => _rejectOrder(order),
-                  child: const Text('رفض الطلب', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                  child: Text(tr('رفض الطلب', 'Reject order'), style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -306,7 +306,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                   onPressed: () => _confirmDelivery(order),
-                  child: const Text('تم التسليم', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(tr('تم التسليم', 'Delivered'), style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -316,7 +316,7 @@ class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTi
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
                 child: Text(
-                  order.shippingCompanyName != null ? 'جاري الشحن' : 'بانتظار الشحن',
+                  order.shippingCompanyName != null ? tr('جاري الشحن', 'Shipping') : tr('بانتظار الشحن', 'Awaiting shipping'),
                   style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ),

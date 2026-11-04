@@ -47,13 +47,13 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('قبول الطلب؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text('بعد قبولك، أنت المسؤول عن توصيل الطلب للزبون وتحصيل المبلغ كاشاً.', style: TextStyle(color: AppColors.subText)),
+          title: Text(tr('قبول الطلب؟', 'Accept the order?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('بعد قبولك، أنت المسؤول عن توصيل الطلب للزبون وتحصيل المبلغ كاشاً.', 'Once you accept, you\'re responsible for delivering the order and collecting the payment in cash.'), style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -68,7 +68,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
                   AppError.showSnackbar(context, AppError.getFirebaseError(e));
                 }
               },
-              child: const Text('تأكيد', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تأكيد', 'Confirm'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -85,13 +85,13 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('رفض الطلب', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          title: Text(tr('رفض الطلب', 'Reject order'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           content: TextFormField(
             controller: reasonController,
             maxLines: 3,
             style: TextStyle(color: AppColors.text),
             decoration: InputDecoration(
-              hintText: 'سبب الرفض',
+              hintText: tr('سبب الرفض', 'Reason for rejection'),
               hintStyle: TextStyle(color: AppColors.subText),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
@@ -101,7 +101,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text('تراجع', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('تراجع', 'Back'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -116,7 +116,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
                   AppError.showSnackbar(context, AppError.getFirebaseError(e));
                 }
               },
-              child: const Text('تأكيد الرفض', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تأكيد الرفض', 'Confirm rejection'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -132,13 +132,13 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          title: Text('تأكيد التسليم؟', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-          content: Text('أكِّد فقط بعد تسليم المنتج فعلياً واستلام كامل المبلغ من الزبون.', style: TextStyle(color: AppColors.subText)),
+          title: Text(tr('تأكيد التسليم؟', 'Confirm delivery?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('أكِّد فقط بعد تسليم المنتج فعلياً واستلام كامل المبلغ من الزبون.', 'Only confirm after you\'ve handed over the product and received the full payment.'), style: TextStyle(color: AppColors.subText)),
           actions: [
             OutlinedButton(
               style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text('إلغاء', style: TextStyle(color: AppColors.gold)),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -153,7 +153,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
                   AppError.showSnackbar(context, AppError.getFirebaseError(e));
                 }
               },
-              child: const Text('تم التسليم', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('تم التسليم', 'Delivered'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -170,7 +170,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.background,
           iconTheme: IconThemeData(color: AppColors.gold),
-          title: Text('تفاصيل الطلب ${order.orderNumber}', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+          title: Text(tr('تفاصيل الطلب ${order.orderNumber}', 'Order ${order.orderNumber}'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
         ),
         body: ListView(
           padding: const EdgeInsets.all(16),
@@ -205,7 +205,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: _acceptOrder,
-              child: const Text('قبول الطلب', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(tr('قبول الطلب', 'Accept order'), style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
           const SizedBox(height: 8),
@@ -214,7 +214,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               onPressed: _rejectOrder,
-              child: const Text('رفض الطلب', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+              child: Text(tr('رفض الطلب', 'Reject order'), style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -226,7 +226,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
         onPressed: _confirmDelivery,
-        child: const Text('تم التسليم', style: TextStyle(fontWeight: FontWeight.bold)),
+        child: Text(tr('تم التسليم', 'Delivered'), style: TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -245,7 +245,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
               children: [
                 Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
                 const SizedBox(height: 6),
-                Text('د.ع ${_formatPrice(order.price)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                Text(tr('د.ع ${_formatPrice(order.price)}', 'IQD ${_formatPrice(order.price)}'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -276,7 +276,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
                 style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: const StadiumBorder()),
                 onPressed: () => _call(order.buyerPhone),
                 icon: Icon(Icons.call, color: AppColors.gold, size: 16),
-                label: Text('اتصال', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                label: Text(tr('اتصال', 'Call'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -309,7 +309,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(order.shippingCompanyName != null ? 'جاري الشحن' : 'بانتظار الشحن', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+                  Text(order.shippingCompanyName != null ? tr('جاري الشحن', 'Shipping') : tr('بانتظار الشحن', 'Awaiting shipping'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
                   if (order.shippingCompanyName != null) ...[
                     const SizedBox(height: 4),
                     Text(order.shippingCompanyName!, style: TextStyle(color: AppColors.subText, fontSize: 12)),
@@ -330,7 +330,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
             Icon(Icons.delivery_dining_outlined, color: AppColors.gold, size: 26),
             const SizedBox(width: 12),
             Expanded(
-              child: Text('أنت مسؤول عن توصيل هذا الطلب وتحصيل المبلغ كاشاً من الزبون', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+              child: Text(tr('أنت مسؤول عن توصيل هذا الطلب وتحصيل المبلغ كاشاً من الزبون', 'You\'re responsible for delivering this order and collecting the cash payment'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
             ),
           ],
         ),
@@ -344,7 +344,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
           children: [
             Icon(Icons.check_circle_outline, color: Colors.green, size: 26),
             SizedBox(width: 12),
-            Text('تم التسليم', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+            Text(tr('تم التسليم', 'Delivered'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
           ],
         ),
       );
@@ -358,21 +358,21 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.gold.withOpacity(0.3))),
       child: Column(
         children: [
-          _invoiceRow('سعر المنتج', _formatPrice(order.price)),
+          _invoiceRow(tr('سعر المنتج', 'Product price'), _formatPrice(order.price)),
           const SizedBox(height: 8),
-          _invoiceRow('سعر التوصيل', _formatPrice(order.deliveryFee)),
+          _invoiceRow(tr('سعر التوصيل', 'Delivery fee'), _formatPrice(order.deliveryFee)),
           const SizedBox(height: 8),
-          _invoiceRow('المجموع', _formatPrice(order.totalAmount)),
+          _invoiceRow(tr('المجموع', 'Total'), _formatPrice(order.totalAmount)),
           const SizedBox(height: 8),
-          _invoiceRow('عمولة AL-HIRFA', '- ${_formatPrice(order.platformFee)}', valueColor: Colors.redAccent),
+          _invoiceRow(tr('عمولة AL-HIRFA', 'AL-HIRFA commission'), '- ${_formatPrice(order.platformFee)}', valueColor: Colors.redAccent),
           const SizedBox(height: 12),
           Divider(color: AppColors.gold.withOpacity(0.4)),
           const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('صافي ربحك', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
-              Text('${_formatPrice(order.artisanEarnings)} د.ع', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
+              Text(tr('صافي ربحك', 'Your net earnings'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 15)),
+              Text(tr('${_formatPrice(order.artisanEarnings)} د.ع', '${_formatPrice(order.artisanEarnings)} IQD'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 20)),
             ],
           ),
         ],
@@ -391,7 +391,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
           showReportProblemDialog(context, orderId: order.id, reporterUid: artisanUid, reportedUid: order.buyerUid, disputeType: 'artisan_report');
         },
         icon: Icon(Icons.report_problem_outlined, color: AppColors.subText, size: 18),
-        label: Text('الإبلاغ عن مشكلة', style: TextStyle(color: AppColors.subText, fontSize: 13)),
+        label: Text(tr('الإبلاغ عن مشكلة', 'Report a problem'), style: TextStyle(color: AppColors.subText, fontSize: 13)),
       ),
     );
   }
@@ -401,7 +401,7 @@ class _ArtisanOrderDetailScreenState extends State<ArtisanOrderDetailScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: TextStyle(color: AppColors.subText, fontSize: 14)),
-        Text('$value د.ع', style: TextStyle(color: valueColor ?? AppColors.text, fontSize: 14)),
+        Text(tr('$value د.ع', '$value IQD'), style: TextStyle(color: valueColor ?? AppColors.text, fontSize: 14)),
       ],
     );
   }
