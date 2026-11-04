@@ -5,6 +5,7 @@ import '../../core/utils/error_handler.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../../core/settings/app_prefs.dart';
+import '../../widgets/common/test_account_locked.dart';
 
 /// حذف الحساب نهائياً — يفي بمتطلب Google Play لحذف الحسابات (Account
 /// Deletion policy): مسار حذف حقيقي داخل التطبيق، لا عبر الدعم فقط.
@@ -73,6 +74,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (context.read<AuthProvider>().currentUser?.isTestAccount ?? false) return TestAccountLocked(title: tr('حذف الحساب', 'Delete account'));
     final isValid = _passwordController.text.isNotEmpty && _confirmed;
     return Directionality(
       textDirection: AppPrefs.dir,

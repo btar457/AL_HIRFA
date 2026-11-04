@@ -4,6 +4,7 @@ import '../../core/constants/colors.dart';
 import '../../core/utils/error_handler.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/settings/app_prefs.dart';
+import '../../widgets/common/test_account_locked.dart';
 
 /// شاشة تغيير كلمة المرور (SHARED-7).
 class ChangePasswordScreen extends StatefulWidget {
@@ -95,6 +96,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (context.read<AuthProvider>().currentUser?.isTestAccount ?? false) return TestAccountLocked(title: tr('تغيير كلمة المرور', 'Change password'));
     return Directionality(
       textDirection: AppPrefs.dir,
       child: Scaffold(
