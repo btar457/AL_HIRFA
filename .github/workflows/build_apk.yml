@@ -115,7 +115,12 @@ jobs:
           tag_name: latest-build
           name: "AL-HIRFA — آخر بناء تلقائي"
           body: "بناء تلقائي من فرع ${{ github.ref_name }} — commit ${{ github.sha }}"
-          files: build/app/outputs/flutter-apk/app-release.apk
+          # الـAAB هنا أيضاً: رابط مباشر بلا ملف zip (تنزيل artifact من الهاتف
+          # يتطلب فك ضغط ويتعذّر أحياناً).
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+          overwrite_files: true
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
