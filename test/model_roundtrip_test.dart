@@ -11,6 +11,15 @@ import 'package:al_hirfa/models/review_model.dart';
 
 void main() {
   group('ProductModel round-trip', () {
+    test('null stock is omitted from toMap (rules reject stock: null)', () {
+      final p = ProductModel(
+        id: 'p', name: 'n', description: 'd', price: 1, category: 'c', city: 'x',
+        images: const [], artisanUid: 'a', artisanName: 'a', status: 'pending',
+        createdAt: DateTime(2026),
+      );
+      expect(p.toMap().containsKey('stock'), isFalse);
+    });
+
     test('every field survives toMap -> fromMap', () {
       final original = ProductModel(
         id: 'p1',

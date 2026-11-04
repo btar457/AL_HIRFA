@@ -1150,3 +1150,8 @@ test('test_accounts: الإدارة فقط تقرأ وتكتب بيانات دخ
   await assertFails(getDoc(doc(ctx('customerA'), 'test_accounts/u1')));
   await assertFails(setDoc(doc(ctx('artisanA'), 'test_accounts/u2'), data));
 });
+
+test('رفض: منتج جديد بـ stock=null (سبب خطأ النشر في v18–v20 — ProductModel.toMap يحذفه الآن)', async () => {
+  await seedBaseFixtures();
+  await assertFails(setDoc(doc(ctx('artisanA'), 'products/n1'), newProductDoc({ stock: null })));
+});

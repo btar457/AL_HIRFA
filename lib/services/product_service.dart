@@ -46,6 +46,7 @@ class ProductService {
       originPlace: product.originPlace,
       technique: product.technique,
       status: 'pending',
+      stock: product.stock,
       createdAt: DateTime.now(),
     );
 

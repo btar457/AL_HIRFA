@@ -115,7 +115,9 @@ class ProductModel {
       'rating': rating,
       'reviewCount': reviewCount,
       'salesCount': salesCount,
-      'stock': stock,
+      // يُحذف إن كان null: قواعد Firestore تقبل غياب الحقل (منتج قديم غير
+      // متتبَّع) لكنها ترفض stock=null — كان هذا يُفشل نشر كل منتج جديد.
+      if (stock != null) 'stock': stock,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
