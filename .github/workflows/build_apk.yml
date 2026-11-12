@@ -55,6 +55,9 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          # مثبَّت عمداً: إصدار Flutter جديد (3.50) يتطلب Gradle أحدث فأفشل
+          # البناء دون أي تغيير منا. حدِّثه يدوياً مع ترقية Gradle معاً.
+          flutter-version: '3.47.9'
 
       - name: Install Dependencies
         run: flutter pub get
