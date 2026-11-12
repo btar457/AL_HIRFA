@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/cart_provider.dart';
+import '../../services/app_settings_service.dart';
 import '../../providers/notification_provider.dart';
 import '../../services/notification_service.dart';
 import 'customer_home_screen.dart';
@@ -36,6 +38,10 @@ class _CustomerNavState extends State<CustomerNav> {
       NotificationService.instance.initialize(uid);
       context.read<NotificationProvider>().loadNotifications(uid);
     }
+    // سعر التوصيل الذي حدّدته الإدارة — كانت السلة تعرض القيمة الافتراضية
+    // (5,000) حتى فتح شاشة إتمام الشراء، فيختلف المجموع بين الشاشتين.
+    final cart = context.read<CartProvider>();
+    AppSettingsService.instance.getSettings().then((s) => cart.setDeliveryFeePerItem(s.fixedDeliveryFee)).catchError((_) {});
   }
 
   @override
