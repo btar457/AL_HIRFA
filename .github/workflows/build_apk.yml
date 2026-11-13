@@ -83,7 +83,8 @@ jobs:
           flutter build apk --release \
             --dart-define=R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }} \
             --dart-define=R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }} \
-            --dart-define=R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}
+            --dart-define=R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }} \
+            --dart-define=APP_VERSION=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -99,7 +100,8 @@ jobs:
           flutter build appbundle --release \
             --dart-define=R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }} \
             --dart-define=R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }} \
-            --dart-define=R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}
+            --dart-define=R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }} \
+            --dart-define=APP_VERSION=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
 
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4

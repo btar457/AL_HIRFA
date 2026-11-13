@@ -55,7 +55,7 @@ class AboutScreen extends StatelessWidget {
               child: Text('HERITAGE IRAQI CRAFTSMANSHIP', style: TextStyle(color: AppColors.subText, fontSize: 11, letterSpacing: 2, fontWeight: FontWeight.w600)),
             ),
             const SizedBox(height: 12),
-            Center(child: Text(tr('الإصدار v1.0.0', 'Version 1.0.0'), style: TextStyle(color: AppColors.subText, fontSize: 12))),
+            Center(child: Text(tr('الإصدار ${const String.fromEnvironment('APP_VERSION', defaultValue: '1.0.0')}', 'Version ${const String.fromEnvironment('APP_VERSION', defaultValue: '1.0.0')}'), style: TextStyle(color: AppColors.subText, fontSize: 12))),
             const SizedBox(height: 4),
             Center(child: Text('Established Baghdad 2024', style: TextStyle(color: AppColors.subText, fontSize: 12))),
             const SizedBox(height: 24),

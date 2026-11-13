@@ -18,7 +18,7 @@ class AppError {
       if (error is FirebaseException) {
         switch (error.code) {
           case 'permission-denied':
-            return tr('لا يمكن إتمام هذا الإجراء — قد تكون حالة الطلب أو المنتج تغيّرت. حدّث الصفحة وحاول مجدداً', 'This action can\'t be completed — the order or product may have changed. Refresh and try again');
+            return tr('تعذّر إتمام هذا الإجراء — تأكّد أنك تستخدم آخر إصدار من التطبيق، ثم حدّث الصفحة وحاول مجدداً', 'This action couldn\'t be completed — make sure you have the latest app version, then refresh and try again');
           case 'unavailable':
           case 'deadline-exceeded':
             return tr('تحقق من اتصالك بالإنترنت ثم حاول مجدداً', 'Check your internet connection and try again');

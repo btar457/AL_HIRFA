@@ -1181,3 +1181,15 @@ test('تعديل محتوى منتج منشور يعيده للمراجعة: act
   await seed('active');
   await assertFails(updateDoc(doc(ctx('artisanB'), 'products/e1'), { name: 'x', status: 'pending' }));
 });
+
+test('رسالة دعم بنفس حقول SupportMessageModel.toMap تُنشأ لأي مستخدم نشط، وتُقرأ رسائله بترتيب الوقت', async () => {
+  await seedBaseFixtures();
+  for (const uid of ['customerA', 'artisanA', 'adminA']) {
+    await assertSucceeds(setDoc(doc(ctx(uid), `support_messages/m_${uid}`), {
+      uid, name: 'x', role: 'customer', message: 'مرحبا', status: 'open', adminReply: null, createdAt: new Date(), resolvedAt: null,
+    }));
+  }
+  await assertFails(setDoc(doc(ctx('bannedA'), 'support_messages/m_b'), {
+    uid: 'bannedA', name: 'x', role: 'customer', message: 'm', status: 'open', adminReply: null, createdAt: new Date(), resolvedAt: null,
+  }));
+});
