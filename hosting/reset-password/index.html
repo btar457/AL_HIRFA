@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AL-HIRFA — إعادة تعيين كلمة المرور</title>
+<style>
+  body { font-family: sans-serif; background: #0D0D0D; color: #EDEDED; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 24px; text-align: center; }
+  .card { max-width: 420px; }
+  h1 { color: #D4AF37; font-size: 20px; }
+  p { line-height: 1.7; color: #B5B5B5; }
+  a.button { display: inline-block; margin-top: 16px; background: #D4AF37; color: #000; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>AL-HIRFA — منصة الحرفة</h1>
+    <p id="message">جارٍ محاولة فتح التطبيق...</p>
+    <a class="button" id="download" href="https://github.com/btar457/AL_HIRFA/releases/download/latest-build/app-release.apk">تنزيل التطبيق</a>
+  </div>
+  <script>
+    // يحاول فتح التطبيق مباشرة عبر intent إن كان مثبَّتاً؛ يظهر هذا الرابط
+    // فقط كخطة بديلة إن فشل التحقق التلقائي من App Links (assetlinks.json)
+    // أو لم يكن التطبيق مثبَّتاً بعد.
+    var params = window.location.search;
+    var intentUrl = 'intent://al-hirfa.web.app/reset-password' + params
+      + '#Intent;scheme=https;package=com.alhirfa.app;end';
+    document.getElementById('message').textContent =
+      'إن لم يفتح التطبيق تلقائياً خلال ثوانٍ، نزّله ثم أعد فتح الرابط من رسالة البريد الإلكتروني.';
+    window.location.href = intentUrl;
+  </script>
+</body>
+</html>

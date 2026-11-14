@@ -1,0 +1,267 @@
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../../core/constants/categories.dart';
+import '../../core/constants/colors.dart';
+import '../../core/utils/error_handler.dart';
+import '../../providers/auth_provider.dart';
+import '../auth/login_screen.dart';
+import '../shared/about_screen.dart';
+import '../shared/change_password_screen.dart';
+import '../shared/delete_account_screen.dart';
+import '../shared/privacy_policy_screen.dart';
+import '../shared/terms_screen.dart';
+import '../../core/settings/app_prefs.dart';
+import '../shared/language_appearance_screen.dart';
+
+class ArtisanProfileScreen extends StatefulWidget {
+  const ArtisanProfileScreen({super.key});
+  @override
+  State<ArtisanProfileScreen> createState() => _ArtisanProfileScreenState();
+}
+
+class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
+  late final _nameController = TextEditingController(text: context.read<AuthProvider>().currentUser?.name ?? '');
+  late String _selectedCity = context.read<AuthProvider>().currentUser?.city.isNotEmpty == true ? context.read<AuthProvider>().currentUser!.city : kCities.first;
+  bool _isSaving = false;
+
+  InputDecoration _fieldDecoration({Widget? suffix}) {
+    return InputDecoration(
+      suffixIcon: suffix,
+      filled: true,
+      fillColor: AppColors.card,
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+    );
+  }
+
+  Widget _buildLabeledField({required String label, required Widget field}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        field,
+      ],
+    );
+  }
+
+  Future<void> _changePhoto() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (picked == null || !mounted) return;
+
+    showDialog(context: context, barrierDismissible: false, builder: (_) => Center(child: CircularProgressIndicator(color: AppColors.gold)));
+    try {
+      await context.read<AuthProvider>().uploadProfilePhoto(File(picked.path));
+      if (!mounted) return;
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    }
+  }
+
+  Future<void> _save() async {
+    if (_nameController.text.trim().isEmpty) return;
+    setState(() => _isSaving = true);
+    try {
+      await context.read<AuthProvider>().updateProfile({
+        'name': _nameController.text.trim(),
+        'city': _selectedCity,
+      });
+      if (!mounted) return;
+      AppError.showSnackbar(context, tr('تم حفظ التعديلات بنجاح', 'Changes saved successfully'), isError: false);
+    } catch (e) {
+      if (!mounted) return;
+      AppError.showSnackbar(context, AppError.getFirebaseError(e));
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: AppPrefs.dir,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: Text(tr('تسجيل الخروج؟', 'Sign out?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('هل أنت متأكد من رغبتك في تسجيل الخروج؟', 'Are you sure you want to sign out?'), style: TextStyle(color: AppColors.subText)),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () async {
+                await context.read<AuthProvider>().signOut();
+                if (!context.mounted) return;
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
+              },
+              child: Text(tr('تسجيل الخروج', 'Sign out'), style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsTile({required IconData icon, required String title, VoidCallback? onTap, Color? color}) {
+    return ListTile(
+      leading: Icon(icon, color: color ?? AppColors.gold),
+      title: Text(title, style: TextStyle(color: color ?? AppColors.text)),
+      trailing: Icon(Icons.arrow_back_ios, color: AppColors.subText, size: 14),
+      onTap: onTap ?? () {},
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: AppPrefs.dir,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildLabeledField(label: tr('الاسم الكامل', 'Full name'), field: TextFormField(controller: _nameController, style: TextStyle(color: AppColors.text), decoration: _fieldDecoration())),
+                  const SizedBox(height: 14),
+                  _buildLabeledField(
+                    label: tr('المدينة', 'City'),
+                    field: DropdownButtonFormField<String>(
+                      initialValue: _selectedCity,
+                      dropdownColor: AppColors.card,
+                      style: TextStyle(color: AppColors.text),
+                      decoration: _fieldDecoration(),
+                      items: kCities.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                      onChanged: (value) => setState(() => _selectedCity = value!),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildSettingsTile(icon: Icons.translate, title: tr('اللغة والمظهر', 'Language & appearance'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageAppearanceScreen()))),
+            _buildSettingsTile(icon: Icons.lock_outline, title: tr('تغيير كلمة المرور', 'Change password'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()))),
+            _buildSettingsTile(icon: Icons.description_outlined, title: tr('الشروط والأحكام', 'Terms & Conditions'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsScreen()))),
+            _buildSettingsTile(icon: Icons.privacy_tip_outlined, title: tr('سياسة الخصوصية', 'Privacy Policy'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()))),
+            _buildSettingsTile(icon: Icons.info_outline, title: tr('عن AL-HIRFA', 'About AL-HIRFA'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()))),
+            Divider(color: AppColors.subText.withOpacity(0.2)),
+            _buildSettingsTile(icon: Icons.logout, title: tr('تسجيل الخروج', 'Sign out'), color: Colors.redAccent, onTap: _confirmLogout),
+            _buildSettingsTile(icon: Icons.delete_outline, title: tr('حذف الحساب', 'Delete account'), color: Colors.redAccent, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeleteAccountScreen()))),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                height: 56,
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, disabledBackgroundColor: AppColors.gold.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                  onPressed: _isSaving ? null : _save,
+                  child: _isSaving
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                      : Text(tr('حفظ التعديلات', 'Save changes'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    final user = context.watch<AuthProvider>().currentUser;
+    return SizedBox(
+      height: 250,
+      child: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 160,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [AppColors.gold, Color(0xFF8B6B1F)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 115,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: _changePhoto,
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 90,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.card, border: Border.all(color: AppColors.background, width: 3)),
+                      child: (user?.photoUrl.isEmpty ?? true)
+                          ? Icon(Icons.person, color: AppColors.gold, size: 44)
+                          : CachedNetworkImage(imageUrl: user!.photoUrl, fit: BoxFit.cover, errorWidget: (_, __, ___) => Icon(Icons.person, color: AppColors.gold, size: 44)),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(color: AppColors.gold, shape: BoxShape.circle, border: Border.all(color: AppColors.background, width: 2)),
+                        child: const Icon(Icons.camera_alt, color: Colors.black, size: 14),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 208,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Column(
+                children: [
+                  Text(user?.name ?? '', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.circular(20)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.verified, color: Colors.black, size: 12),
+                        SizedBox(width: 4),
+                        Text(tr('حرفي موثّق', 'Verified artisan'), style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

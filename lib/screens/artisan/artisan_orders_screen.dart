@@ -1,0 +1,333 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../core/constants/colors.dart';
+import '../../core/utils/error_handler.dart';
+import '../../models/order_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../widgets/common/product_thumbnail.dart';
+import '../../services/order_service.dart';
+import '../../widgets/common/loading_shimmer.dart';
+import 'artisan_order_detail_screen.dart';
+import '../../core/settings/app_prefs.dart';
+
+// حالتا شركة الشحن (shipping_assigned/picked_up) تبقيان هنا فقط لعرض طلبات
+// قديمة قد تكون عالقة فيهما من قبل إغلاق القسم مؤقتاً — لا مسار جديد يصل
+// إليهما الآن (راجع sellerApproveOrder).
+const _legacyShippingStatuses = {'shipping_assigned', 'picked_up'};
+
+String _formatPrice(int value) {
+  final str = value.toString();
+  final buffer = StringBuffer();
+  for (int i = 0; i < str.length; i++) {
+    if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(str[i]);
+  }
+  return buffer.toString();
+}
+
+class ArtisanOrdersScreen extends StatefulWidget {
+  const ArtisanOrdersScreen({super.key});
+  @override
+  State<ArtisanOrdersScreen> createState() => _ArtisanOrdersScreenState();
+}
+
+class _ArtisanOrdersScreenState extends State<ArtisanOrdersScreen> with SingleTickerProviderStateMixin {
+  late final TabController _tabController = TabController(length: 4, vsync: this);
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  List<OrderModel> _ordersFor(List<OrderModel> orders, Set<String> statuses) => orders.where((o) => statuses.contains(o.status)).toList();
+
+  void _acceptOrder(OrderModel order) {
+    showDialog(
+      context: context,
+      builder: (context) => Directionality(
+        textDirection: AppPrefs.dir,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: Text(tr('قبول الطلب؟', 'Accept the order?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('بعد قبولك، أنت المسؤول عن توصيل الطلب للزبون وتحصيل المبلغ كاشاً.', 'Once you accept, you\'re responsible for delivering the order and collecting the payment in cash.'), style: TextStyle(color: AppColors.subText)),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () => Navigator.pop(context),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () async {
+                Navigator.pop(context);
+                try {
+                  await OrderService.instance.sellerApproveOrder(order.id);
+                } catch (e) {
+                  if (!mounted) return;
+                  AppError.showSnackbar(context, AppError.getFirebaseError(e));
+                }
+              },
+              child: Text(tr('تأكيد', 'Confirm'), style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _rejectOrder(OrderModel order) {
+    final reasonController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => Directionality(
+        textDirection: AppPrefs.dir,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: Text(tr('رفض الطلب', 'Reject order'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: TextFormField(
+            controller: reasonController,
+            maxLines: 3,
+            style: TextStyle(color: AppColors.text),
+            decoration: InputDecoration(
+              hintText: tr('سبب الرفض', 'Reason for rejection'),
+              hintStyle: TextStyle(color: AppColors.subText),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.gold.withOpacity(0.4))),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: AppColors.gold)),
+            ),
+          ),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () => Navigator.pop(context),
+              child: Text(tr('تراجع', 'Back'), style: TextStyle(color: AppColors.gold)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () async {
+                Navigator.pop(context);
+                try {
+                  await OrderService.instance.sellerRejectOrder(order.id, reasonController.text.trim());
+                } catch (e) {
+                  if (!mounted) return;
+                  AppError.showSnackbar(context, AppError.getFirebaseError(e));
+                }
+              },
+              child: Text(tr('تأكيد الرفض', 'Confirm rejection'), style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmDelivery(OrderModel order) {
+    showDialog(
+      context: context,
+      builder: (context) => Directionality(
+        textDirection: AppPrefs.dir,
+        child: AlertDialog(
+          backgroundColor: AppColors.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: Text(tr('تأكيد التسليم؟', 'Confirm delivery?'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          content: Text(tr('أكِّد فقط بعد تسليم المنتج فعلياً واستلام كامل المبلغ من الزبون.', 'Only confirm after you\'ve handed over the product and received the full payment.'), style: TextStyle(color: AppColors.subText)),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.gold), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () => Navigator.pop(context),
+              child: Text(tr('إلغاء', 'Cancel'), style: TextStyle(color: AppColors.gold)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () async {
+                Navigator.pop(context);
+                try {
+                  await OrderService.instance.confirmDelivery(order.id);
+                } catch (e) {
+                  if (!mounted) return;
+                  AppError.showSnackbar(context, AppError.getFirebaseError(e));
+                }
+              },
+              child: Text(tr('تم التسليم', 'Delivered'), style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final artisanUid = context.watch<AuthProvider>().currentUser?.uid;
+
+    return Directionality(
+      textDirection: AppPrefs.dir,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          automaticallyImplyLeading: false,
+          title: Text(tr('الطلبات الواردة', 'Incoming orders'), style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
+          bottom: TabBar(
+            controller: _tabController,
+            indicatorColor: AppColors.gold,
+            labelColor: AppColors.gold,
+            unselectedLabelColor: AppColors.subText,
+            tabs: [Tab(text: tr('جديدة 🔴', 'New 🔴')), Tab(text: tr('قيد التنفيذ 🟡', 'In progress 🟡')), Tab(text: tr('مكتملة ✅', 'Completed ✅')), Tab(text: tr('مرفوضة ❌', 'Rejected ❌'))],
+          ),
+        ),
+        body: artisanUid == null
+            ? Center(child: Text(tr('سجّل الدخول لعرض الطلبات', 'Sign in to see orders'), style: TextStyle(color: AppColors.subText)))
+            : StreamBuilder<List<OrderModel>>(
+                stream: OrderService.instance.getArtisanOrders(artisanUid),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(child: Text(tr('تعذّر تحميل الطلبات', 'Couldn\'t load orders'), style: TextStyle(color: AppColors.subText)));
+                  }
+                  if (!snapshot.hasData) {
+                    return const ListRowShimmer();
+                  }
+                  final orders = snapshot.data!;
+                  final newOrders = _ordersFor(orders, {'pending'});
+                  return Column(
+                    children: [
+                      if (newOrders.isNotEmpty) _buildNewOrdersBanner(newOrders.length),
+                      Expanded(
+                        child: TabBarView(
+                          controller: _tabController,
+                          children: [
+                            _buildOrdersList(newOrders),
+                            _buildOrdersList(_ordersFor(orders, {'seller_approved', ..._legacyShippingStatuses})),
+                            _buildOrdersList(_ordersFor(orders, {'delivered'})),
+                            _buildOrdersList(_ordersFor(orders, {'cancelled'})),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+      ),
+    );
+  }
+
+  Widget _buildNewOrdersBanner(int count) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+      child: Row(
+        children: [
+          Icon(Icons.notifications_active_outlined, color: AppColors.gold),
+          const SizedBox(width: 10),
+          Expanded(child: Text(tr('لديك $count طلبات جديدة بانتظار المراجعة', 'You have $count new order(s) to review'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrdersList(List<OrderModel> orders) {
+    if (orders.isEmpty) {
+      return Center(child: Text(tr('لا توجد طلبات', 'No orders'), style: TextStyle(color: AppColors.subText)));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: orders.length,
+      itemBuilder: (context, i) => _buildOrderCard(orders[i]),
+    );
+  }
+
+  Widget _buildOrderCard(OrderModel order) {
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ArtisanOrderDetailScreen(order: order))),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(order.orderNumber, style: TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            Divider(color: AppColors.divider),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ProductThumbnail(imageUrl: order.productImage, size: 80, iconSize: 26),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(order.productName, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 2),
+                      Text(tr('د.ع ${_formatPrice(order.price)}', 'IQD ${_formatPrice(order.price)}'), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 13)),
+                      const SizedBox(height: 4),
+                      Text(order.buyerName, style: TextStyle(color: AppColors.subText, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 4),
+                      Row(children: [Icon(Icons.location_on_outlined, color: AppColors.subText, size: 13), const SizedBox(width: 4), Expanded(child: Text('${order.governorate} - ${order.district}', style: TextStyle(color: AppColors.subText, fontSize: 11)))]),
+                      const SizedBox(height: 2),
+                      Row(children: [Icon(Icons.call_outlined, color: AppColors.subText, size: 13), const SizedBox(width: 4), Text(order.buyerPhone, style: TextStyle(color: AppColors.subText, fontSize: 11))]),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (order.status == 'pending') ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                  onPressed: () => _acceptOrder(order),
+                  child: Text(tr('قبول الطلب', 'Accept order'), style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                  onPressed: () => _rejectOrder(order),
+                  child: Text(tr('رفض الطلب', 'Reject order'), style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+            if (order.status == 'seller_approved') ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                  onPressed: () => _confirmDelivery(order),
+                  child: Text(tr('تم التسليم', 'Delivered'), style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+            if (_legacyShippingStatuses.contains(order.status)) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+                child: Text(
+                  order.shippingCompanyName != null ? tr('جاري الشحن', 'Shipping') : tr('بانتظار الشحن', 'Awaiting shipping'),
+                  style: TextStyle(color: AppColors.gold, fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ),
+              if (order.shippingCompanyName != null) ...[
+                const SizedBox(height: 6),
+                Text(order.shippingCompanyName!, style: TextStyle(color: AppColors.subText, fontSize: 12)),
+              ],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
