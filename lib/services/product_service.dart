@@ -176,6 +176,13 @@ class ProductService {
   }
 
   /// Admin: كل المنتجات بحالة معيّنة عبر كل الحرفيين — لشاشة admin_products.
+  /// Admin: كل المنتجات بكل حالاتها — لسجلّ الحرفيين (admin_artisans_ledger_screen.dart).
+  Stream<List<ProductModel>> getAllProducts() {
+    return _firestore.collection(_productsCollection).snapshots().map(
+      (snapshot) => snapshot.docs.map((doc) => ProductModel.fromMap(doc.id, doc.data())).toList(),
+    );
+  }
+
   Stream<List<ProductModel>> getProductsByStatus(String status) {
     return _firestore.collection(_productsCollection).where('status', isEqualTo: status).snapshots().map(
       (snapshot) => snapshot.docs.map((doc) => ProductModel.fromMap(doc.id, doc.data())).toList(),

@@ -456,7 +456,7 @@ class OrderService {
 
     final batch = _firestore.batch();
     for (final orderId in orderIds) {
-      batch.update(_firestore.collection(_ordersCollection).doc(orderId), {'commissionPaid': true});
+      batch.update(_firestore.collection(_ordersCollection).doc(orderId), {'commissionPaid': true, 'commissionPaidAt': Timestamp.now()});
     }
     await batch.commit();
   }

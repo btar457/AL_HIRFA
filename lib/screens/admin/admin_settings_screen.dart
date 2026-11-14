@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
+import 'admin_artisans_ledger_screen.dart';
 import 'admin_categories_screen.dart';
 import 'admin_commissions_screen.dart';
 import 'admin_financials_screen.dart';
@@ -70,6 +71,7 @@ class AdminSettingsScreen extends StatelessWidget {
         ),
         body: ListView(
           children: [
+            _buildTile(context, icon: Icons.groups_2_outlined, title: tr('سجلّ الحرفيين (منتجات وعمولات)', 'Artisans ledger (products & commissions)'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminArtisansLedgerScreen()))),
             _buildTile(context, icon: Icons.percent, title: tr('إدارة العمولات', 'Manage commissions'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminCommissionsScreen()))),
             _buildTile(context, icon: Icons.account_balance_outlined, title: tr('التسويات المالية', 'Financial settlements'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminFinancialsScreen()))),
             _buildTile(context, icon: Icons.notifications_outlined, title: tr('إدارة الإشعارات', 'Manage notifications'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminNotificationsScreen()))),

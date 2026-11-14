@@ -32,9 +32,12 @@ class OrderModel {
   final DateTime createdAt;
   final DateTime? deliveredAt;
   // هل حوّل الحرفي عمولة المنصة (platformFee) المستحقة عليه لهذا الطلب فعلياً
-  // (تحويل بنكي يدوي خارج التطبيق)؟ لا معنى له قبل status=='delivered' —
+  // (نقداً باليد خارج التطبيق)؟ لا معنى له قبل status=='delivered' —
   // راجع admin_commissions_owed_screen.dart.
   final bool commissionPaid;
+  // متى سجّلت الإدارة استلام العمولة (null للطلبات القديمة أو غير المسدَّدة).
+  // يُقرأ فقط — تكتبه OrderService.markArtisanCommissionPaid، لا toMap().
+  final DateTime? commissionPaidAt;
   // الكمية المخصومة من مخزون المنتج عند إنشاء الطلب — تُعاد للمخزون عند
   // الإلغاء. 0 للطلبات القديمة أو لمنتج بلا مخزون متتبَّع (لا شيء يُعاد).
   final int reservedQuantity;
@@ -69,6 +72,7 @@ class OrderModel {
     required this.createdAt,
     this.deliveredAt,
     this.commissionPaid = false,
+    this.commissionPaidAt,
     this.reservedQuantity = 0,
   });
 
@@ -115,6 +119,7 @@ class OrderModel {
       createdAt: createdAt,
       deliveredAt: deliveredAt ?? this.deliveredAt,
       commissionPaid: commissionPaid ?? this.commissionPaid,
+      commissionPaidAt: commissionPaidAt,
       reservedQuantity: reservedQuantity ?? this.reservedQuantity,
     );
   }
@@ -151,6 +156,7 @@ class OrderModel {
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       deliveredAt: (map['deliveredAt'] as Timestamp?)?.toDate(),
       commissionPaid: map['commissionPaid'] as bool? ?? false,
+      commissionPaidAt: (map['commissionPaidAt'] as Timestamp?)?.toDate(),
       reservedQuantity: map['reservedQuantity'] as int? ?? 0,
     );
   }
