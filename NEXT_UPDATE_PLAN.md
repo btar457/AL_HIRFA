@@ -36,3 +36,32 @@ play-services-safetynet» (الجودة الفنية، الإصدار 27).
 (`.github/workflows/build_apk.yml`). إن تطلّبت حزم FlutterFire الجديدة
 Flutter أحدث، تُرقّى Flutter ونسخة Gradle (`gradle-wrapper.properties`،
 9.3.1 أو أحدث لـ Flutter 3.50) معاً في نفس التحديث.
+
+## 2. محادثة بين الإدارة والحرفي (مُعتمَد)
+
+**الوضع الحالي:** «تواصل مع الدعم» (`support_service.dart`) اتجاه واحد: المستخدم
+يرسل رسالة، والإدارة تردّ ردّاً واحداً (`adminReply`) وتغلقها. الإدارة لا
+تستطيع بدء محادثة مع حرفي، ولا يوجد تبادل رسائل متعدد.
+
+**المطلوب:**
+- محادثة حقيقية متعددة الرسائل بين الإدارة وكل حرفي (خيط واحد لكل حرفي).
+- الإدارة تبدأ المحادثة من «سجلّ الحرفيين» (زر «مراسلة» في صفحة الحرفي)،
+  ومن «رسائل الدعم».
+- الحرفي يرى المحادثة في تبويب/شاشة «رسائل الإدارة» مع عدّاد غير المقروء،
+  ويردّ منها.
+- إشعار داخل التطبيق عند كل رسالة جديدة للطرفين (نفس NotificationService).
+- إمكانية إرفاق صورة (اختياري، بنفس رفع R2 المستخدم للمنتجات).
+
+**التصميم المقترح:**
+- `conversations/{artisanUid}`: `artisanUid`، `artisanName`، `lastMessage`،
+  `lastAt`، `unreadForAdmin`، `unreadForArtisan`.
+- `conversations/{artisanUid}/messages/{id}`: `senderUid`، `senderRole`
+  (admin/artisan)، `text`، `imageUrl?`، `createdAt`.
+- قواعد Firestore: القراءة والكتابة للحرفي صاحب المحادثة وللإدارة فقط؛
+  `senderUid == request.auth.uid` إجباري؛ لا تعديل ولا حذف للرسائل؛ الحرفي
+  يصفّر `unreadForArtisan` فقط، والإدارة `unreadForAdmin` فقط. اختبارات
+  محاكي لكل ذلك (طرف ثالث لا يقرأ، لا انتحال للمرسل، لا تعديل).
+- فهرس: `messages` حسب `createdAt`، و`conversations` حسب `lastAt` للإدارة.
+
+**حدود معروفة:** الإشعار داخل التطبيق فقط (لا push حين يكون التطبيق مغلقاً)
+— نفس حدود بقية الإشعارات بلا Cloud Functions.
