@@ -1,0 +1,70 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../core/constants/colors.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/notification_provider.dart';
+import '../../services/notification_service.dart';
+import 'artisan_dashboard_screen.dart';
+import 'artisan_orders_screen.dart';
+import 'artisan_profile_screen.dart';
+import 'manage_products_screen.dart';
+import '../../core/settings/app_prefs.dart';
+
+/// الحاوية الرئيسية لتجربة الحرفي عبر شريط تنقل سفلي بأربع تبويبات.
+class ArtisanNav extends StatefulWidget {
+  final int initialIndex;
+  const ArtisanNav({super.key, this.initialIndex = 0});
+  @override
+  State<ArtisanNav> createState() => _ArtisanNavState();
+}
+
+class _ArtisanNavState extends State<ArtisanNav> {
+  late int _index = widget.initialIndex;
+
+  final _screens = [
+    ArtisanDashboardScreen(),
+    ManageProductsScreen(),
+    ArtisanOrdersScreen(),
+    ArtisanProfileScreen(),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    final uid = context.read<AuthProvider>().currentUser?.uid;
+    if (uid != null) {
+      NotificationService.instance.initialize(uid);
+      context.read<NotificationProvider>().loadNotifications(uid);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: AppPrefs.dir,
+      child: Scaffold(
+        body: _screens[_index],
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(color: AppColors.navBackground),
+          child: BottomNavigationBar(
+            currentIndex: _index,
+            onTap: (i) => setState(() => _index = i),
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            selectedItemColor: AppColors.gold,
+            unselectedItemColor: AppColors.subText,
+            selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            unselectedLabelStyle: TextStyle(fontSize: 11),
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: tr('الرئيسية', 'Home')),
+              BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: tr('منتجاتي', 'My products')),
+              BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), activeIcon: Icon(Icons.receipt_long), label: tr('الطلبات', 'Orders')),
+              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: tr('حسابي', 'My account')),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
