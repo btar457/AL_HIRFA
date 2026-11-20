@@ -94,3 +94,12 @@ Flutter أحدث، تُرقّى Flutter ونسخة Gradle (`gradle-wrapper.prope
 في `android/app/build.gradle.kts`). قبل أي تغيير: فتح تفاصيل الاقتراح في Play
 Console لمعرفة ما يطلبه تحديداً (مثلاً رفع ملف mapping لفكّ تشويش تقارير
 الأعطال، أو قواعد keep واسعة في `proguard-rules.pro`)، ثم تطبيق ما يلزم فقط.
+
+**سبب مرجَّح وُجد بالفحص:** `android/app/proguard-rules.pro` فيه قواعد keep
+واسعة جداً: `-keep class io.flutter.** { *; }` و`com.google.firebase.**`
+و`com.google.android.gms.**` و`com.google.android.play.core.**` — تمنع R8 من
+ضغط وتحسين أغلب كود Firebase وGoogle Play Services. هذه المكتبات تأتي بقواعد
+R8 الخاصة بها (consumer rules)، فالقواعد الواسعة غالباً غير ضرورية. الحل:
+حذفها تدريجياً مع اختبار تشغيل كامل لنسخة release على جهاز حقيقي بعد كل حذف
+(تسجيل دخول، Firestore، App Check، Crashlytics، الإشعارات)، والإبقاء فقط على
+ما يثبت الاختبار أنه لازم.
