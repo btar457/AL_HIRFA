@@ -65,3 +65,32 @@ Flutter أحدث، تُرقّى Flutter ونسخة Gradle (`gradle-wrapper.prope
 
 **حدود معروفة:** الإشعار داخل التطبيق فقط (لا push حين يكون التطبيق مغلقاً)
 — نفس حدود بقية الإشعارات بلا Cloud Functions.
+
+## 3. «العرض حتى حافة الشاشة» لكل المستخدمين (مُعتمَد)
+
+**المصدر:** اقتراح Play Console (تجربة المستخدم، الإصدار 27): «ميزة العرض
+حتى حافة الشاشة قد لا تكون مفعّلة لدى جميع المستخدمين».
+
+**السبب:** Android 15 يفرضها تلقائياً (targetSdk من Flutter)، لكن الأجهزة
+الأقدم لا تفعّلها إلا إن طلبها التطبيق صراحة. `MainActivity.kt` حالياً
+`FlutterActivity` فارغة.
+
+**الخطوات:**
+1. في `MainActivity.onCreate` استدعاء
+   `WindowCompat.setDecorFitsSystemWindows(window, false)` (FlutterActivity ليست
+   ComponentActivity، فلا تُستخدم `enableEdgeToEdge()` من androidx.activity)،
+   مع شريطَي حالة وتنقّل شفافين، وأيقونات تتبع المظهر الفاتح/الداكن عبر
+   `SystemUiOverlayStyle` في `main.dart`.
+2. مراجعة كل شاشة لها محتوى عند الحواف السفلية (شريط التنقل السفلي، أزرار
+   «إتمام الشراء»، «نشر المنتج»، شاشات بلا AppBar مثل اختيار اللغة) والتأكد
+   من `SafeArea` أو الحشوة السفلية — على جهاز Android 15 وجهاز أقدم.
+
+## 4. اقتراح R8 (للتحقق فقط)
+
+**المصدر:** اقتراح Play Console (استخدام الذاكرة، الإصدار 27): «تحسين الذاكرة
+والأداء في تطبيقك من خلال تحسين الأداة R8».
+
+**الوضع:** R8 مفعّل فعلاً (`isMinifyEnabled = true` و`isShrinkResources = true`
+في `android/app/build.gradle.kts`). قبل أي تغيير: فتح تفاصيل الاقتراح في Play
+Console لمعرفة ما يطلبه تحديداً (مثلاً رفع ملف mapping لفكّ تشويش تقارير
+الأعطال، أو قواعد keep واسعة في `proguard-rules.pro`)، ثم تطبيق ما يلزم فقط.
